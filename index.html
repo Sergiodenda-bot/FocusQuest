@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FocusQuest - Gamified Focus & Productivity</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+darkMode: 'class',
+theme: {
+extend: {
+colors: {
+darkBg: '#0f172a',
+cardBg: '#1e293b',
+borderCol: '#334155',
+accentGreen: '#10b981',
+accentCoral: '#f43f5e',
+accentIndigo: '#6366f1',
+}
+}
+}
+}
+</script>
+<!-- FontAwesome for Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- Google Fonts Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Inter', sans-serif; }
+/* Custom scrollbar /
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+/* Theme styles /
+body.theme-midnight { background-color: #090d16; }
+body.theme-obsidian { background-color: #000000; }
+body.theme-emerald { background-color: #022c22; }
+body.theme-dusk { background-color: #1e1b4b; }
+</style>
+</head>
+<body class="theme-midnight bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+<!-- App Container -->
+<div id="app" class="flex flex-col md:flex-row flex-1 h-screen overflow-hidden relative">
+<!-- Mobile Header Bar -->
+<header class="md:hidden flex items-center justify-between px-4 py-3 bg-cardBg/80 backdrop-blur border-b border-borderCol z-30">
+<div class="flex items-center space-x-2">
+<div class="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/30">
+<i class="fa-solid fa-bullseye text-sm"></i>
+</div>
+<span class="font-bold text-lg tracking-tight">FocusQuest</span>
+</div>
+<div class="flex items-center space-x-3">
+<button onclick="app.toggleMobileMenu()" class="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white">
+<i class="fa-solid fa-bars"></i>
+</button>
+</div>
+</header>
+<!-- Sidebar Navigation -->
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-cardBg/90 md:bg-cardBg/50 backdrop-blur-xl border-r border-borderCol flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+<!-- Brand Area -->
+<div class="p-5 flex items-center justify-between border-b border-borderCol/50">
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+<i class="fa-solid fa-bullseye text-lg"></i>
+</div>
+<div>
+<h1 class="font-bold text-base tracking-tight leading-none">FocusQuest</h1>
+<span id="userRankTitle" class="text-xs text-indigo-400 font-medium mt-1 block">Procrastinator</span>
+</div>
+</div>
+<button onclick="app.toggleMobileMenu()" class="md:hidden text-slate-400 hover:text-white">
+<i class="fa-solid fa-xmark text-lg"></i>
+</button>
+</div>
+<!-- Level & Points Widget -->
+<div class="p-4 mx-4 mt-4 rounded-2xl bg-slate-800/60 border border-slate-700/50 shadow-inner">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center space-x-2">
+<span class="px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-400 font-semibold text-xs border border-indigo-500/30">
+Lv. <span id="userLevelDisplay">1</span>
+</span>
+<span class="text-xs text-slate-400"><span id="userPointsDisplay">0</span> pts</span>
+</div>
+<button onclick="app.openModal('shopModal')" class="text-xs text-amber-400 hover:text-amber-300 font-medium flex items-center space-x-1 bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-500/20 transition">
+<i class="fa-solid fa-store"></i>
+<span>Shop</span>
+</button>
+</div>
+<!-- Progress Bar -->
+<div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-700/40">
+<div id="levelProgressBar" class="bg-gradient-to-r from-indigo-500 to-emerald-400 h-full transition-all duration-500" style="width: 0%"></div>
+</div>
+<div class="flex justify-between items-center mt-1.5 text-[10px] text-slate-400">
+<span id="progressText">0 / 10 pts to next level</span>
+<button onclick="app.openModal('debugModal')" class="hover:text-indigo-400 underline">Simulate Midnight</button>
+</div>
+</div>
+<!-- Navigation Links -->
+<div class="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+<!-- Views -->
+<div>
+<div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-3 mb-2">Overview</div>
+<nav class="space-y-1">
+<button onclick="app.switchView('today')" id="nav-today" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white">
+<div class="flex items-center space-x-3">
+<div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+<i class="fa-solid fa-sun text-xs"></i>
+</div>
+<span>Today's Focus</span>
+</div>
+<span id="todayCountBadge" class="px-2 py-0.5 rounded-full text-xs bg-slate-800 text-slate-300 font-semibold">0</span>
+</button>
+<button onclick="app.switchView('all')" id="nav-all" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white">
+<div class="flex items-center space-x-3">
+<div class="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+<i class="fa-solid fa-list-check text-xs"></i>
+</div>
+<span>All Tasks</span>
+</div>
+<span id="allCountBadge" class="px-2 py-0.5 rounded-full text-xs bg-slate-800 text-slate-300 font-semibold">0</span>
+</button>
+</nav>
+</div>
+<!-- Folders / Categories -->
+<div>
+<div class="flex items-center justify-between px-3 mb-2">
+<span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Categories</span>
+<button onclick="app.openModal('categoryModal')" class="text-slate-400 hover:text-white text-xs">
+<i class="fa-solid fa-plus"></i>
+</button>
+</div>
+<nav id="categoryListContainer" class="space-y-1">
+<!-- Dynamically populated categories -->
+</nav>
+</div>
+</div>
+<!-- Footer Sidebar Settings/Theme -->
+<div class="p-4 border-t border-borderCol/50 flex items-center justify-between">
+<button onclick="app.openModal('settingsModal')" class="flex items-center space-x-2 text-sm text-slate-400 hover:text-slate-200 transition">
+<i class="fa-solid fa-gear"></i>
+<span>Settings & Audio</span>
+</button>
+<div class="flex items-center space-x-1 text-xs text-slate-500">
+<i class="fa-solid fa-shield-halved"></i>
+<span>Secure</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-transparent md:ml-72">
+<!-- Top Bar / View Title Header -->
+<header class="px-6 py-5 border-b border-borderCol/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-cardBg/20 backdrop-blur-md">
+<div>
+<h2 id="currentViewTitle" class="text-2xl font-bold tracking-tight text-white flex items-center space-x-3">
+<span>Today's Focus</span>
+<span id="headerDateBadge" class="text-xs font-normal px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700"></span>
+</h2>
+<p id="currentViewSubtitle" class="text-sm text-slate-400 mt-0.5">Complete your active bets to earn points and avoid midnight penalties.</p>
+</div>
+<div class="flex items-center space-x-3">
+<button onclick="app.openModal('taskModal')" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm shadow-lg shadow-indigo-600/25 flex items-center space-x-2 transition transform active:scale-95">
+<i class="fa-solid fa-plus"></i>
+<span>New Task</span>
+</button>
+</div>
+</header>
+<!-- Main Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<!-- Today Banner / Progress Indicator -->
+<div id="todayProgressBanner" class="p-5 rounded-2xl bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900/40 border border-indigo-500/20 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex items-center space-x-4">
+<div class="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xl shadow-inner">
+<i class="fa-solid fa-fire-flame-curved"></i>
+</div>
+<div>
+<h3 class="font-bold text-base text-white">Daily Bet Active</h3>
+<p class="text-xs text-slate-300 mt-0.5">Assigned tasks earn <span class="text-emerald-400 font-semibold">+2 Points</span> upon completion. Unfinished tasks deduct <span class="text-rose-400 font-semibold">-2 Points</span> at midnight.</p>
+</div>
+</div>
+<div class="flex items-center space-x-3 bg-slate-900/60 px-4 py-2.5 rounded-xl border border-slate-700/50">
+<div class="text-right">
+<div class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Today's Progress</div>
+<div class="text-sm font-bold text-white"><span id="completedTodayCount">0</span> / <span id="totalTodayCount">0</span> Done</div>
+</div>
+<div class="w-10 h-10 rounded-full flex items-center justify-center bg-indigo-500/10 text-indigo-400 font-bold text-sm" id="todayCompletionPercent">0%</div>
+</div>
+</div>
+<!-- Filters & Search Bar -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+<div class="relative w-full sm:w-80">
+<i class="fa-solid fa-search absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+<input type="text" id="taskSearchInput" oninput="app.handleSearch(this.value)" placeholder="Search tasks..." class="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+</div>
+<div class="flex items-center space-x-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
+<button onclick="app.setFilter('all')" id="filter-btn-all" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white transition whitespace-nowrap">All</button>
+<button onclick="app.setFilter('active')" id="filter-btn-active" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">Active</button>
+<button onclick="app.setFilter('completed')" id="filter-btn-completed" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">Completed</button>
+</div>
+</div>
+<!-- Task List Container -->
+<div id="taskContainer" class="space-y-3 pb-20">
+<!-- Dynamic task cards will be injected here -->
+</div>
+</div>
+</main>
+</div>
+<!-- Modals -->
+<!-- New / Edit Task Modal -->
+<div id="taskModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+<div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+<div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
+<h3 id="taskModalTitle" class="font-bold text-base text-white">Create New Task</h3>
+<button onclick="app.closeModal('taskModal')" class="text-slate-400 hover:text-white">
+<i class="fa-solid fa-xmark"></i>
+</button>
+</div>
+<form id="taskForm" onsubmit="app.saveTask(event)" class="p-6 space-y-4">
+<input type="hidden" id="editTaskId">
+<div>
+<label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Task Title</label>
+<input type="text" id="taskTitleInput" required placeholder="e.g., Complete Math Assignment" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Category</label>
+<select id="taskCategorySelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+<!-- Populated dynamically -->
+</select>
+</div>
+<div>
+<label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Frequency</label>
+<select id="taskFrequencySelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+<option value="once">One-time</option>
+<option value="daily">Daily Recurring</option>
+<option value="weekly">Weekly Recurring</option>
+</select>
+</div>
+</div>
+<div class="flex items-center space-x-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+<input type="checkbox" id="taskIsTodayInput" class="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+<div>
+<label for="taskIsTodayInput" class="text-sm font-medium text-slate-200 cursor-pointer">Assign to Today's Focus</label>
+<p class="text-[11px] text-slate-400">Doubles point value to 2 pts, but carries a midnight penalty if missed.</p>
+</div>
+</div>
+<div class="flex justify-end space-x-3 pt-2">
+<button type="button" onclick="app.closeModal('taskModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-sm font-medium">Cancel</button>
+<button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium shadow-lg shadow-indigo-600/20">Save Task</button>
+</div>
+</form>
+</div>
+</div>
+<!-- New Category Modal -->
+<div id="categoryModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+<div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl">
+<div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
+<h3 class="font-bold text-base text-white">New Category</h3>
+<button onclick="app.closeModal('categoryModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+</div>
+<form onsubmit="app.saveCategory(event)" class="p-6 space-y-4">
+<div>
+<label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Category Name</label>
+<input type="text" id="categoryNameInput" required placeholder="e.g., Coding, Fitness" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+</div>
+<div>
+<label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Icon (FontAwesome)</label>
+<input type="text" id="categoryIconInput" value="fa-folder" placeholder="e.g., fa-book, fa-dumbbell" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+</div>
+<div class="flex justify-end space-x-3 pt-2">
+<button type="button" onclick="app.closeModal('categoryModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-sm">Cancel</button>
+<button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm">Create</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Shop Modal -->
+<div id="shopModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+<div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+<div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
+<div class="flex items-center space-x-3">
+<div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
+<i class="fa-solid fa-store"></i>
+</div>
+<div>
+<h3 class="font-bold text-base text-white">Reward & Customization Shop</h3>
+<p class="text-xs text-slate-400">Spend points to unlock UI themes, titles, and sound packs.</p>
+</div>
+</div>
+<div class="flex items-center space-x-4">
+<span class="text-sm font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/20">
+<i class="fa-solid fa-coins mr-1.5"></i> <span id="shopUserPoints">0</span> pts
+</span>
+<button onclick="app.closeModal('shopModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-6 space-y-4" id="shopItemsContainer">
+<!-- Dynamically populated shop items -->
+</div>
+</div>
+</div>
+<!-- Settings Modal -->
+<div id="settingsModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+<div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+<div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
+<h3 class="font-bold text-base text-white">App Settings & Audio</h3>
+<button onclick="app.closeModal('settingsModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+</div>
+<div class="p-6 space-y-5">
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-sm font-medium text-slate-200">Sound Effects (Web Audio)</h4>
+<p class="text-xs text-slate-400">Play chime on task completion.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input type="checkbox" id="audioToggle" onchange="app.toggleAudio(this.checked)" class="sr-only peer" checked>
+<div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+</label>
+</div>
+<div class="pt-4 border-t border-slate-800">
+<h4 class="text-sm font-medium text-slate-200 mb-2">Data Management</h4>
+<button onclick="app.resetData()" class="px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-xs font-semibold border border-rose-500/20 transition">
+<i class="fa-solid fa-trash mr-1.5"></i> Reset All Data
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Debug Midnight Simulator Modal -->
+<div id="debugModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+<div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl p-6 text-center space-y-4">
+<div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto text-xl">
+<i class="fa-solid fa-clock-rotate-left"></i>
+</div>
+<div>
+<h3 class="font-bold text-base text-white">Simulate Midnight Reset</h3>
+<p class="text-xs text-slate-400 mt-1">Triggers midnight evaluation: uncompleted "Today" tasks will deduct -2 points each!</p>
+</div>
+<div class="flex space-x-3 pt-2">
+<button onclick="app.closeModal('debugModal')" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-sm">Cancel</button>
+<button onclick="app.simulateMidnight()" class="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold">Trigger Penalty</button>
+</div>
+</div>
+</div>
+<!-- Celebration Success Modal -->
+<div id="celebrationModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+<div class="bg-cardBg border border-emerald-500/30 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-8 text-center space-y-5 animate-in zoom-in-95 duration-300">
+<div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 flex items-center justify-center mx-auto text-3xl shadow-lg shadow-emerald-500/30">
+<i class="fa-solid fa-trophy"></i>
+</div>
+<div>
+<h3 class="font-extrabold text-2xl text-white">Awesome Job!</h3>
+<p class="text-sm text-slate-300 mt-2">You crushed all of today's focus goals! Your dedication is paying off.</p>
+</div>
+<div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-xs text-slate-400">
+Streak maintained! Bonus points secured. Keep up the momentum tomorrow.
+</div>
+<button onclick="app.closeModal('celebrationModal')" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-600/30 transition">
+Continue Winning
+</button>
+</div>
+</div>
+<!-- Notification Toast Container -->
+<div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+<!-- Application Logic Script -->
+<script>
+// Web Audio API Synthesizer
+class SoundEngine {
+constructor() {
+this.enabled = true;
+this.audioCtx = null;
+}
+init() {
+if (!this.audioCtx) {
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+this.audioCtx = new AudioContext();
+}
+}
+playChime() {
+if (!this.enabled) return;
+try {
+this.init();
+if (this.audioCtx.state === 'suspended') {
+this.audioCtx.resume();
+}
+const now = this.audioCtx.currentTime;
+const osc = this.audioCtx.createOscillator();
+const gain = this.audioCtx.createGain();
+osc.type = 'triangle';
+osc.frequency.setValueAtTime(523.25, now); // C5
+osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.15); // C6
+gain.gain.setValueAtTime(0.2, now);
+gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+osc.connect(gain);
+gain.connect(this.audioCtx.destination);
+osc.start(now);
+osc.stop(now + 0.4);
+} catch(e) { console.error(e); }
+}
+playPenalty() {
+if (!this.enabled) return;
+try {
+this.init();
+if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
+const now = this.audioCtx.currentTime;
+const osc = this.audioCtx.createOscillator();
+const gain = this.audioCtx.createGain();
+osc.type = 'sawtooth';
+osc.frequency.setValueAtTime(220, now);
+osc.frequency.linearRampToValueAtTime(110, now + 0.3);
+gain.gain.setValueAtTime(0.25, now);
+gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+osc.connect(gain);
+gain.connect(this.audioCtx.destination);
+osc.start(now);
+osc.stop(now + 0.35);
+} catch(e) { console.error(e); }
+}
+}
+// Main FocusQuest Application
+class FocusQuestApp {
+constructor() {
+this.sound = new SoundEngine();
+this.state = {
+points: 0,
+level: 1,
+tasks: [],
+categories: [
+{ id: 'cat-1', name: 'School & Study', icon: 'fa-book-open' },
+{ id: 'cat-2', name: 'Fitness & Health', icon: 'fa-dumbbell' },
+{ id: 'cat-3', name: 'Personal', icon: 'fa-user' }
+],
+shopItems: [
+{ id: 'theme-midnight', type: 'theme', name: 'Midnight Blue Theme', cost: 10, unlocked: true, value: 'theme-midnight' },
+{ id: 'theme-obsidian', type: 'theme', name: 'Obsidian Minimal', cost: 25, unlocked: false, value: 'theme-obsidian' },
+{ id: 'theme-emerald', type: 'theme', name: 'Emerald Focus', cost: 40, unlocked: false, value: 'theme-emerald' },
+{ id: 'theme-dusk', type: 'theme', name: 'Warm Dusk', cost: 60, unlocked: false, value: 'theme-dusk' },
+{ id: 'badge-novice', type: 'badge', name: 'Title: Focus Novice', cost: 15, unlocked: true, value: 'Focus Novice' },
+{ id: 'badge-master', type: 'badge', name: 'Title: Task Master', cost: 50, unlocked: false, value: 'Task Master' },
+{ id: 'badge-legend', type: 'badge', name: 'Title: Productivity Legend', cost: 120, unlocked: false, value: 'Productivity Legend' }
+],
+activeTheme: 'theme-midnight',
+currentView: 'today',
+currentCategoryFilter: null,
+searchQuery: '',
+statusFilter: 'all',
+audioEnabled: true
+};
+this.ranks = [
+{ level: 1, title: 'Procrastinator' },
+{ level: 3, title: 'Focus Novice' },
+{ level: 7, title: 'Task Apprentice' },
+{ level: 12, title: 'Productivity Adept' },
+{ level: 20, title: 'Task Master' },
+{ level: 35, title: 'Productivity Legend' }
+];
+this.loadState();
+}
+init() {
+this.applyTheme(this.state.activeTheme);
+document.getElementById('audioToggle').checked = this.state.audioEnabled;
+this.sound.enabled = this.state.audioEnabled;
+this.updateDateBadge();
+this.renderCategories();
+this.renderCategorySelectOptions();
+this.renderTasks();
+this.updateUserInfo();
+}
+loadState() {
+const saved = localStorage.getItem('focusquest_state');
+if (saved) {
+try {
+const parsed = JSON.parse(saved);
+this.state = { ...this.state, ...parsed };
+} catch(e) { console.error(e); }
+} else {
+// Seed initial demo tasks
+this.state.tasks = [
+{ id: 't-1', title: 'Review Calculus Chapter 4', category: 'cat-1', isToday: true, completed: false, frequency: 'daily' },
+{ id: 't-2', title: '30-minute Cardio Workout', category: 'cat-2', isToday: true, completed: true, frequency: 'once' },
+{ id: 't-3', title: 'Read 20 pages of a book', category: 'cat-3', isToday: false, completed: false, frequency: 'weekly' }
+];
+this.state.points = 2; // initial demo points
+this.saveState();
+}
+}
+saveState() {
+localStorage.setItem('focusquest_state', JSON.stringify(this.state));
+}
+updateDateBadge() {
+const options = { weekday: 'short', month: 'short', day: 'numeric' };
+const dateStr = new Date().toLocaleDateString('en-US', options);
+document.getElementById('headerDateBadge').textContent = dateStr;
+}
+// Gamification & Points
+addPoints(amt) {
+this.state.points += amt;
+if (this.state.points < 0) this.state.points = 0;
+this.checkLevelProgression();
+this.saveState();
+this.updateUserInfo();
+}
+checkLevelProgression() {
+// Formula: Level N requires N * 10 total points
+let newLevel = 1;
+let cumulative = 0;
+for (let l = 1; l <= 50; l++) {
+cumulative += l * 10;
+if (this.state.points >= cumulative) {
+newLevel = l + 1;
+} else {
+break;
+}
+}
+if (newLevel > this.state.level) {
+this.state.level = newLevel;
+this.showToast(`Level Up! You reached Level ${newLevel}!`, 'success');
+}
+}
+updateUserInfo() {
+document.getElementById('userPointsDisplay').textContent = this.state.points;
+document.getElementById('shopUserPoints').textContent = this.state.points;
+document.getElementById('userLevelDisplay').textContent = this.state.level;
+// Calculate progress to next level
+let prevCumulative = 0;
+for (let l = 1; l < this.state.level; l++) {
+prevCumulative += l * 10;
+}
+const currentLevelNeeded = this.state.level * 10;
+const pointsIntoLevel = this.state.points - prevCumulative;
+const pct = Math.min(100, Math.max(0, (pointsIntoLevel / currentLevelNeeded) * 100));
+document.getElementById('levelProgressBar').style.width = `${pct}%`;
+document.getElementById('progressText').textContent = `${Math.max(0, pointsIntoLevel)} / ${currentLevelNeeded} pts to next level`;
+// Rank title
+let currentRankTitle = 'Procrastinator';
+for (const r of this.ranks) {
+if (this.state.level >= r.level) currentRankTitle = r.title;
+}
+document.getElementById('userRankTitle').textContent = currentRankTitle;
+}
+// Task Management
+switchView(viewName) {
+this.state.currentView = viewName;
+this.state.currentCategoryFilter = null;
+document.getElementById('nav-today').className = viewName === 'today' ? 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
+document.getElementById('nav-all').className = viewName === 'all' ? 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
+// Reset category active states
+document.querySelectorAll('.category-nav-btn').forEach(btn => btn.classList.remove('bg-indigo-600/20', 'text-indigo-400', 'border', 'border-indigo-500/30'));
+const titleEl = document.getElementById('currentViewTitle').querySelector('span');
+const subEl = document.getElementById('currentViewSubtitle');
+const bannerEl = document.getElementById('todayProgressBanner');
+if (viewName === 'today') {
+titleEl.textContent = "Today's Focus";
+subEl.textContent = "Complete your active bets to earn points and avoid midnight penalties.";
+bannerEl.style.display = 'flex';
+} else {
+titleEl.textContent = "All Tasks";
+subEl.textContent = "Manage your entire task pool across all categories.";
+bannerEl.style.display = 'none';
+}
+this.renderTasks();
+}
+filterByCategory(catId) {
+this.state.currentView = 'category';
+this.state.currentCategoryFilter = catId;
+const cat = this.state.categories.find(c => c.id === catId);
+const titleEl = document.getElementById('currentViewTitle').querySelector('span');
+const subEl = document.getElementById('currentViewSubtitle');
+const bannerEl = document.getElementById('todayProgressBanner');
+titleEl.textContent = cat ? cat.name : 'Category Tasks';
+subEl.textContent = "Tasks associated with this category.";
+bannerEl.style.display = 'none';
+document.getElementById('nav-today').className = 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
+document.getElementById('nav-all').className = 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
+document.querySelectorAll('.category-nav-btn').forEach(btn => {
+if (btn.dataset.catid === catId) {
+btn.className = 'category-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30';
+} else {
+btn.className = 'category-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
+}
+});
+this.renderTasks();
+}
+setFilter(status) {
+this.state.statusFilter = status;
+['all', 'active', 'completed'].forEach(s => {
+const btn = document.getElementById(`filter-btn-${s}`);
+if (s === status) {
+btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white transition whitespace-nowrap';
+} else {
+btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap';
+}
+});
+this.renderTasks();
+}
+handleSearch(query) {
+this.state.searchQuery = query.toLowerCase();
+this.renderTasks();
+}
+toggleTaskComplete(id) {
+const task = this.state.tasks.find(t => t.id === id);
+if (!task) return;
+task.completed = !task.completed;
+if (task.completed) {
+this.sound.playChime();
+// Reward points: Today task = 2 pts, regular task = 1 pt
+const pointsEarned = task.isToday ? 2 : 1;
+this.addPoints(pointsEarned);
+this.showToast(`Completed! +${pointsEarned} Points`, 'success');
+} else {
+// Reversing completion deducts points
+const pointsDed = task.isToday ? 2 : 1;
+this.addPoints(-pointsDed);
+this.showToast(`Task reopened. -${pointsDed} Points`, 'info');
+}
+this.saveState();
+this.renderTasks();
+this.checkTodayCelebration();
+}
+toggleTaskToday(id) {
+const task = this.state.tasks.find(t => t.id === id);
+if (!task) return;
+task.isToday = !task.isToday;
+this.saveState();
+this.renderTasks();
+this.showToast(task.isToday ? "Added to Today's Focus (Bet Active: 2 pts)" : "Removed from Today's Focus", 'info');
+}
+deleteTask(id) {
+this.state.tasks = this.state.tasks.filter(t => t.id !== id);
+this.saveState();
+this.renderTasks();
+this.showToast("Task deleted", 'info');
+}
+saveTask(event) {
+event.preventDefault();
+const title = document.getElementById('taskTitleInput').value.trim();
+const category = document.getElementById('taskCategorySelect').value;
+const frequency = document.getElementById('taskFrequencySelect').value;
+const isToday = document.getElementById('taskIsTodayInput').checked;
+const editId = document.getElementById('editTaskId').value;
+if (!title) return;
+if (editId) {
+const task = this.state.tasks.find(t => t.id === editId);
+if (task) {
+task.title = title;
+task.category = category;
+task.frequency = frequency;
+task.isToday = isToday;
+}
+} else {
+const newTask = {
+id: 't-' + Date.now(),
+title,
+category,
+frequency,
+isToday,
+completed: false
+};
+this.state.tasks.push(newTask);
+}
+this.saveState();
+this.closeModal('taskModal');
+this.renderTasks();
+this.showToast("Task saved successfully", 'success');
+}
+saveCategory(event) {
+event.preventDefault();
+const name = document.getElementById('categoryNameInput').value.trim();
+const icon = document.getElementById('categoryIconInput').value.trim() || 'fa-folder';
+if (!name) return;
+const newCat = {
+id: 'cat-' + Date.now(),
+name,
+icon
+};
+this.state.categories.push(newCat);
+this.saveState();
+this.closeModal('categoryModal');
+this.renderCategories();
+this.renderCategorySelectOptions();
+this.showToast("Category created", 'success');
+}
+checkTodayCelebration() {
+const todayTasks = this.state.tasks.filter(t => t.isToday);
+if (todayTasks.length > 0 && todayTasks.every(t => t.completed)) {
+this.openModal('celebrationModal');
+}
+}
+simulateMidnight() {
+this.closeModal('debugModal');
+// Penalty for uncompleted today tasks
+let penalizedCount = 0;
+this.state.tasks.forEach(t => {
+if (t.isToday && !t.completed) {
+penalizedCount++;
+}
+});
+if (penalizedCount > 0) {
+const penaltyAmount = penalizedCount * 2;
+this.addPoints(-penaltyAmount);
+this.sound.playPenalty();
+this.showToast(`Midnight Reset! ${penalizedCount} uncompleted focus tasks missed. -${penaltyAmount} Points penalty.`, 'error');
+} else {
+this.showToast("Midnight Reset! All today tasks were completed. Clean slate!", 'success');
+}
+// If tasks are 'once', they can reset or remain; weekly/daily persist
+this.saveState();
+this.renderTasks();
+}
+// Rendering Functions
+renderCategories() {
+const container = document.getElementById('categoryListContainer');
+container.innerHTML = this.state.categories.map(cat => {
+const count = this.state.tasks.filter(t => t.category === cat.id && !t.completed).length;
+const isSelected = this.state.currentCategoryFilter === cat.id;
+const className = isSelected ?
+'category-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' :
+'category-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
+return `
+<button onclick="app.filterByCategory('${cat.id}')" data-catid="${cat.id}" class="${className}">
+<div class="flex items-center space-x-3 truncate">
+<div class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center">
+<i class="fa-solid ${cat.icon} text-xs"></i>
+</div>
+<span class="truncate">${cat.name}</span>
+</div>
+<span class="px-2 py-0.5 rounded-full text-xs bg-slate-800 text-slate-400 font-semibold">${count}</span>
+</button>
+`;
+}).join('');
+}
+renderCategorySelectOptions() {
+const select = document.getElementById('taskCategorySelect');
+select.innerHTML = this.state.categories.map(cat => `
+<option value="${cat.id}">${cat.name}</option>
+`).join('');
+}
+renderTasks() {
+const container = document.getElementById('taskContainer');
+let filtered = this.state.tasks;
+// View Filter
+if (this.state.currentView === 'today') {
+filtered = filtered.filter(t => t.isToday);
+} else if (this.state.currentView === 'category') {
+filtered = filtered.filter(t => t.category === this.state.currentCategoryFilter);
+}
+// Status Filter
+if (this.state.statusFilter === 'active') {
+filtered = filtered.filter(t => !t.completed);
+} else if (this.state.statusFilter === 'completed') {
+filtered = filtered.filter(t => t.completed);
+}
+// Search Query
+if (this.state.searchQuery) {
+filtered = filtered.filter(t => t.title.toLowerCase().includes(this.state.searchQuery));
+}
+// Update Badges
+const todayTotal = this.state.tasks.filter(t => t.isToday).length;
+const todayCompleted = this.state.tasks.filter(t => t.isToday && t.completed).length;
+document.getElementById('todayCountBadge').textContent = todayTotal;
+document.getElementById('allCountBadge').textContent = this.state.tasks.length;
+document.getElementById('completedTodayCount').textContent = todayCompleted;
+document.getElementById('totalTodayCount').textContent = todayTotal;
+const pct = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
+document.getElementById('todayCompletionPercent').textContent = `${pct}%`;
+if (filtered.length === 0) {
+container.innerHTML = `
+<div class="p-12 text-center rounded-2xl bg-cardBg/30 border border-slate-800/80 flex flex-col items-center justify-center space-y-3">
+<div class="w-12 h-12 rounded-2xl bg-slate-800 text-slate-500 flex items-center justify-center text-lg">
+<i class="fa-solid fa-clipboard-check"></i>
+</div>
+<div>
+<h4 class="font-semibold text-slate-300 text-sm">No tasks found</h4>
+<p class="text-xs text-slate-500 mt-0.5">Create a new task or switch views to see more.</p>
+</div>
+</div>
+`;
+return;
+}
+container.innerHTML = filtered.map(task => {
+const cat = this.state.categories.find(c => c.id === task.category) || { name: 'General', icon: 'fa-folder' };
+const pointVal = task.isToday ? 2 : 1;
+return `
+<div class="group flex items-center justify-between p-4 rounded-2xl bg-cardBg/60 hover:bg-cardBg border border-borderCol/60 hover:border-slate-700 transition shadow-sm">
+<div class="flex items-center space-x-4 min-w-0 flex-1">
+<button onclick="app.toggleTaskComplete('${task.id}')" class="w-6 h-6 rounded-lg border ${task.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'border-slate-600 hover:border-indigo-500 bg-slate-900'} flex items-center justify-center transition flex-shrink-0">
+${task.completed ? '<i class="fa-solid fa-check text-xs font-bold"></i>' : ''}
+</button>
+<div class="min-w-0 flex-1">
+<div class="flex items-center space-x-2">
+<h4 class="font-medium text-sm text-slate-200 truncate ${task.completed ? 'line-through text-slate-500' : ''}">${task.title}</h4>
+${task.frequency !== 'once' ? `<span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 font-medium">${task.frequency}</span>` : ''}
+</div>
+<div class="flex items-center space-x-3 mt-1 text-xs text-slate-400">
+<span class="flex items-center space-x-1"><i class="fa-solid ${cat.icon} text-[10px]"></i><span>${cat.name}</span></span>
+<span>•</span>
+<span class="text-indigo-400 font-medium">+${pointVal} pts</span>
+</div>
+</div>
+</div>
+<div class="flex items-center space-x-2 ml-4 flex-shrink-0">
+<button onclick="app.toggleTaskToday('${task.id}')" title="Toggle Today's Focus Bet" class="p-2 rounded-xl ${task.isToday ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-800/60 text-slate-400 hover:text-white'} transition text-xs">
+<i class="fa-solid fa-sun"></i>
+</button>
+<button onclick="app.deleteTask('${task.id}')" title="Delete Task" class="p-2 rounded-xl bg-slate-800/60 text-slate-400 hover:text-rose-400 transition text-xs">
+<i class="fa-solid fa-trash"></i>
+</button>
+</div>
+</div>
+`;
+}).join('');
+}
+// Shop Logic
+renderShop() {
+const container = document.getElementById('shopItemsContainer');
+container.innerHTML = this.state.shopItems.map(item => {
+const canAfford = this.state.points >= item.cost;
+const isUnlocked = item.unlocked;
+let btnHtml = '';
+if (isUnlocked) {
+const isActive = (item.type === 'theme' && this.state.activeTheme === item.value);
+btnHtml = `<button onclick="app.equipShopItem('${item.id}')" class="px-4 py-2 rounded-xl text-xs font-semibold ${isActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'} transition">${isActive ? 'Equipped' : 'Equip'}</button>`;
+} else {
+btnHtml = `<button onclick="app.buyShopItem('${item.id}')" ${!canAfford ? 'disabled' : ''} class="px-4 py-2 rounded-xl text-xs font-semibold ${canAfford ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20' : 'bg-slate-800 text-slate-600 cursor-not-allowed'} transition">Unlock (${item.cost} pts)</button>`;
+}
+return `
+<div class="flex items-center justify-between p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+<div>
+<h4 class="font-medium text-sm text-white">${item.name}</h4>
+<p class="text-xs text-slate-400 mt-0.5">Type: <span class="uppercase text-[10px] text-indigo-400 font-semibold">${item.type}</span></p>
+</div>
+<div>${btnHtml}</div>
+</div>
+`;
+}).join('');
+}
+buyShopItem(itemId) {
+const item = this.state.shopItems.find(i => i.id === itemId);
+if (!item || item.unlocked || this.state.points < item.cost) return;
+this.state.points -= item.cost;
+item.unlocked = true;
+if (item.type === 'theme') {
+this.equipShopItem(itemId);
+}
+this.saveState();
+this.renderShop();
+this.updateUserInfo();
+this.sound.playChime();
+this.showToast(`Unlocked ${item.name}!`, 'success');
+}
+equipShopItem(itemId) {
+const item = this.state.shopItems.find(i => i.id === itemId);
+if (!item || !item.unlocked) return;
+if (item.type === 'theme') {
+this.state.activeTheme = item.value;
+this.applyTheme(item.value);
+}
+this.saveState();
+this.renderShop();
+this.showToast(`Equipped ${item.name}`, 'info');
+}
+applyTheme(themeName) {
+document.body.className = `${themeName} bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white`;
+}
+// Audio settings
+toggleAudio(enabled) {
+this.state.audioEnabled = enabled;
+this.sound.enabled = enabled;
+this.saveState();
+}
+resetData() {
+if (confirm("Are you sure you want to reset all data and points?")) {
+localStorage.removeItem('focusquest_state');
+location.reload();
+}
+}
+// UI Modals helper
+openModal(modalId) {
+if (modalId === 'shopModal') {
+this.renderShop();
+}
+document.getElementById(modalId).classList.remove('hidden');
+}
+closeModal(modalId) {
+document.getElementById(modalId).classList.add('hidden');
+}
+toggleMobileMenu() {
+const sidebar = document.getElementById('sidebar');
+sidebar.classList.toggle('-translate-x-full');
+}
+showToast(message, type = 'info') {
+const container = document.getElementById('toastContainer');
+const toast = document.createElement('div');
+const bgCol = type === 'success' ? 'bg-emerald-600/90 border-emerald-500 text-white' : type === 'error' ? 'bg-rose-600/90 border-rose-500 text-white' : 'bg-slate-800/90 border-slate-700 text-slate-200';
+toast.className = `px-4 py-3 rounded-xl border ${bgCol} shadow-xl backdrop-blur-md text-xs font-medium flex items-center space-x-2 animate-in slide-in-from-bottom-5 duration-300 pointer-events-auto`;
+toast.innerHTML = `
+<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info'} text-sm"></i>
+<span>${message}</span>
+`;
+container.appendChild(toast);
+setTimeout(() => {
+toast.style.opacity = '0';
+toast.style.transition = 'opacity 0.3s ease';
+setTimeout(() => toast.remove(), 300);
+}, 3000);
+}
+}
+// Initialize App on window load
+let app;
+window.onload = function() {
+app = new FocusQuestApp();
+app.init();
+};
+</script>
+</body>
+</html>
