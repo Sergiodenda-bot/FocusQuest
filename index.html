@@ -35,6 +35,10 @@
         body.theme-obsidian { background-color: #000000; }
         body.theme-emerald { background-color: #022c22; }
         body.theme-dusk { background-color: #1e1b4b; }
+        body.theme-sage { background-color: #13221a; }
+        body.theme-lavender { background-color: #1b1626; }
+        body.theme-sunset { background-color: #261713; }
+        body.theme-cyber { background-color: #070d1a; }
     </style>
 </head>
 <body class="theme-midnight bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
@@ -42,7 +46,7 @@
     <div id="app" class="flex flex-col md:flex-row flex-1 h-screen overflow-hidden relative">
 
         <!-- Mobile Header Bar -->
-        <header class="md:hidden flex items-center justify-between px-4 py-3 bg-cardBg/80 backdrop-blur border-b border-borderCol z-30">
+        <header class="md:hidden flex items-center justify-between px-4 py-3 bg-cardBg/85 backdrop-blur border-b border-borderCol z-30">
             <div class="flex items-center space-x-2">
                 <div class="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/30">
                     <i class="fa-solid fa-bullseye text-sm"></i>
@@ -57,7 +61,7 @@
         </header>
 
         <!-- Sidebar Navigation -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-cardBg/90 md:bg-cardBg/50 backdrop-blur-xl border-r border-borderCol flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-cardBg/95 md:bg-cardBg/60 backdrop-blur-xl border-r border-borderCol flex flex-col transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
             <!-- Brand Area -->
             <div class="p-5 flex items-center justify-between border-b border-borderCol/50">
                 <div class="flex items-center space-x-3">
@@ -133,7 +137,7 @@
                     </nav>
                 </div>
 
-                <!-- Folders / Categories with True Task Counters -->
+                <!-- Folders / Categories -->
                 <div>
                     <div class="flex items-center justify-between px-3 mb-2">
                         <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Categories</span>
@@ -150,7 +154,7 @@
             <div class="p-4 border-t border-borderCol/50 flex items-center justify-between">
                 <button onclick="app.openModal('settingsModal')" class="flex items-center space-x-2 text-sm text-slate-400 hover:text-slate-200 transition">
                     <i class="fa-solid fa-gear"></i>
-                    <span>Settings & Audio</span>
+                    <span>Settings & Sync</span>
                 </button>
                 <div class="flex items-center space-x-1 text-xs text-slate-500">
                     <i class="fa-solid fa-shield-halved"></i>
@@ -159,7 +163,6 @@
             </div>
         </aside>
 
-        <!-- Main Content Area -->
         <main class="flex-1 flex flex-col h-full overflow-hidden bg-transparent md:ml-72">
             <header class="px-6 py-5 border-b border-borderCol/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-cardBg/20 backdrop-blur-md">
                 <div>
@@ -360,7 +363,7 @@
                     </div>
                     <div>
                         <h3 class="font-bold text-base text-white">Reward & Customization Shop</h3>
-                        <p class="text-xs text-slate-400">Spend points to unlock UI themes, titles, and sound packs.</p>
+                        <p class="text-xs text-slate-400">Spend points to unlock UI themes, custom titles, badges, and perks.</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4">
@@ -369,6 +372,12 @@
                     </span>
                     <button onclick="app.closeModal('shopModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
+            </div>
+            <!-- Shop Tabs -->
+            <div class="flex border-b border-borderCol px-6 pt-3 bg-slate-900/30 gap-4">
+                <button onclick="app.switchShopTab('themes')" id="shop-tab-themes" class="pb-2 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-400">Themes</button>
+                <button onclick="app.switchShopTab('badges')" id="shop-tab-badges" class="pb-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200">Badges & Titles</button>
+                <button onclick="app.switchShopTab('perks')" id="shop-tab-perks" class="pb-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200">Perks & FX</button>
             </div>
             <div class="flex-1 overflow-y-auto p-6 space-y-4" id="shopItemsContainer">
                 <!-- Dynamically populated shop items -->
@@ -380,7 +389,7 @@
     <div id="settingsModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
             <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
-                <h3 class="font-bold text-base text-white">App Settings & Audio</h3>
+                <h3 class="font-bold text-base text-white">App Settings & Data Sync</h3>
                 <button onclick="app.closeModal('settingsModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 space-y-5">
@@ -394,6 +403,26 @@
                         <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                     </label>
                 </div>
+
+                <!-- Cross-Device Data Sync Section -->
+                <div class="pt-4 border-t border-slate-800 space-y-3">
+                    <div>
+                        <h4 class="text-sm font-medium text-slate-200">Cross-Device Data Sync</h4>
+                        <p class="text-xs text-slate-400">Export your backup file or import on another device (iPad, Phone, PC).</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button onclick="app.exportBackup()" class="flex-1 py-2.5 px-3 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-400 text-xs font-semibold border border-indigo-500/30 transition flex items-center justify-center space-x-1.5">
+                            <i class="fa-solid fa-download"></i>
+                            <span>Export Backup</span>
+                        </button>
+                        <label class="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center justify-center space-x-1.5 cursor-pointer">
+                            <i class="fa-solid fa-upload"></i>
+                            <span>Import Backup</span>
+                            <input type="file" id="importFile" accept=".json" onchange="app.importBackup(event)" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
                 <div class="pt-4 border-t border-slate-800">
                     <h4 class="text-sm font-medium text-slate-200 mb-2">Data Management</h4>
                     <button onclick="app.resetData()" class="px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-xs font-semibold border border-rose-500/20 transition">
@@ -519,21 +548,40 @@
                         { id: 'cat-3', name: 'Personal', icon: 'fa-user' }
                     ],
                     shopItems: [
-                        { id: 'theme-midnight', type: 'theme', name: 'Midnight Blue Theme', cost: 10, unlocked: true, value: 'theme-midnight' },
-                        { id: 'theme-obsidian', type: 'theme', name: 'Obsidian Minimal', cost: 25, unlocked: false, value: 'theme-obsidian' },
-                        { id: 'theme-emerald', type: 'theme', name: 'Emerald Focus', cost: 40, unlocked: false, value: 'theme-emerald' },
-                        { id: 'theme-dusk', type: 'theme', name: 'Warm Dusk', cost: 60, unlocked: false, value: 'theme-dusk' },
-                        { id: 'badge-novice', type: 'badge', name: 'Title: Focus Novice', cost: 15, unlocked: true, value: 'Focus Novice' },
-                        { id: 'badge-master', type: 'badge', name: 'Title: Task Master', cost: 50, unlocked: false, value: 'Task Master' },
-                        { id: 'badge-legend', type: 'badge', name: 'Title: Productivity Legend', cost: 120, unlocked: false, value: 'Productivity Legend' }
+                        // Themes (6 items)
+                        { id: 'theme-midnight', type: 'themes', name: 'Midnight Blue Theme', description: 'Deep midnight navy gradient UI design.', cost: 0, unlocked: true, value: 'theme-midnight' },
+                        { id: 'theme-obsidian', type: 'themes', name: 'Obsidian Minimal', description: 'Pure sleek black minimalist interface.', cost: 25, unlocked: false, value: 'theme-obsidian' },
+                        { id: 'theme-emerald', type: 'themes', name: 'Emerald Focus', description: 'Calming deep green forest tones.', cost: 45, unlocked: false, value: 'theme-emerald' },
+                        { id: 'theme-dusk', type: 'themes', name: 'Warm Dusk', description: 'Rich indigo and twilight purple aesthetic.', cost: 70, unlocked: false, value: 'theme-dusk' },
+                        { id: 'theme-sage', type: 'themes', name: 'Sage Green', description: 'Earthy organic sage backdrop.', cost: 95, unlocked: false, value: 'theme-sage' },
+                        { id: 'theme-cyber', type: 'themes', name: 'Cyber Slate', description: 'Futuristic electric blue accent scheme.', cost: 130, unlocked: false, value: 'theme-cyber' },
+                        
+                        // Badges & Titles (6 items)
+                        { id: 'badge-novice', type: 'badges', name: 'Title: Focus Novice', description: 'Your starting badge of dedication.', cost: 10, unlocked: true, value: 'Focus Novice' },
+                        { id: 'badge-master', type: 'badges', name: 'Title: Task Master', description: 'Command your daily tasks with precision.', cost: 40, unlocked: false, value: 'Task Master' },
+                        { id: 'badge-legend', type: 'badges', name: 'Title: Productivity Legend', description: 'Recognized for legendary consistency.', cost: 85, unlocked: false, value: 'Productivity Legend' },
+                        { id: 'badge-streak', type: 'badges', name: 'Title: Streak Lord', description: 'Unstoppable daily task completion streaks.', cost: 140, unlocked: false, value: 'Streak Lord' },
+                        { id: 'badge-titan', type: 'badges', name: 'Title: Focus Titan', description: 'Towering mental endurance and willpower.', cost: 210, unlocked: false, value: 'Focus Titan' },
+                        { id: 'badge-mythic', type: 'badges', name: 'Title: Mythic Achiever', description: 'The absolute pinnacle of productivity status.', cost: 300, unlocked: false, value: 'Mythic Achiever' },
+
+                        // Perks & FX (6 items)
+                        { id: 'perk-glow', type: 'perks', name: 'Glowing Task Borders', description: 'Adds ambient neon glow effect to active task cards.', cost: 50, unlocked: false, value: 'glow-effect' },
+                        { id: 'perk-confetti', type: 'perks', name: 'Celebration FX Boost', description: 'Enhanced celebration animations when crushing today goals.', cost: 90, unlocked: false, value: 'confetti-fx' },
+                        { id: 'perk-speed', type: 'perks', name: 'Quick-Check Accelerator', description: 'Streamlines task toggling with instant visual feedback.', cost: 150, unlocked: false, value: 'speed-fx' },
+                        { id: 'perk-shield', type: 'perks', name: 'Streak Shield Charm', description: 'Symbolic badge protecting against missed midnight penalties.', cost: 220, unlocked: false, value: 'shield-charm' },
+                        { id: 'perk-aura', type: 'perks', name: 'Productivity Aura', description: 'Surrounds your dashboard header with glowing energy.', cost: 310, unlocked: false, value: 'aura-fx' },
+                        { id: 'perk-mastery', type: 'perks', name: 'Mastery Crest', description: 'The ultimate emblem of focus mastery and dedication.', cost: 450, unlocked: false, value: 'mastery-crest' }
                     ],
                     activeTheme: 'theme-midnight',
+                    activeBadge: 'Focus Novice',
+                    activePerks: [],
                     currentView: 'today',
                     currentCategoryFilter: null,
                     searchQuery: '',
                     statusFilter: 'all',
                     audioEnabled: true,
-                    plannerWeekOffset: 0
+                    plannerWeekOffset: 0,
+                    shopTab: 'themes'
                 };
                 this.ranks = [
                     { level: 1, title: 'Procrastinator' },
@@ -541,7 +589,10 @@
                     { level: 7, title: 'Task Apprentice' },
                     { level: 12, title: 'Productivity Adept' },
                     { level: 20, title: 'Task Master' },
-                    { level: 35, title: 'Productivity Legend' }
+                    { level: 30, title: 'Focus Titan' },
+                    { level: 45, title: 'Productivity Legend' },
+                    { level: 60, title: 'Mythic Achiever' },
+                    { level: 80, title: 'Ascended Master' }
                 ];
                 this.loadState();
             }
@@ -567,11 +618,48 @@
             loadState() {
                 const saved = localStorage.getItem('focusquest_state');
                 const todayStr = this.getLocalDateString();
+                
+                // Define default items to ensure complete restoration if storage is older
+                const defaultShopItems = [
+                    { id: 'theme-midnight', type: 'themes', name: 'Midnight Blue Theme', description: 'Deep midnight navy gradient UI design.', cost: 0, unlocked: true, value: 'theme-midnight' },
+                    { id: 'theme-obsidian', type: 'themes', name: 'Obsidian Minimal', description: 'Pure sleek black minimalist interface.', cost: 25, unlocked: false, value: 'theme-obsidian' },
+                    { id: 'theme-emerald', type: 'themes', name: 'Emerald Focus', description: 'Calming deep green forest tones.', cost: 45, unlocked: false, value: 'theme-emerald' },
+                    { id: 'theme-dusk', type: 'themes', name: 'Warm Dusk', description: 'Rich indigo and twilight purple aesthetic.', cost: 70, unlocked: false, value: 'theme-dusk' },
+                    { id: 'theme-sage', type: 'themes', name: 'Sage Green', description: 'Earthy organic sage backdrop.', cost: 95, unlocked: false, value: 'theme-sage' },
+                    { id: 'theme-cyber', type: 'themes', name: 'Cyber Slate', description: 'Futuristic electric blue accent scheme.', cost: 130, unlocked: false, value: 'theme-cyber' },
+                    
+                    { id: 'badge-novice', type: 'badges', name: 'Title: Focus Novice', description: 'Your starting badge of dedication.', cost: 10, unlocked: true, value: 'Focus Novice' },
+                    { id: 'badge-master', type: 'badges', name: 'Title: Task Master', description: 'Command your daily tasks with precision.', cost: 40, unlocked: false, value: 'Task Master' },
+                    { id: 'badge-legend', type: 'badges', name: 'Title: Productivity Legend', description: 'Recognized for legendary consistency.', cost: 85, unlocked: false, value: 'Productivity Legend' },
+                    { id: 'badge-streak', type: 'badges', name: 'Title: Streak Lord', description: 'Unstoppable daily task completion streaks.', cost: 140, unlocked: false, value: 'Streak Lord' },
+                    { id: 'badge-titan', type: 'badges', name: 'Title: Focus Titan', description: 'Towering mental endurance and willpower.', cost: 210, unlocked: false, value: 'Focus Titan' },
+                    { id: 'badge-mythic', type: 'badges', name: 'Title: Mythic Achiever', description: 'The absolute pinnacle of productivity status.', cost: 300, unlocked: false, value: 'Mythic Achiever' },
+
+                    { id: 'perk-glow', type: 'perks', name: 'Glowing Task Borders', description: 'Adds ambient neon glow effect to active task cards.', cost: 50, unlocked: false, value: 'glow-effect' },
+                    { id: 'perk-confetti', type: 'perks', name: 'Celebration FX Boost', description: 'Enhanced celebration animations when crushing today goals.', cost: 90, unlocked: false, value: 'confetti-fx' },
+                    { id: 'perk-speed', type: 'perks', name: 'Quick-Check Accelerator', description: 'Streamlines task toggling with instant visual feedback.', cost: 150, unlocked: false, value: 'speed-fx' },
+                    { id: 'perk-shield', type: 'perks', name: 'Streak Shield Charm', description: 'Symbolic badge protecting against missed midnight penalties.', cost: 220, unlocked: false, value: 'shield-charm' },
+                    { id: 'perk-aura', type: 'perks', name: 'Productivity Aura', description: 'Surrounds your dashboard header with glowing energy.', cost: 310, unlocked: false, value: 'aura-fx' },
+                    { id: 'perk-mastery', type: 'perks', name: 'Mastery Crest', description: 'The ultimate emblem of focus mastery and dedication.', cost: 450, unlocked: false, value: 'mastery-crest' }
+                ];
+
                 if (saved) {
                     try {
                         const parsed = JSON.parse(saved);
                         this.state = { ...this.state, ...parsed };
                         if (!this.state.completions) this.state.completions = {};
+                        if (!this.state.activePerks) this.state.activePerks = [];
+                        
+                        // Robust Shop Items synchronization
+                        const savedItemsMap = new Map((this.state.shopItems || []).map(i => [i.id, i]));
+                        this.state.shopItems = defaultShopItems.map(defaultItem => {
+                            const savedItem = savedItemsMap.get(defaultItem.id);
+                            if (savedItem) {
+                                return { ...defaultItem, unlocked: !!savedItem.unlocked };
+                            }
+                            return defaultItem;
+                        });
+
                         this.state.tasks.forEach(t => {
                             if (!t.date && !t.recurringDays) t.date = todayStr;
                             if (!t.frequencyType) t.frequencyType = t.recurringDays && t.recurringDays.length > 0 ? 'recurring' : 'once';
@@ -592,6 +680,39 @@
                 localStorage.setItem('focusquest_state', JSON.stringify(this.state));
             }
 
+            exportBackup() {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.state, null, 2));
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("download", `focusquest_backup_${this.getLocalDateString()}.json`);
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+                this.showToast("Backup exported successfully!", "success");
+            }
+
+            importBackup(event) {
+                const fileReader = new FileReader();
+                if (event.target.files[0]) {
+                    fileReader.readAsText(event.target.files[0], "UTF-8");
+                    fileReader.onload = (e) => {
+                        try {
+                            const imported = JSON.parse(e.target.result);
+                            if (imported && imported.tasks && typeof imported.points !== 'undefined') {
+                                this.state = { ...this.state, ...imported };
+                                this.saveState();
+                                this.init();
+                                this.showToast("Data imported successfully!", "success");
+                            } else {
+                                this.showToast("Invalid backup file structure.", "error");
+                            }
+                        } catch(err) {
+                            this.showToast("Failed to parse JSON backup file.", "error");
+                        }
+                    };
+                }
+            }
+
             updateDateBadge() {
                 const options = { weekday: 'short', month: 'short', day: 'numeric' };
                 const dateStr = new Date().toLocaleDateString('en-US', options);
@@ -606,42 +727,57 @@
                 this.updateUserInfo();
             }
 
+            getCostForLevel(level) {
+                if (level === 1) return 10;
+                if (level === 2) return 25;
+                if (level === 3) return 50;
+                if (level === 4) return 90;
+                return Math.floor(10 * Math.pow(level, 1.5));
+            }
+
             checkLevelProgression() {
-                let newLevel = 1;
-                let cumulative = 0;
-                for (let l = 1; l <= 50; l++) {
-                    cumulative += l * 10;
-                    if (this.state.points >= cumulative) {
-                        newLevel = l + 1;
+                let currentLevel = 1;
+                let pointsRemaining = this.state.points;
+                while (true) {
+                    let costForNext = this.getCostForLevel(currentLevel);
+                    if (pointsRemaining >= costForNext) {
+                        pointsRemaining -= costForNext;
+                        currentLevel++;
                     } else {
                         break;
                     }
                 }
-                if (newLevel > this.state.level) {
-                    this.state.level = newLevel;
-                    this.showToast(`Level Up! You reached Level ${newLevel}!`, 'success');
+
+                if (currentLevel > this.state.level) {
+                    this.state.level = currentLevel;
+                    this.showToast(`Level Up! You reached Level ${currentLevel}!`, 'success');
                 }
             }
 
             updateUserInfo() {
                 document.getElementById('userPointsDisplay').textContent = this.state.points;
-                document.getElementById('shopUserPoints').textContent = this.state.points;
+                const shopPointsEl = document.getElementById('shopUserPoints');
+                if (shopPointsEl) shopPointsEl.textContent = this.state.points;
                 document.getElementById('userLevelDisplay').textContent = this.state.level;
 
-                let prevCumulative = 0;
-                for (let l = 1; l < this.state.level; l++) {
-                    prevCumulative += l * 10;
+                let pointsIntoLevel = this.state.points;
+                let lvl = 1;
+                while (lvl < this.state.level) {
+                    pointsIntoLevel -= this.getCostForLevel(lvl);
+                    lvl++;
                 }
-                const currentLevelNeeded = this.state.level * 10;
-                const pointsIntoLevel = this.state.points - prevCumulative;
-                const pct = Math.min(100, Math.max(0, (pointsIntoLevel / currentLevelNeeded) * 100));
+                const currentLevelNeeded = this.getCostForLevel(this.state.level);
+                const currentProgressPoints = Math.max(0, pointsIntoLevel);
+                const pct = Math.min(100, Math.max(0, (currentProgressPoints / currentLevelNeeded) * 100));
 
                 document.getElementById('levelProgressBar').style.width = `${pct}%`;
-                document.getElementById('progressText').textContent = `${Math.max(0, pointsIntoLevel)} / ${currentLevelNeeded} pts to next level`;
+                document.getElementById('progressText').textContent = `${currentProgressPoints} / ${currentLevelNeeded} pts to next level`;
 
-                let currentRankTitle = 'Procrastinator';
-                for (const r of this.ranks) {
-                    if (this.state.level >= r.level) currentRankTitle = r.title;
+                let currentRankTitle = this.state.activeBadge || 'Procrastinator';
+                if (!this.state.activeBadge) {
+                    for (const r of this.ranks) {
+                        if (this.state.level >= r.level) currentRankTitle = r.title;
+                    }
                 }
                 document.getElementById('userRankTitle').textContent = currentRankTitle;
             }
@@ -737,7 +873,7 @@
             isTaskScheduledForDate(task, dateStr, dateObj) {
                 if (task.frequencyType === 'recurring') {
                     if (!task.recurringDays || task.recurringDays.length === 0) return false;
-                    const dayOfWeek = dateObj.getDay(); // 0 is Sun, 1 is Mon, etc.
+                    const dayOfWeek = dateObj.getDay();
                     return task.recurringDays.includes(dayOfWeek);
                 } else {
                     return task.date === dateStr;
@@ -944,6 +1080,7 @@
             renderWeeklyPlanner() {
                 const container = document.getElementById('plannerDaysGrid');
                 const labelEl = document.getElementById('plannerWeekRangeLabel');
+                if (!container || !labelEl) return;
                 
                 const today = new Date();
                 const startOfWeek = new Date(today);
@@ -965,6 +1102,7 @@
                 }
 
                 const todayStr = this.getLocalDateString(today);
+                const hasGlow = this.state.activePerks.includes('glow-effect');
 
                 container.innerHTML = weekDays.map(dateObj => {
                     const dateStr = this.getLocalDateString(dateObj);
@@ -994,7 +1132,7 @@
                                 ` : dayTasks.map(task => {
                                     const isComp = this.isTaskCompletedForDate(task.id, dateStr);
                                     return `
-                                        <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs flex items-center justify-between group">
+                                        <div class="p-2.5 rounded-xl bg-slate-900/80 border ${hasGlow && !isComp ? 'border-indigo-500/50 shadow-sm shadow-indigo-500/20' : 'border-slate-800'} text-xs flex items-center justify-between group">
                                             <div class="flex items-center space-x-2 truncate flex-1">
                                                 <button onclick="app.toggleTaskCompleteForDate('${task.id}', '${dateStr}')" class="w-4 h-4 rounded border ${isComp ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'border-slate-600 hover:border-indigo-500 bg-slate-900'} flex items-center justify-center text-[10px] flex-shrink-0">
                                                     ${isComp ? '<i class="fa-solid fa-check font-bold"></i>' : ''}
@@ -1029,6 +1167,7 @@
 
             renderCategories() {
                 const container = document.getElementById('categoryListContainer');
+                if (!container) return;
                 container.innerHTML = this.state.categories.map(cat => {
                     const count = this.state.tasks.filter(t => t.category === cat.id && !t.completed).length;
                     const isSelected = this.state.currentCategoryFilter === cat.id;
@@ -1052,6 +1191,7 @@
 
             renderCategorySelectOptions() {
                 const select = document.getElementById('taskCategorySelect');
+                if (!select) return;
                 select.innerHTML = this.state.categories.map(cat => `
                     <option value="${cat.id}">${cat.name}</option>
                 `).join('');
@@ -1059,6 +1199,7 @@
 
             renderTasks() {
                 const container = document.getElementById('taskContainer');
+                if (!container) return;
                 let filtered = [...this.state.tasks];
                 const todayStr = this.getLocalDateString();
                 const todayObj = new Date();
@@ -1117,6 +1258,8 @@
                     return;
                 }
 
+                const hasGlow = this.state.activePerks.includes('glow-effect');
+
                 container.innerHTML = filtered.map(task => {
                     const cat = this.state.categories.find(c => c.id === task.category) || { name: 'General', icon: 'fa-folder' };
                     const isTodayView = (this.state.currentView === 'today');
@@ -1132,7 +1275,7 @@
                     }
                     
                     return `
-                        <div class="group flex items-center justify-between p-4 rounded-2xl bg-cardBg/60 hover:bg-cardBg border border-borderCol/60 hover:border-slate-700 transition shadow-sm">
+                        <div class="group flex items-center justify-between p-4 rounded-2xl bg-cardBg/60 hover:bg-cardBg border ${hasGlow && !isComp ? 'border-indigo-500/50 shadow-md shadow-indigo-500/10' : 'border-borderCol/60'} hover:border-slate-700 transition shadow-sm">
                             <div class="flex items-center space-x-4 min-w-0 flex-1">
                                 <button onclick="app.toggleTaskCompleteForDate('${task.id}', '${activeCheckDate}')" class="w-6 h-6 rounded-lg border ${isComp ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'border-slate-600 hover:border-indigo-500 bg-slate-900'} flex items-center justify-center transition flex-shrink-0">
                                     ${isComp ? '<i class="fa-solid fa-check text-xs font-bold"></i>' : ''}
@@ -1161,27 +1304,58 @@
                 }).join('');
             }
 
+            switchShopTab(tabName) {
+                this.state.shopTab = tabName;
+                ['themes', 'badges', 'perks'].forEach(t => {
+                    const btn = document.getElementById(`shop-tab-${t}`);
+                    if (!btn) return;
+                    if (t === tabName) {
+                        btn.className = 'pb-2 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-400';
+                    } else {
+                        btn.className = 'pb-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200';
+                    }
+                });
+                this.renderShop();
+            }
+
             renderShop() {
                 const container = document.getElementById('shopItemsContainer');
-                container.innerHTML = this.state.shopItems.map(item => {
+                if (!container) return;
+                
+                const currentTab = this.state.shopTab || 'themes';
+                const items = (this.state.shopItems || []).filter(i => i.type === currentTab);
+
+                if (items.length === 0) {
+                    container.innerHTML = `
+                        <div class="p-8 text-center text-slate-400 text-xs">No items found in this category.</div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = items.map(item => {
                     const canAfford = this.state.points >= item.cost;
                     const isUnlocked = item.unlocked;
 
                     let btnHtml = '';
                     if (isUnlocked) {
-                        const isActive = (item.type === 'theme' && this.state.activeTheme === item.value);
-                        btnHtml = `<button onclick="app.equipShopItem('${item.id}')" class="px-4 py-2 rounded-xl text-xs font-semibold ${isActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'} transition">${isActive ? 'Equipped' : 'Equip'}</button>`;
+                        let isActive = false;
+                        if (item.type === 'themes') isActive = (this.state.activeTheme === item.value);
+                        else if (item.type === 'badges') isActive = (this.state.activeBadge === item.value);
+                        else if (item.type === 'perks') isActive = (this.state.activePerks.includes(item.value));
+
+                        btnHtml = `<button onclick="app.equipShopItem('${item.id}')" class="px-4 py-2 rounded-xl text-xs font-semibold ${isActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'} transition">${isActive ? 'Equipped' : (item.type === 'perks' ? 'Toggle' : 'Equip')}</button>`;
                     } else {
-                        btnHtml = `<button onclick="app.buyShopItem('${item.id}')" ${!canAfford ? 'disabled' : ''} class="px-4 py-2 rounded-xl text-xs font-semibold ${canAfford ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20' : 'bg-slate-800 text-slate-600 cursor-not-allowed'} transition">Unlock (${item.cost} pts)</button>`;
+                        btnHtml = `<button onclick="app.buyShopItem('${item.id}')" ${!canAfford ? 'disabled' : ''} class="px-4 py-2 rounded-xl text-xs font-semibold ${canAfford ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20' : 'bg-slate-800 text-slate-600 cursor-not-allowed'} transition">Buy (${item.cost} pts)</button>`;
                     }
 
                     return `
-                        <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
-                            <div>
+                        <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition">
+                            <div class="pr-4">
                                 <h4 class="font-medium text-sm text-white">${item.name}</h4>
-                                <p class="text-xs text-slate-400 mt-0.5">Type: <span class="uppercase text-[10px] text-indigo-400 font-semibold">${item.type}</span></p>
+                                <p class="text-xs text-slate-400 mt-0.5">${item.description}</p>
+                                <span class="inline-block mt-2 text-[10px] text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20"><i class="fa-solid fa-coins mr-1"></i>${item.cost} points</span>
                             </div>
-                            <div>${btnHtml}</div>
+                            <div class="flex-shrink-0">${btnHtml}</div>
                         </div>
                     `;
                 }).join('');
@@ -1193,9 +1367,7 @@
 
                 this.state.points -= item.cost;
                 item.unlocked = true;
-                if (item.type === 'theme') {
-                    this.equipShopItem(itemId);
-                }
+                this.equipShopItem(itemId);
                 this.saveState();
                 this.renderShop();
                 this.updateUserInfo();
@@ -1207,13 +1379,24 @@
                 const item = this.state.shopItems.find(i => i.id === itemId);
                 if (!item || !item.unlocked) return;
 
-                if (item.type === 'theme') {
+                if (item.type === 'themes') {
                     this.state.activeTheme = item.value;
                     this.applyTheme(item.value);
+                } else if (item.type === 'badges') {
+                    this.state.activeBadge = item.value;
+                    this.updateUserInfo();
+                } else if (item.type === 'perks') {
+                    if (this.state.activePerks.includes(item.value)) {
+                        this.state.activePerks = this.state.activePerks.filter(p => p !== item.value);
+                    } else {
+                        this.state.activePerks.push(item.value);
+                    }
                 }
                 this.saveState();
                 this.renderShop();
-                this.showToast(`Equipped ${item.name}`, 'info');
+                this.renderTasks();
+                if (this.state.currentView === 'planner') this.renderWeeklyPlanner();
+                this.showToast(`Updated equipment: ${item.name}`, 'info');
             }
 
             applyTheme(themeName) {
@@ -1259,6 +1442,7 @@
 
             showToast(message, type = 'info') {
                 const container = document.getElementById('toastContainer');
+                if (!container) return;
                 const toast = document.createElement('div');
                 const bgCol = type === 'success' ? 'bg-emerald-600/90 border-emerald-500 text-white' : type === 'error' ? 'bg-rose-600/90 border-rose-500 text-white' : 'bg-slate-800/90 border-slate-700 text-slate-200';
                 
