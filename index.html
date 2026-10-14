@@ -133,7 +133,7 @@
                     </nav>
                 </div>
 
-                <!-- Folders / Categories with Dynamic True Task Counters -->
+                <!-- Folders / Categories with True Task Counters -->
                 <div>
                     <div class="flex items-center justify-between px-3 mb-2">
                         <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Categories</span>
@@ -203,7 +203,7 @@
                     <div class="p-4 rounded-2xl bg-cardBg/50 border border-borderCol/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h3 class="font-bold text-base text-white">Weekly Calendar Planner</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Plan tasks in advance for any day of the week. Points & penalties only apply when each scheduled day arrives as "Today".</p>
+                            <p class="text-xs text-slate-400 mt-0.5">Plan tasks in advance for any day of the week, including recurring schedule days. Points & penalties only apply when each scheduled day arrives as "Today".</p>
                         </div>
                         <div class="flex items-center space-x-2">
                             <button onclick="app.changePlannerWeek(-1)" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-semibold"><i class="fa-solid fa-chevron-left mr-1"></i> Prev</button>
@@ -237,7 +237,6 @@
         </main>
     </div>
 
-    <!-- Modals Section -->
     <div id="taskModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
             <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
@@ -260,26 +259,65 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Frequency</label>
-                        <select id="taskFrequencySelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
-                            <option value="once">One-time</option>
-                            <option value="daily">Daily Recurring</option>
-                            <option value="weekly">Weekly Recurring</option>
+                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Frequency Type</label>
+                        <select id="taskFrequencyTypeSelect" onchange="app.handleFrequencyTypeChange(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                            <option value="once">One-time / Scheduled Date</option>
+                            <option value="recurring">Recurring Weekly Days</option>
                         </select>
                     </div>
                 </div>
-                <div>
+
+                <!-- One-time Date Section -->
+                <div id="oneTimeDateSection">
                     <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Scheduled Date</label>
                     <input type="date" id="taskDateInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
                     <p class="text-[11px] text-slate-400 mt-1">Points (+2 gain / -2 penalty) apply strictly when this scheduled date arrives as Today.</p>
                 </div>
-                <div class="flex items-center space-x-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+
+                <!-- Recurring Days Multi-Select Section -->
+                <div id="recurringDaysSection" class="hidden space-y-2">
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Repeat on Days of Week</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
+                            <input type="checkbox" name="recurringDay" value="1" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                            <span>Mon</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
+                            <input type="checkbox" name="recurringDay" value="2" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                            <span>Tue</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
+                            <input type="checkbox" name="recurringDay" value="3" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                            <span>Wed</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
+                            <input type="checkbox" name="recurringDay" value="4" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                            <span>Thu</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
+                            <input type="checkbox" name="recurringDay" value="5" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                            <span>Fri</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
+                            <input type="checkbox" name="recurringDay" value="6" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                            <span>Sat</span>
+                        </label>
+                        <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
+                            <input type="checkbox" name="recurringDay" value="0" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                            <span>Sun</span>
+                        </label>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Task will automatically appear on these days every single week indefinitely.</p>
+                </div>
+
+                <div id="todayCheckboxWrapper" class="flex items-center space-x-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800">
                     <input type="checkbox" id="taskIsTodayInput" onchange="app.syncModalDateCheckbox(this.checked)" class="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
                     <div>
                         <label for="taskIsTodayInput" class="text-sm font-medium text-slate-200 cursor-pointer">Assign to Today's Focus</label>
                         <p class="text-[11px] text-slate-400">Shortcut to schedule task for today.</p>
                     </div>
                 </div>
+
                 <div class="flex justify-end space-x-3 pt-2">
                     <button type="button" onclick="app.closeModal('taskModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-sm font-medium">Cancel</button>
                     <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium shadow-lg shadow-indigo-600/20">Save Task</button>
@@ -405,7 +443,6 @@
     <!-- Notification Toast Container -->
     <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-    <!-- JavaScript Application Logic -->
     <script>
         class SoundEngine {
             constructor() {
@@ -475,6 +512,7 @@
                     points: 0,
                     level: 1,
                     tasks: [],
+                    completions: {}, // format: { "task-id_YYYY-MM-DD": true }
                     categories: [
                         { id: 'cat-1', name: 'School & Study', icon: 'fa-book-open' },
                         { id: 'cat-2', name: 'Fitness & Health', icon: 'fa-dumbbell' },
@@ -533,15 +571,17 @@
                     try {
                         const parsed = JSON.parse(saved);
                         this.state = { ...this.state, ...parsed };
+                        if (!this.state.completions) this.state.completions = {};
                         this.state.tasks.forEach(t => {
-                            if (!t.date) t.date = todayStr;
+                            if (!t.date && !t.recurringDays) t.date = todayStr;
+                            if (!t.frequencyType) t.frequencyType = t.recurringDays && t.recurringDays.length > 0 ? 'recurring' : 'once';
                         });
                     } catch(e) { console.error(e); }
                 } else {
                     this.state.tasks = [
-                        { id: 't-1', title: 'Review Calculus Chapter 4', category: 'cat-1', date: todayStr, completed: false, frequency: 'daily' },
-                        { id: 't-2', title: '30-minute Cardio Workout', category: 'cat-2', date: todayStr, completed: true, frequency: 'once' },
-                        { id: 't-3', title: 'Read 20 pages of a book', category: 'cat-3', date: todayStr, completed: false, frequency: 'weekly' }
+                        { id: 't-1', title: 'Review Calculus Chapter 4', category: 'cat-1', date: todayStr, frequencyType: 'once', recurringDays: [], completed: false },
+                        { id: 't-2', title: '30-minute Cardio Workout', category: 'cat-2', frequencyType: 'recurring', recurringDays: [1, 3, 5], completed: false },
+                        { id: 't-3', title: 'Read 20 pages of a book', category: 'cat-3', date: todayStr, frequencyType: 'once', recurringDays: [], completed: false }
                     ];
                     this.state.points = 2;
                     this.saveState();
@@ -637,7 +677,7 @@
                     this.renderWeeklyPlanner();
                 } else {
                     titleEl.textContent = "All Tasks Pool";
-                    subEl.textContent = "Manage your entire task pool across all dates and categories.";
+                    subEl.textContent = "Manage your entire task pool across all dates, recurring schedules, and categories.";
                     bannerEl.style.display = 'none';
                     plannerEl.classList.add('hidden');
                     filtersAndSearchEl.style.display = 'flex';
@@ -694,28 +734,57 @@
                 this.renderTasks();
             }
 
-            toggleTaskComplete(id) {
-                const task = this.state.tasks.find(t => t.id === id);
+            isTaskScheduledForDate(task, dateStr, dateObj) {
+                if (task.frequencyType === 'recurring') {
+                    if (!task.recurringDays || task.recurringDays.length === 0) return false;
+                    const dayOfWeek = dateObj.getDay(); // 0 is Sun, 1 is Mon, etc.
+                    return task.recurringDays.includes(dayOfWeek);
+                } else {
+                    return task.date === dateStr;
+                }
+            }
+
+            isTaskCompletedForDate(taskId, dateStr) {
+                const key = `${taskId}_${dateStr}`;
+                const task = this.state.tasks.find(t => t.id === taskId);
+                if (!task) return false;
+                if (task.frequencyType === 'once') {
+                    return !!task.completed;
+                }
+                return !!this.state.completions[key];
+            }
+
+            toggleTaskCompleteForDate(taskId, dateStr) {
+                const task = this.state.tasks.find(t => t.id === taskId);
                 if (!task) return;
 
                 const todayStr = this.getLocalDateString();
-                const isCurrentToday = (task.date === todayStr);
+                const isCurrentToday = (dateStr === todayStr);
 
-                task.completed = !task.completed;
-                if (task.completed) {
+                const key = `${taskId}_${dateStr}`;
+                const currentlyCompleted = this.isTaskCompletedForDate(taskId, dateStr);
+                const newCompletedStatus = !currentlyCompleted;
+
+                if (task.frequencyType === 'once') {
+                    task.completed = newCompletedStatus;
+                } else {
+                    this.state.completions[key] = newCompletedStatus;
+                }
+
+                if (newCompletedStatus) {
                     this.sound.playChime();
                     if (isCurrentToday) {
                         this.addPoints(2);
                         this.showToast(`Completed Today's Task! +2 Points`, 'success');
                     } else {
-                        this.showToast(`Task completed (Scheduled for ${task.date})`, 'success');
+                        this.showToast(`Task completed for ${dateStr}`, 'success');
                     }
                 } else {
                     if (isCurrentToday) {
                         this.addPoints(-2);
                         this.showToast(`Today's task reopened. -2 Points`, 'info');
                     } else {
-                        this.showToast(`Task reopened`, 'info');
+                        this.showToast(`Task reopened for ${dateStr}`, 'info');
                     }
                 }
 
@@ -723,16 +792,35 @@
                 this.renderCategories();
                 this.renderTasks();
                 if (this.state.currentView === 'planner') this.renderWeeklyPlanner();
-                this.checkTodayCelebration();
+                if (isCurrentToday) this.checkTodayCelebration();
             }
 
             deleteTask(id) {
                 this.state.tasks = this.state.tasks.filter(t => t.id !== id);
+                Object.keys(this.state.completions).forEach(k => {
+                    if (k.startsWith(id + '_')) delete this.state.completions[k];
+                });
                 this.saveState();
                 this.renderCategories();
                 this.renderTasks();
                 if (this.state.currentView === 'planner') this.renderWeeklyPlanner();
                 this.showToast("Task deleted", 'info');
+            }
+
+            handleFrequencyTypeChange(type) {
+                const oneTimeSec = document.getElementById('oneTimeDateSection');
+                const recurringSec = document.getElementById('recurringDaysSection');
+                const todayCbWrapper = document.getElementById('todayCheckboxWrapper');
+
+                if (type === 'recurring') {
+                    oneTimeSec.classList.add('hidden');
+                    recurringSec.classList.remove('hidden');
+                    todayCbWrapper.classList.add('hidden');
+                } else {
+                    oneTimeSec.classList.remove('hidden');
+                    recurringSec.classList.add('hidden');
+                    todayCbWrapper.classList.remove('hidden');
+                }
             }
 
             syncModalDateCheckbox(isChecked) {
@@ -745,27 +833,42 @@
                 event.preventDefault();
                 const title = document.getElementById('taskTitleInput').value.trim();
                 const category = document.getElementById('taskCategorySelect').value;
-                const frequency = document.getElementById('taskFrequencySelect').value;
-                const taskDate = document.getElementById('taskDateInput').value || this.getLocalDateString();
+                const frequencyType = document.getElementById('taskFrequencyTypeSelect').value;
                 const editId = document.getElementById('editTaskId').value;
 
                 if (!title) return;
+
+                let taskDate = this.getLocalDateString();
+                let recurringDays = [];
+
+                if (frequencyType === 'recurring') {
+                    const checkboxes = document.querySelectorAll('input[name="recurringDay"]:checked');
+                    checkboxes.forEach(cb => recurringDays.push(parseInt(cb.value)));
+                    if (recurringDays.length === 0) {
+                        this.showToast("Please select at least one recurring day of the week.", "error");
+                        return;
+                    }
+                } else {
+                    taskDate = document.getElementById('taskDateInput').value || this.getLocalDateString();
+                }
 
                 if (editId) {
                     const task = this.state.tasks.find(t => t.id === editId);
                     if (task) {
                         task.title = title;
                         task.category = category;
-                        task.frequency = frequency;
+                        task.frequencyType = frequencyType;
                         task.date = taskDate;
+                        task.recurringDays = recurringDays;
                     }
                 } else {
                     const newTask = {
                         id: 't-' + Date.now(),
                         title,
                         category,
-                        frequency,
+                        frequencyType,
                         date: taskDate,
+                        recurringDays,
                         completed: false
                     };
                     this.state.tasks.push(newTask);
@@ -800,8 +903,9 @@
 
             checkTodayCelebration() {
                 const todayStr = this.getLocalDateString();
-                const todayTasks = this.state.tasks.filter(t => t.date === todayStr);
-                if (todayTasks.length > 0 && todayTasks.every(t => t.completed)) {
+                const todayObj = new Date();
+                const todayTasks = this.state.tasks.filter(t => this.isTaskScheduledForDate(t, todayStr, todayObj));
+                if (todayTasks.length > 0 && todayTasks.every(t => this.isTaskCompletedForDate(t.id, todayStr))) {
                     this.openModal('celebrationModal');
                 }
             }
@@ -809,10 +913,11 @@
             simulateMidnight() {
                 this.closeModal('debugModal');
                 const todayStr = this.getLocalDateString();
+                const todayObj = new Date();
                 let penalizedCount = 0;
                 
                 this.state.tasks.forEach(t => {
-                    if (t.date === todayStr && !t.completed) {
+                    if (this.isTaskScheduledForDate(t, todayStr, todayObj) && !this.isTaskCompletedForDate(t.id, todayStr)) {
                         penalizedCount++;
                     }
                 });
@@ -867,8 +972,8 @@
                     const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
                     const monthDay = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                     
-                    const dayTasks = this.state.tasks.filter(t => t.date === dateStr);
-                    const completedCount = dayTasks.filter(t => t.completed).length;
+                    const dayTasks = this.state.tasks.filter(t => this.isTaskScheduledForDate(t, dateStr, dateObj));
+                    const completedCount = dayTasks.filter(t => this.isTaskCompletedForDate(t.id, dateStr)).length;
 
                     return `
                         <div class="flex flex-col rounded-2xl bg-cardBg/60 border ${isToday ? 'border-indigo-500/80 shadow-lg shadow-indigo-500/10' : 'border-borderCol/60'} overflow-hidden h-96">
@@ -887,15 +992,16 @@
                                         No tasks scheduled
                                     </div>
                                 ` : dayTasks.map(task => {
+                                    const isComp = this.isTaskCompletedForDate(task.id, dateStr);
                                     return `
                                         <div class="p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs flex items-center justify-between group">
                                             <div class="flex items-center space-x-2 truncate flex-1">
-                                                <button onclick="app.toggleTaskComplete('${task.id}')" class="w-4 h-4 rounded border ${task.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'border-slate-600 hover:border-indigo-500 bg-slate-900'} flex items-center justify-center text-[10px] flex-shrink-0">
-                                                    ${task.completed ? '<i class="fa-solid fa-check font-bold"></i>' : ''}
+                                                <button onclick="app.toggleTaskCompleteForDate('${task.id}', '${dateStr}')" class="w-4 h-4 rounded border ${isComp ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'border-slate-600 hover:border-indigo-500 bg-slate-900'} flex items-center justify-center text-[10px] flex-shrink-0">
+                                                    ${isComp ? '<i class="fa-solid fa-check font-bold"></i>' : ''}
                                                 </button>
-                                                <span class="truncate ${task.completed ? 'line-through text-slate-500' : 'text-slate-200'}">${task.title}</span>
+                                                <span class="truncate ${isComp ? 'line-through text-slate-500' : 'text-slate-200'}">${task.title}</span>
                                             </div>
-                                            <button onclick="app.deleteTask('${task.id}')" class="text-slate-500 hover:text-rose-400 ml-2 hidden group-hover:block"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                            <button onclick="app.deleteTask('${task.id}')" class="text-slate-500 hover:text-rose-400 ml-2 hidden group-hover:block" title="Delete Task"><i class="fa-solid fa-trash text-[10px]"></i></button>
                                         </div>
                                     `;
                                 }).join('')}
@@ -913,6 +1019,8 @@
                 document.getElementById('taskForm').reset();
                 document.getElementById('editTaskId').value = '';
                 document.getElementById('taskModalTitle').textContent = `Schedule Task for ${dateStr}`;
+                document.getElementById('taskFrequencyTypeSelect').value = 'once';
+                this.handleFrequencyTypeChange('once');
                 document.getElementById('taskDateInput').value = dateStr;
                 const todayStr = this.getLocalDateString();
                 document.getElementById('taskIsTodayInput').checked = (dateStr === todayStr);
@@ -951,28 +1059,39 @@
 
             renderTasks() {
                 const container = document.getElementById('taskContainer');
-                let filtered = this.state.tasks;
+                let filtered = [...this.state.tasks];
                 const todayStr = this.getLocalDateString();
+                const todayObj = new Date();
 
                 if (this.state.currentView === 'today') {
-                    filtered = filtered.filter(t => t.date === todayStr);
+                    filtered = filtered.filter(t => this.isTaskScheduledForDate(t, todayStr, todayObj));
                 } else if (this.state.currentView === 'category') {
                     filtered = filtered.filter(t => t.category === this.state.currentCategoryFilter);
                 }
 
                 if (this.state.statusFilter === 'active') {
-                    filtered = filtered.filter(t => !t.completed);
+                    filtered = filtered.filter(t => {
+                        if (this.state.currentView === 'today') {
+                            return !this.isTaskCompletedForDate(t.id, todayStr);
+                        }
+                        return !t.completed;
+                    });
                 } else if (this.state.statusFilter === 'completed') {
-                    filtered = filtered.filter(t => t.completed);
+                    filtered = filtered.filter(t => {
+                        if (this.state.currentView === 'today') {
+                            return this.isTaskCompletedForDate(t.id, todayStr);
+                        }
+                        return t.completed;
+                    });
                 }
 
                 if (this.state.searchQuery) {
                     filtered = filtered.filter(t => t.title.toLowerCase().includes(this.state.searchQuery));
                 }
 
-                const todayTasksList = this.state.tasks.filter(t => t.date === todayStr);
+                const todayTasksList = this.state.tasks.filter(t => this.isTaskScheduledForDate(t, todayStr, todayObj));
                 const todayTotal = todayTasksList.length;
-                const todayCompleted = todayTasksList.filter(t => t.completed).length;
+                const todayCompleted = todayTasksList.filter(t => this.isTaskCompletedForDate(t.id, todayStr)).length;
                 
                 document.getElementById('todayCountBadge').textContent = todayTotal;
                 document.getElementById('plannerCountBadge').textContent = this.state.tasks.length;
@@ -1000,24 +1119,33 @@
 
                 container.innerHTML = filtered.map(task => {
                     const cat = this.state.categories.find(c => c.id === task.category) || { name: 'General', icon: 'fa-folder' };
-                    const isTodayTask = (task.date === todayStr);
-                    const pointVal = isTodayTask ? 2 : 1;
+                    const isTodayView = (this.state.currentView === 'today');
+                    const activeCheckDate = isTodayView ? todayStr : (task.date || todayStr);
+                    const isComp = this.isTaskCompletedForDate(task.id, activeCheckDate);
+                    const pointVal = isTodayView ? 2 : 1;
+
+                    let scheduleLabel = `Date: ${task.date || 'Recurring'}`;
+                    if (task.frequencyType === 'recurring' && task.recurringDays) {
+                        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                        const daysStr = task.recurringDays.map(d => dayNames[d]).join(', ');
+                        scheduleLabel = `Repeats: ${daysStr}`;
+                    }
                     
                     return `
                         <div class="group flex items-center justify-between p-4 rounded-2xl bg-cardBg/60 hover:bg-cardBg border border-borderCol/60 hover:border-slate-700 transition shadow-sm">
                             <div class="flex items-center space-x-4 min-w-0 flex-1">
-                                <button onclick="app.toggleTaskComplete('${task.id}')" class="w-6 h-6 rounded-lg border ${task.completed ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'border-slate-600 hover:border-indigo-500 bg-slate-900'} flex items-center justify-center transition flex-shrink-0">
-                                    ${task.completed ? '<i class="fa-solid fa-check text-xs font-bold"></i>' : ''}
+                                <button onclick="app.toggleTaskCompleteForDate('${task.id}', '${activeCheckDate}')" class="w-6 h-6 rounded-lg border ${isComp ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'border-slate-600 hover:border-indigo-500 bg-slate-900'} flex items-center justify-center transition flex-shrink-0">
+                                    ${isComp ? '<i class="fa-solid fa-check text-xs font-bold"></i>' : ''}
                                 </button>
                                 <div class="min-w-0 flex-1">
                                     <div class="flex items-center space-x-2">
-                                        <h4 class="font-medium text-sm text-slate-200 truncate ${task.completed ? 'line-through text-slate-500' : ''}">${task.title}</h4>
-                                        ${task.frequency !== 'once' ? `<span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 font-medium">${task.frequency}</span>` : ''}
+                                        <h4 class="font-medium text-sm text-slate-200 truncate ${isComp ? 'line-through text-slate-500' : ''}">${task.title}</h4>
+                                        <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 font-medium">${task.frequencyType === 'recurring' ? 'Recurring' : 'One-time'}</span>
                                     </div>
                                     <div class="flex items-center space-x-3 mt-1 text-xs text-slate-400">
                                         <span class="flex items-center space-x-1"><i class="fa-solid ${cat.icon} text-[10px]"></i><span>${cat.name}</span></span>
                                         <span>•</span>
-                                        <span class="text-slate-400"><i class="fa-regular fa-calendar mr-1"></i>${task.date}</span>
+                                        <span class="text-slate-400"><i class="fa-regular fa-calendar mr-1"></i>${scheduleLabel}</span>
                                         <span>•</span>
                                         <span class="text-indigo-400 font-medium">+${pointVal} pts</span>
                                     </div>
@@ -1111,6 +1239,8 @@
                 }
                 if (modalId === 'taskModal' && !document.getElementById('editTaskId').value) {
                     document.getElementById('taskForm').reset();
+                    document.getElementById('taskFrequencyTypeSelect').value = 'once';
+                    this.handleFrequencyTypeChange('once');
                     document.getElementById('taskDateInput').value = this.getLocalDateString();
                     document.getElementById('taskIsTodayInput').checked = true;
                     document.getElementById('taskModalTitle').textContent = "Create New Task";
