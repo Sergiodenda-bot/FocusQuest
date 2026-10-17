@@ -515,7 +515,7 @@
                         <div>
                             <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Your Active Sync Code / Account Key</label>
                             <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                                <input type="text" id="syncCodeDisplay" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-indigo-300 focus:outline-none focus:border-indigo-500" placeholder="e.g., mysecretquest123">
+                                <input type="text" id="syncCodeDisplay" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-indigo-300 focus:outline-none focus:border-indigo-500" placeholder="e.g., Sergio">
                                 <div class="flex space-x-2">
                                     <button onclick="app.copySyncCode()" class="flex-1 sm:flex-initial px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold whitespace-nowrap transition flex items-center justify-center space-x-1.5">
                                         <i class="fa-solid fa-copy"></i>
@@ -692,6 +692,7 @@
                 this.sidebarCollapsed = false;
                 this.searchQuery = '';
                 this.plannerOffsetWeeks = 0;
+                this.syncingInProcess = false;
                 
                 this.state = {
                     points: 0,
@@ -766,21 +767,18 @@
                 this.evaluateAutomaticMidnightPenalty();
                 this.applyTheme(this.state.activeTheme);
                 this.renderAll();
-                this.setupCloudSyncPolling();
                 
-                // Set sync display
+                // Initialize cloud sync
                 const syncDisplay = document.getElementById('syncCodeDisplay');
                 if (syncDisplay) syncDisplay.value = this.state.syncCode;
+                this.triggerCloudSyncPull();
+                this.setupCloudSyncPolling();
 
                 // Handle initial responsive sidebar state on mobile
                 if (window.innerWidth < 768) {
                     this.sidebarCollapsed = true;
                     this.applySidebarState();
                 }
-
-                window.addEventListener('resize', () => {
-                    // Auto-adjust layout on resize if needed
-                });
             }
 
             loadFromLocalStorage() {
@@ -909,7 +907,7 @@
                         floatingBtn.style.display = 'flex';
                     } else {
                         sidebar.classList.remove('desktop-collapsed');
-                        if (main) main.style.marginLeft = '0px'; // Flexbox takes care of layout
+                        if (main) main.style.marginLeft = '0px';
                         if (overlay) overlay.classList.add('hidden');
                         if (floatingBtn) floatingBtn.classList.add('hidden');
                         floatingBtn.style.display = 'none';
@@ -1504,87 +1502,127 @@
                 document.body.className = `${themeClass} bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white`;
             }
 
+            // Real-Time Shared Cloud Sync Implementation using keyvalue API
+            getCloudKey() {
+                const cleanCode = (this.state.syncCode || 'default-quest').trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+                return `focusquest_room_${cleanCode}`;
+            }
+
             setupCloudSyncPolling() {
                 setInterval(() => {
                     this.triggerCloudSyncPull();
-                }, 15000);
+                }, 12000);
             }
 
             async triggerCloudSyncPush() {
-                const code = this.state.syncCode;
-                if (!code) return;
+                const key = this.getCloudKey();
+                this.updateCloudStatus('syncing');
 
                 try {
-                    const response = await fetch(`https://api.jsonbin.io/v3/b/${encodeURIComponent(code)}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Master-Key': '$2a$10$v0sX5/U.9R8GkPjJ9ZgW5e2N1g2c3d4e5f6g7h8i9j0'
-                        },
+                    const response = await fetch(`https://api.keyvalue.xyz/${encodeURIComponent(key)}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(this.state)
                     });
-                    this.updateCloudStatus(true);
+
+                    if (response.ok) {
+                        this.updateCloudStatus('synced');
+                    } else {
+                        this.updateCloudStatus('error');
+                    }
                 } catch (e) {
-                    this.updateCloudStatus(false);
+                    console.warn("Cloud push failed:", e);
+                    this.updateCloudStatus('error');
                 }
             }
 
             async triggerCloudSyncPull() {
-                const code = this.state.syncCode;
-                if (!code) return;
+                const key = this.getCloudKey();
+                if (this.syncingInProcess) return;
+                this.syncingInProcess = true;
 
                 try {
-                    const response = await fetch(`https://api.jsonbin.io/v3/b/${encodeURIComponent(code)}/latest`, {
-                        headers: {
-                            'X-Master-Key': '$2a$10$v0sX5/U.9R8GkPjJ9ZgW5e2N1g2c3d4e5f6g7h8i9j0'
-                        }
-                    });
+                    const response = await fetch(`https://api.keyvalue.xyz/${encodeURIComponent(key)}`);
                     if (response.ok) {
-                        const data = await response.json();
-                        if (data && data.record) {
-                            this.state = { ...this.state, ...data.record };
-                            this.applyTheme(this.state.activeTheme);
-                            this.renderAll();
-                            this.updateCloudStatus(true);
+                        const rawText = await response.text();
+                        if (rawText && rawText.trim() !== "") {
+                            const cloudData = JSON.parse(rawText);
+                            if (cloudData && typeof cloudData === 'object' && cloudData.tasks) {
+                                this.state = { ...this.state, ...cloudData };
+                                localStorage.setItem('focusQuestData', JSON.stringify(this.state));
+                                this.applyTheme(this.state.activeTheme);
+                                this.renderAll();
+                                this.updateCloudStatus('synced');
+                            }
+                        } else {
+                            // If key does not exist yet on cloud, push current local state to create it
+                            await this.triggerCloudSyncPush();
                         }
+                    } else if (response.status === 404) {
+                        // Key missing, create it
+                        await this.triggerCloudSyncPush();
+                    } else {
+                        this.updateCloudStatus('error');
                     }
                 } catch (e) {
-                    this.updateCloudStatus(false);
+                    console.warn("Cloud pull failed:", e);
+                    this.updateCloudStatus('error');
+                } finally {
+                    this.syncingInProcess = false;
                 }
             }
 
             manualCloudSync() {
-                this.triggerCloudSyncPush();
-                this.showToast('Cloud Sync triggered!', 'info');
+                this.triggerCloudSyncPull().then(() => {
+                    this.triggerCloudSyncPush();
+                    this.showToast('Cloud Sync updated successfully!', 'success');
+                });
             }
 
             applySyncCodeInput() {
                 const input = document.getElementById('syncCodeDisplay');
                 if (input && input.value.trim()) {
-                    this.state.syncCode = input.value.trim();
+                    const newCode = input.value.trim();
+                    this.state.syncCode = newCode;
                     this.saveToLocalStorage();
+                    this.showToast(`Syncing code "${newCode}"...`, 'info');
                     this.triggerCloudSyncPull();
-                    this.showToast(`Sync Code updated to: ${this.state.syncCode}`, 'success');
                 }
             }
 
             copySyncCode() {
                 const input = document.getElementById('syncCodeDisplay');
                 if (input) {
-                    document.execCommand('copy');
-                    this.showToast('Sync Code copied to clipboard!', 'info');
+                    navigator.clipboard.writeText(input.value)
+                        .then(() => this.showToast('Sync Code copied to clipboard!', 'info'))
+                        .catch(() => this.showToast('Failed to copy', 'error'));
                 }
             }
 
-            updateCloudStatus(online) {
+            updateCloudStatus(status) {
                 const label = document.getElementById('cloudSyncStatusLabel');
                 const text = document.getElementById('cloudStatusText');
-                if (online) {
+                const ping = document.getElementById('syncDotPing');
+                const staticDot = document.getElementById('syncDotStatic');
+
+                if (status === 'synced') {
                     if (label) label.className = 'text-[11px] text-emerald-400 font-medium flex items-center space-x-1.5';
+                    if (label) label.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> <span>Synced Successfully</span>';
                     if (text) text.textContent = 'Synced';
-                } else {
+                    if (ping) ping.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75';
+                    if (staticDot) staticDot.className = 'relative inline-flex rounded-full h-2 w-2 bg-emerald-500';
+                } else if (status === 'syncing') {
                     if (label) label.className = 'text-[11px] text-amber-400 font-medium flex items-center space-x-1.5';
+                    if (label) label.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-[10px]"></i> <span>Syncing...</span>';
+                    if (text) text.textContent = 'Syncing...';
+                    if (ping) ping.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75';
+                    if (staticDot) staticDot.className = 'relative inline-flex rounded-full h-2 w-2 bg-amber-500';
+                } else {
+                    if (label) label.className = 'text-[11px] text-rose-400 font-medium flex items-center space-x-1.5';
+                    if (label) label.innerHTML = '<i class="fa-solid fa-triangle-exclamation text-[10px]"></i> <span>Offline / Sync Error</span>';
                     if (text) text.textContent = 'Offline';
+                    if (ping) ping.className = 'hidden';
+                    if (staticDot) staticDot.className = 'relative inline-flex rounded-full h-2 w-2 bg-rose-500';
                 }
             }
 
