@@ -2,8 +2,9 @@
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FocusQuest - Gamified Focus & Productivity</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -22,8 +23,10 @@
             }
         }
     </script>
+    <!-- FontAwesome & Inter Font -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <style>
         body { font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -31,48 +34,63 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
         
+        /* Themes */
         body.theme-midnight { background-color: #090d16; }
         body.theme-obsidian { background-color: #000000; }
         body.theme-emerald { background-color: #022c22; }
         body.theme-dusk { background-color: #1e1b4b; }
         body.theme-sage { background-color: #13221a; }
-        body.theme-lavender { background-color: #1b1626; }
-        body.theme-sunset { background-color: #261713; }
         body.theme-cyber { background-color: #070d1a; }
 
-        /* Smooth sidebar transition and layout adjustments */
+        /* Sidebar Collapsible Transitions & Strict Hidden State */
         #sidebar {
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform, width;
         }
-        aside.collapsed {
-            transform: translateX(-100%);
+        
+        /* When sidebar is collapsed on desktop */
+        #sidebar.desktop-collapsed {
+            width: 0px !important;
+            min-width: 0px !important;
+            transform: translateX(-100%) !important;
+            overflow: hidden !important;
+            border-right: none !important;
         }
-        @media (min-width: 768px) {
-            aside.collapsed {
-                width: 0rem !important;
-                overflow: hidden;
-                border-right: none !important;
-            }
-            main.expanded {
-                margin-left: 0rem !important;
-            }
+
+        #mainContent {
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Neon Glow Effect for Today's Scheduled Tasks */
+        .neon-today-card {
+            box-shadow: 0 0 15px -2px var(--category-color, #6366f1);
+            border-color: var(--category-color, #6366f1) !important;
+        }
+
+        /* Custom Pulse Animations */
+        @keyframes subtlePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(0.98); }
+        }
+        .penalty-pulse {
+            animation: subtlePulse 2s infinite ease-in-out;
         }
     </style>
 </head>
-<body class="theme-midnight bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+<body class="theme-midnight bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden">
 
     <div id="app" class="flex flex-col md:flex-row flex-1 h-screen overflow-hidden relative">
 
         <!-- Mobile Header Bar -->
-        <header class="md:hidden flex items-center justify-between px-4 py-3 bg-cardBg/85 backdrop-blur border-b border-borderCol z-30">
+        <header class="md:hidden flex items-center justify-between px-4 py-3 bg-cardBg/90 backdrop-blur border-b border-borderCol z-30 shrink-0">
             <div class="flex items-center space-x-2">
-                <button onclick="app.toggleSidebar()" class="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white mr-1">
-                    <i class="fa-solid fa-bars"></i>
+                <button onclick="app.toggleSidebar()" class="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white active:scale-95 transition">
+                    <i class="fa-solid fa-bars text-sm"></i>
                 </button>
                 <div class="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/30">
                     <i class="fa-solid fa-bullseye text-sm"></i>
                 </div>
-                <span class="font-bold text-lg tracking-tight">FocusQuest</span>
+                <span class="font-bold text-base tracking-tight">FocusQuest</span>
             </div>
             <div class="flex items-center space-x-3">
                 <button onclick="app.openModal('shopModal')" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 flex items-center space-x-1.5 transition transform active:scale-95">
@@ -82,57 +100,64 @@
             </div>
         </header>
 
-        <!-- Sidebar Navigation -->
-        <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-72 bg-cardBg/95 md:bg-cardBg/60 backdrop-blur-xl border-r border-borderCol flex flex-col transform -translate-x-full md:translate-x-0">
+        <!-- Sidebar Floating Toggle Button (Always accessible when sidebar is collapsed) -->
+        <button id="floatingSidebarOpenBtn" onclick="app.toggleSidebar()" class="fixed left-4 top-4 z-40 p-3 rounded-2xl bg-cardBg/90 border border-borderCol text-indigo-400 hover:text-white shadow-2xl backdrop-blur-md hidden transition transform hover:scale-105 active:scale-95 items-center justify-center" title="Open Sidebar">
+            <i class="fa-solid fa-angles-right text-base"></i>
+        </button>
+
+        <!-- Collapsible Sidebar Navigation -->
+        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 w-72 md:w-72 bg-cardBg/95 md:bg-cardBg/70 backdrop-blur-xl border-r border-borderCol flex flex-col transform -translate-x-full md:translate-x-0 shadow-2xl shrink-0 overflow-y-auto">
             <!-- Brand Area & Sidebar Toggle -->
-            <div class="p-5 flex items-center justify-between border-b border-borderCol/50">
+            <div class="p-5 flex items-center justify-between border-b border-borderCol/50 shrink-0">
                 <div class="flex items-center space-x-3">
-                    <button onclick="app.toggleSidebar()" class="hidden md:flex p-2 rounded-xl bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition" title="Toggle Sidebar">
-                        <i class="fa-solid fa-bars text-sm"></i>
+                    <button onclick="app.toggleSidebar()" class="hidden md:flex p-2.5 rounded-xl bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition" title="Toggle Sidebar Width">
+                        <i class="fa-solid fa-angles-left text-sm" id="sidebarCollapseIcon"></i>
                     </button>
                     <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
                         <i class="fa-solid fa-bullseye text-lg"></i>
                     </div>
                     <div>
-                        <h1 class="font-bold text-base tracking-tight leading-none">FocusQuest</h1>
-                        <span id="userRankTitle" class="text-xs text-indigo-400 font-medium mt-1 block">Procrastinator</span>
+                        <h1 class="font-black text-base tracking-tight leading-none text-white">FocusQuest</h1>
+                        <span id="userRankTitle" class="text-xs text-indigo-400 font-semibold mt-1 block">Procrastinator</span>
                     </div>
                 </div>
-                <button onclick="app.toggleSidebar()" class="md:hidden text-slate-400 hover:text-white">
+                <!-- Mobile Close Button -->
+                <button onclick="app.toggleSidebar()" class="md:hidden p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800/50">
                     <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
 
-            <!-- Enhanced Level & Progress UI + Bigger Shop Button -->
-            <div class="p-4 mx-4 mt-4 rounded-2xl bg-gradient-to-br from-indigo-950/70 via-slate-900/80 to-slate-900/90 border border-indigo-500/40 shadow-xl">
+            <!-- Enhanced Level & Progress UI + Shop Button -->
+            <div class="p-4 mx-4 mt-4 rounded-2xl bg-gradient-to-br from-indigo-950/80 via-slate-900/90 to-slate-900 border border-indigo-500/40 shadow-xl shrink-0">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center space-x-2">
-                        <span class="px-3 py-1 rounded-lg bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-extrabold text-xs shadow-md shadow-indigo-500/30 border border-indigo-400/40">
-                            LEVEL <span id="userLevelDisplay" class="text-amber-300 text-sm">1</span>
+                        <span class="px-3 py-1 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-black text-xs shadow-md shadow-indigo-500/30 border border-indigo-400/40 tracking-wider">
+                            LEVEL <span id="userLevelDisplay" class="text-amber-300 text-base ml-0.5">1</span>
                         </span>
-                        <span class="text-xs text-indigo-200 font-semibold"><span id="userPointsDisplay" class="text-amber-400 font-bold text-sm">0</span> pts</span>
+                        <span class="text-xs text-indigo-200 font-semibold"><span id="userPointsDisplay" class="text-amber-400 font-extrabold text-base">0</span> pts</span>
                     </div>
-                    <button onclick="app.openModal('shopModal')" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 hover:from-amber-400 to-orange-500 hover:to-orange-400 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/30 flex items-center space-x-1.5 transition transform hover:scale-105 active:scale-95">
+                    <!-- Stylish Shop Button -->
+                    <button onclick="app.openModal('shopModal')" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center space-x-1.5 transition transform hover:scale-105 active:scale-95 uppercase tracking-wider">
                         <i class="fa-solid fa-store text-sm"></i>
                         <span>SHOP</span>
                     </button>
                 </div>
                 <!-- Vibrant Progress Bar -->
-                <div class="w-full bg-slate-950 rounded-full h-3 overflow-hidden border border-indigo-500/30 shadow-inner">
-                    <div id="levelProgressBar" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-full transition-all duration-500 shadow-md" style="width: 0%"></div>
+                <div class="w-full bg-slate-950 rounded-full h-3.5 overflow-hidden border border-indigo-500/30 shadow-inner p-0.5">
+                    <div id="levelProgressBar" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-full rounded-full transition-all duration-500 shadow-md" style="width: 0%"></div>
                 </div>
-                <div class="flex justify-between items-center mt-2 text-[11px] text-slate-300 font-medium">
-                    <span id="progressText">0 / 10 pts to next level</span>
-                    <button onclick="app.openModal('debugModal')" class="text-rose-400 hover:text-rose-300 underline font-semibold">Simulate Midnight</button>
+                <div class="flex justify-between items-center mt-2.5 text-[11px] text-slate-300 font-medium">
+                    <span id="progressText" class="font-semibold text-indigo-200">0 / 10 pts to next level</span>
+                    <button onclick="app.openModal('debugModal')" class="text-rose-400 hover:text-rose-300 underline font-semibold transition">Simulate Midnight</button>
                 </div>
             </div>
 
             <!-- Navigation Links -->
             <div class="flex-1 overflow-y-auto px-4 py-4 space-y-6">
                 <div>
-                    <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-3 mb-2">Overview</div>
+                    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-3 mb-2">Overview</div>
                     <nav class="space-y-1">
-                        <button onclick="app.switchView('today')" id="nav-today" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
+                        <button onclick="app.switchView('today')" id="nav-today" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
                             <div class="flex items-center space-x-3">
                                 <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
                                     <i class="fa-solid fa-sun text-xs"></i>
@@ -141,7 +166,7 @@
                             </div>
                             <span id="todayCountBadge" class="px-2 py-0.5 rounded-full text-xs bg-slate-800 text-slate-300 font-semibold">0</span>
                         </button>
-                        <button onclick="app.switchView('planner')" id="nav-planner" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white">
+                        <button onclick="app.switchView('planner')" id="nav-planner" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white">
                             <div class="flex items-center space-x-3">
                                 <div class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
                                     <i class="fa-solid fa-calendar-days text-xs"></i>
@@ -150,7 +175,7 @@
                             </div>
                             <span id="plannerCountBadge" class="px-2 py-0.5 rounded-full text-xs bg-slate-800 text-slate-300 font-semibold">0</span>
                         </button>
-                        <button onclick="app.switchView('all')" id="nav-all" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white">
+                        <button onclick="app.switchView('all')" id="nav-all" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white">
                             <div class="flex items-center space-x-3">
                                 <div class="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
                                     <i class="fa-solid fa-list-check text-xs"></i>
@@ -162,11 +187,11 @@
                     </nav>
                 </div>
 
-                <!-- Folders / Categories with Color customization -->
+                <!-- Category Filtering List with Colored Badges -->
                 <div>
                     <div class="flex items-center justify-between px-3 mb-2">
-                        <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Categories</span>
-                        <button onclick="app.openModal('categoryModal')" class="text-slate-400 hover:text-white text-xs">
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Categories</span>
+                        <button onclick="app.openModal('categoryModal')" class="p-1 text-slate-400 hover:text-white text-xs transition" title="Add Category">
                             <i class="fa-solid fa-plus"></i>
                         </button>
                     </div>
@@ -176,89 +201,102 @@
                 </div>
             </div>
 
-            <div class="p-4 border-t border-borderCol/50 flex items-center justify-between">
-                <button onclick="app.openModal('settingsModal')" class="flex items-center space-x-2 text-sm text-slate-400 hover:text-slate-200 transition">
+            <div class="p-4 border-t border-borderCol/50 flex items-center justify-between shrink-0">
+                <button onclick="app.openModal('settingsModal')" class="flex items-center space-x-2 text-sm text-slate-400 hover:text-slate-200 transition font-medium">
                     <i class="fa-solid fa-gear"></i>
                     <span>Settings & Sync</span>
                 </button>
-                <div class="flex items-center space-x-1 text-xs text-indigo-400" id="cloudSyncIndicator" title="Cloud Sync Active">
-                    <i class="fa-solid fa-cloud"></i>
-                    <span id="cloudStatusText" class="text-[10px]">Synced</span>
+                <div class="flex items-center space-x-1.5 text-xs text-indigo-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-800" id="cloudSyncIndicator" title="Cloud Sync Active">
+                    <span class="relative flex h-2 w-2">
+                      <span id="syncDotPing" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span id="syncDotStatic" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span id="cloudStatusText" class="text-[10px] font-semibold text-slate-300">Synced</span>
                 </div>
             </div>
         </aside>
 
+        <!-- Sidebar Overlay for Mobile Touchscreens -->
+        <div id="sidebarOverlay" onclick="app.toggleSidebar()" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-40 hidden md:hidden"></div>
+
         <!-- Main Content Area -->
-        <main id="mainContent" class="flex-1 flex flex-col h-full overflow-hidden bg-transparent md:ml-72 transition-all duration-300">
-            <header class="px-6 py-5 border-b border-borderCol/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-cardBg/20 backdrop-blur-md">
-                <div class="flex items-center space-x-3">
-                    <button onclick="app.toggleSidebar()" class="hidden md:flex p-2 rounded-xl bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition" title="Toggle Sidebar">
+        <main id="mainContent" class="flex-1 flex flex-col h-full overflow-hidden bg-transparent md:ml-0 transition-all duration-300">
+            <!-- Header Bar -->
+            <header class="px-4 sm:px-6 py-4 sm:py-5 border-b border-borderCol/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-cardBg/20 backdrop-blur-md shrink-0">
+                <div class="flex items-center space-x-3 min-w-0">
+                    <button onclick="app.toggleSidebar()" class="p-2.5 rounded-xl bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition shrink-0" title="Toggle Sidebar">
                         <i class="fa-solid fa-bars text-sm"></i>
                     </button>
-                    <div>
-                        <h2 id="currentViewTitle" class="text-2xl font-bold tracking-tight text-white flex items-center space-x-3">
-                            <span>Today's Focus</span>
-                            <span id="headerDateBadge" class="text-xs font-normal px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700"></span>
+                    <div class="min-w-0">
+                        <h2 id="currentViewTitle" class="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center space-x-3 truncate">
+                            <span class="truncate">Today's Focus</span>
+                            <span id="headerDateBadge" class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700 shrink-0"></span>
                         </h2>
-                        <p id="currentViewSubtitle" class="text-sm text-slate-400 mt-0.5">Complete your active bets for today to earn points and avoid midnight penalties.</p>
+                        <p id="currentViewSubtitle" class="text-xs sm:text-sm text-slate-400 mt-0.5 truncate">Complete active bets for today to earn points and avoid midnight penalties.</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <button onclick="app.openModal('taskModal')" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm shadow-lg shadow-indigo-600/25 flex items-center space-x-2 transition transform active:scale-95">
-                        <i class="fa-solid fa-plus"></i>
+                <div class="flex items-center space-x-3 shrink-0">
+                    <button onclick="app.openModal('taskModal')" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2 transition transform active:scale-95">
+                        <i class="fa-solid fa-plus text-xs"></i>
                         <span>New Task</span>
                     </button>
                 </div>
             </header>
 
-            <div class="flex-1 overflow-y-auto p-6 space-y-6">
-                <!-- Today Banner with Penalty Alert Indicator -->
-                <div id="todayProgressBanner" class="p-5 rounded-2xl bg-gradient-to-r from-indigo-900/40 via-purple-900/30 to-slate-900/40 border border-indigo-500/20 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div class="flex items-center space-x-4">
-                        <div id="todayBannerIconWrapper" class="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xl shadow-inner transition-colors duration-300">
+            <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+                <!-- Today Progress Banner -->
+                <div id="todayProgressBanner" class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-indigo-950/60 via-purple-900/40 to-slate-900/60 border border-indigo-500/30 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3.5">
+                        <div id="todayBannerIconWrapper" class="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 text-xl shadow-inner shrink-0">
                             <i class="fa-solid fa-fire-flame-curved"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-base text-white">Daily Bet Active</h3>
-                            <p class="text-xs text-slate-300 mt-0.5">Tasks scheduled for today earn <span class="text-emerald-400 font-semibold">+2 Points</span> upon completion. Unfinished today tasks deduct <span class="text-rose-400 font-semibold">-2 Points</span> at midnight.</p>
+                            <h3 class="font-extrabold text-sm sm:text-base text-white">Daily Bet Active</h3>
+                            <p class="text-xs text-slate-300 mt-0.5">Tasks scheduled for today earn <span class="text-emerald-400 font-bold">+2 Points</span> upon completion. Unfinished tasks deduct <span class="text-rose-400 font-bold">-2 Points</span> automatically at midnight.</p>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-3 bg-slate-900/60 px-4 py-2.5 rounded-xl border border-slate-700/50">
-                        <div class="text-right">
-                            <div class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Today's Progress</div>
-                            <div class="text-sm font-bold text-white"><span id="completedTodayCount">0</span> / <span id="totalTodayCount">0</span> Done</div>
+                    <div class="flex items-center justify-between sm:justify-start space-x-3 bg-slate-950/70 px-4 py-2.5 rounded-xl border border-slate-800 shrink-0">
+                        <div class="text-left sm:text-right">
+                            <div class="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Today's Progress</div>
+                            <div class="text-sm font-black text-white"><span id="completedTodayCount">0</span> / <span id="totalTodayCount">0</span> Done</div>
                         </div>
-                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-indigo-500/10 text-indigo-400 font-bold text-sm" id="todayCompletionPercent">0%</div>
+                        <div class="w-10 h-10 rounded-full flex items-center justify-center bg-indigo-500/20 text-indigo-300 font-black text-sm border border-indigo-500/30" id="todayCompletionPercent">0%</div>
                     </div>
                 </div>
 
-                <!-- Weekly Planner Container -->
+                <!-- Responsive Weekly Planner Section -->
                 <div id="weeklyPlannerContainer" class="hidden space-y-6">
-                    <div class="p-4 rounded-2xl bg-cardBg/50 border border-borderCol/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="p-4 rounded-2xl bg-cardBg/60 border border-borderCol/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h3 class="font-bold text-base text-white">Weekly Calendar Planner</h3>
-                            <p class="text-xs text-slate-400 mt-0.5">Plan tasks in advance for any day of the week. Tasks scheduled for today feature a glowing neon category border.</p>
+                            <h3 class="font-extrabold text-base text-white flex items-center space-x-2">
+                                <i class="fa-solid fa-calendar-week text-indigo-400"></i>
+                                <span>Weekly Calendar Planner</span>
+                            </h3>
+                            <p class="text-xs text-slate-400 mt-0.5">Plan tasks in advance for any day of the week. Today's tasks feature a glowing neon border.</p>
                         </div>
                         <div class="flex items-center space-x-2">
-                            <button onclick="app.changePlannerWeek(-1)" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-semibold"><i class="fa-solid fa-chevron-left mr-1"></i> Prev</button>
-                            <span id="plannerWeekRangeLabel" class="text-xs font-semibold text-indigo-400 px-2"></span>
-                            <button onclick="app.changePlannerWeek(1)" class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs font-semibold">Next <i class="fa-solid fa-chevron-right ml-1"></i></button>
+                            <button onclick="app.changePlannerWeek(-1)" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition"><i class="fa-solid fa-chevron-left mr-1"></i> Prev</button>
+                            <span id="plannerWeekRangeLabel" class="text-xs font-bold text-indigo-400 px-3 bg-indigo-950/50 py-1 rounded-lg border border-indigo-500/20"></span>
+                            <button onclick="app.changePlannerWeek(1)" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">Next <i class="fa-solid fa-chevron-right ml-1"></i></button>
                         </div>
                     </div>
                     
-                    <!-- 7-Day Columns Grid -->
-                    <div id="plannerDaysGrid" class="grid grid-cols-1 md:grid-cols-7 gap-4">
+                    <!-- 7-Day Responsive Grid -->
+                    <div id="plannerDaysGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
                         <!-- Dynamically populated 7 days of the week -->
                     </div>
 
-                    <!-- Category Task Pool Management Below Planner -->
+                    <!-- Category-Filtered Task Pool Below Grid -->
                     <div class="p-5 rounded-2xl bg-cardBg/40 border border-borderCol/60 space-y-4">
-                        <h4 class="font-bold text-sm text-white flex items-center space-x-2">
-                            <i class="fa-solid fa-layer-group text-indigo-400"></i>
-                            <span>Task Pool Organized by Category</span>
-                        </h4>
-                        <div id="plannerCategoryPoolsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <!-- Category pools injected dynamically -->
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-extrabold text-sm text-white flex items-center space-x-2">
+                                <i class="fa-solid fa-layer-group text-indigo-400"></i>
+                                <span>Category Task Blocks</span>
+                            </h4>
+                            <span class="text-xs text-slate-400 hidden sm:inline">Filtered view of all active category schedules</span>
+                        </div>
+                        <div id="plannerCategoryPoolsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            <!-- Category blocks injected dynamically -->
                         </div>
                     </div>
                 </div>
@@ -267,16 +305,25 @@
                 <div id="filtersAndSearchSection" class="flex flex-col sm:flex-row items-center justify-between gap-3">
                     <div class="relative w-full sm:w-80">
                         <i class="fa-solid fa-search absolute left-3.5 top-3 text-slate-400 text-sm"></i>
-                        <input type="text" id="taskSearchInput" oninput="app.handleSearch(this.value)" placeholder="Search tasks..." class="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                        <input type="text" id="taskSearchInput" oninput="app.handleSearch(this.value)" placeholder="Search tasks..." class="w-full bg-slate-900/80 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
                     </div>
                     <div class="flex items-center space-x-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-                        <button onclick="app.setFilter('all')" id="filter-btn-all" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white transition whitespace-nowrap">All</button>
-                        <button onclick="app.setFilter('active')" id="filter-btn-active" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">Active</button>
-                        <button onclick="app.setFilter('completed')" id="filter-btn-completed" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">Completed</button>
+                        <button onclick="app.setFilter('all')" id="filter-btn-all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition whitespace-nowrap shadow-md shadow-indigo-600/20">All</button>
+                        <button onclick="app.setFilter('active')" id="filter-btn-active" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">Active</button>
+                        <button onclick="app.setFilter('completed')" id="filter-btn-completed" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap">Completed</button>
                     </div>
                 </div>
 
-                <!-- Task List Container -->
+                <!-- Active Category Filter Bar Notification -->
+                <div id="activeCategoryFilterBar" class="hidden p-3 rounded-xl bg-indigo-950/60 border border-indigo-500/40 flex items-center justify-between text-xs text-indigo-200">
+                    <div class="flex items-center space-x-2 truncate mr-2">
+                        <i class="fa-solid fa-filter text-indigo-400 shrink-0"></i>
+                        <span class="truncate">Filtering by: <strong id="activeCategoryFilterName" class="text-white">Category</strong></span>
+                    </div>
+                    <button onclick="app.clearCategoryFilter()" class="text-indigo-400 hover:text-white font-bold underline shrink-0">Show All</button>
+                </div>
+
+                <!-- Task Cards List Container -->
                 <div id="taskContainer" class="space-y-3 pb-20">
                     <!-- Dynamic task cards will be injected here -->
                 </div>
@@ -285,10 +332,10 @@
     </div>
 
     <!-- Task Modal -->
-    <div id="taskModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+    <div id="taskModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-md overflow-hidden shadow-2xl my-auto animate-in fade-in zoom-in duration-200">
             <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
-                <h3 id="taskModalTitle" class="font-bold text-base text-white">Create New Task</h3>
+                <h3 id="taskModalTitle" class="font-extrabold text-base text-white">Create New Task</h3>
                 <button onclick="app.closeModal('taskModal')" class="text-slate-400 hover:text-white">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -296,18 +343,18 @@
             <form id="taskForm" onsubmit="app.saveTask(event)" class="p-6 space-y-4">
                 <input type="hidden" id="editTaskId">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Task Title</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Task Title</label>
                     <input type="text" id="taskTitleInput" required placeholder="e.g., Complete Math Assignment" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Category</label>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Category</label>
                         <select id="taskCategorySelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
                             <!-- Populated dynamically -->
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Frequency Type</label>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Frequency Type</label>
                         <select id="taskFrequencyTypeSelect" onchange="app.handleFrequencyTypeChange(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
                             <option value="once">One-time / Scheduled Date</option>
                             <option value="recurring">Recurring Weekly Days</option>
@@ -317,14 +364,14 @@
 
                 <!-- One-time Date Section -->
                 <div id="oneTimeDateSection">
-                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Scheduled Date</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Scheduled Date</label>
                     <input type="date" id="taskDateInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
-                    <p class="text-[11px] text-slate-400 mt-1">Points (+2 gain / -2 penalty) apply strictly when this scheduled date arrives as Today.</p>
+                    <p class="text-[11px] text-slate-400 mt-1">Points (+2 gain / -2 penalty) apply when this scheduled date arrives as Today.</p>
                 </div>
 
                 <!-- Recurring Days Multi-Select Section -->
                 <div id="recurringDaysSection" class="hidden space-y-2">
-                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Repeat on Days of Week</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Repeat on Days of Week</label>
                     <div class="grid grid-cols-4 gap-2">
                         <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
                             <input type="checkbox" name="recurringDay" value="1" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
@@ -355,98 +402,97 @@
                             <span>Sun</span>
                         </label>
                     </div>
-                    <p class="text-[11px] text-slate-400">Task will automatically appear on these days every single week indefinitely.</p>
                 </div>
 
                 <div id="todayCheckboxWrapper" class="flex items-center space-x-3 p-3 rounded-xl bg-slate-900/60 border border-slate-800">
                     <input type="checkbox" id="taskIsTodayInput" onchange="app.syncModalDateCheckbox(this.checked)" class="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
                     <div>
-                        <label for="taskIsTodayInput" class="text-sm font-medium text-slate-200 cursor-pointer">Assign to Today's Focus</label>
+                        <label for="taskIsTodayInput" class="text-sm font-bold text-slate-200 cursor-pointer">Assign to Today's Focus</label>
                         <p class="text-[11px] text-slate-400">Shortcut to schedule task for today.</p>
                     </div>
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" onclick="app.closeModal('taskModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-sm font-medium">Cancel</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium shadow-lg shadow-indigo-600/20">Save Task</button>
+                    <button type="button" onclick="app.closeModal('taskModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white text-sm font-semibold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-600/20">Save Task</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- New / Edit Category Modal with Accent Color Selection -->
-    <div id="categoryModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl">
+    <!-- Category Modal -->
+    <div id="categoryModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl my-auto">
             <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
-                <h3 class="font-bold text-base text-white">Create / Customize Category</h3>
+                <h3 class="font-extrabold text-base text-white">Create / Customize Category</h3>
                 <button onclick="app.closeModal('categoryModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <form onsubmit="app.saveCategory(event)" class="p-6 space-y-4">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Category Name</label>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Category Name</label>
                     <input type="text" id="categoryNameInput" required placeholder="e.g., Coding, Fitness" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Icon (FontAwesome)</label>
-                        <input type="text" id="categoryIconInput" value="fa-folder" placeholder="e.g., fa-book, fa-dumbbell" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Icon (FontAwesome)</label>
+                        <input type="text" id="categoryIconInput" value="fa-folder" placeholder="e.g., fa-book, fa-dumbbell" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Accent Color</label>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Accent Color</label>
                         <input type="color" id="categoryColorInput" value="#6366f1" class="w-full h-10 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1 cursor-pointer">
                     </div>
                 </div>
                 <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" onclick="app.closeModal('categoryModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-sm">Cancel</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm">Save Category</button>
+                    <button type="button" onclick="app.closeModal('categoryModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-sm font-semibold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow-lg shadow-indigo-600/20">Save Category</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Shop Modal -->
-    <div id="shopModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
-            <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
+    <div id="shopModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl my-auto">
+            <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50 shrink-0">
                 <div class="flex items-center space-x-3">
-                    <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
-                        <i class="fa-solid fa-store"></i>
+                    <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                        <i class="fa-solid fa-store text-lg"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-base text-white">Reward & Customization Shop</h3>
-                        <p class="text-xs text-slate-400">Spend points to unlock UI themes, custom titles, badges, and perks.</p>
+                        <h3 class="font-extrabold text-sm sm:text-base text-white">Reward & Customization Shop</h3>
+                        <p class="text-xs text-slate-400 hidden sm:block">Spend focus points to unlock UI themes, titles, and perks.</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <span class="text-sm font-bold text-amber-400 bg-amber-500/10 px-3 py-1 rounded-lg border border-amber-500/20">
-                        <i class="fa-solid fa-coins mr-1.5"></i> <span id="shopUserPoints">0</span> pts
+                <div class="flex items-center space-x-3">
+                    <span class="text-xs sm:text-sm font-extrabold text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/30 flex items-center space-x-1.5">
+                        <i class="fa-solid fa-coins text-amber-400"></i> <span id="shopUserPoints">0</span> pts
                     </span>
                     <button onclick="app.closeModal('shopModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
                 </div>
             </div>
             <!-- Shop Tabs -->
-            <div class="flex border-b border-borderCol px-6 pt-3 bg-slate-900/30 gap-4">
-                <button onclick="app.switchShopTab('themes')" id="shop-tab-themes" class="pb-2 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-400">Themes</button>
-                <button onclick="app.switchShopTab('badges')" id="shop-tab-badges" class="pb-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200">Badges & Titles</button>
-                <button onclick="app.switchShopTab('perks')" id="shop-tab-perks" class="pb-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200">Perks & FX</button>
+            <div class="flex border-b border-borderCol px-6 pt-3 bg-slate-900/30 gap-4 shrink-0 overflow-x-auto">
+                <button onclick="app.switchShopTab('themes')" id="shop-tab-themes" class="pb-2 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 whitespace-nowrap">Themes</button>
+                <button onclick="app.switchShopTab('badges')" id="shop-tab-badges" class="pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Badges & Titles</button>
+                <button onclick="app.switchShopTab('perks')" id="shop-tab-perks" class="pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Perks & FX</button>
             </div>
-            <div class="flex-1 overflow-y-auto p-6 space-y-4" id="shopItemsContainer">
+            <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4" id="shopItemsContainer">
                 <!-- Dynamically populated shop items -->
             </div>
         </div>
     </div>
 
     <!-- Settings & Cloud Sync Modal -->
-    <div id="settingsModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl max-h-[90vh] flex flex-col">
-            <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
-                <h3 class="font-bold text-base text-white">App Settings & Cross-Device Cloud Sync</h3>
+    <div id="settingsModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl max-h-[90vh] flex flex-col my-auto">
+            <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50 shrink-0">
+                <h3 class="font-extrabold text-sm sm:text-base text-white">App Settings & Cross-Device Cloud Sync</h3>
                 <button onclick="app.closeModal('settingsModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
             </div>
             <div class="p-6 space-y-6 overflow-y-auto flex-1">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h4 class="text-sm font-medium text-slate-200">Sound Effects (Web Audio)</h4>
+                        <h4 class="text-sm font-bold text-slate-200">Sound Effects (Web Audio)</h4>
                         <p class="text-xs text-slate-400">Play chime on task completion.</p>
                     </div>
                     <label class="relative inline-flex items-center cursor-pointer">
@@ -462,58 +508,50 @@
                             <i class="fa-solid fa-cloud-arrow-up"></i>
                             <span>Real-Time Cross-Device Cloud Sync</span>
                         </h4>
-                        <p class="text-xs text-slate-300 mt-1">Sync tasks, points, levels, and unlocks instantly between your devices.</p>
+                        <p class="text-xs text-slate-300 mt-1">Sync tasks, points, levels, and unlocks instantly between PC, iPad, and Phone using a shared Account Key / Sync Code.</p>
                     </div>
 
-                    <div class="p-4 rounded-xl bg-slate-900/80 border border-slate-800 space-y-3">
+                    <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3">
                         <div>
-                            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Your Unique Cloud Sync Code</label>
-                            <div class="flex space-x-2">
-                                <input type="text" id="syncCodeDisplay" readonly class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-indigo-300 select-all" placeholder="Generating key...">
-                                <button onclick="app.copySyncCode()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold whitespace-nowrap transition flex items-center space-x-1.5">
-                                    <i class="fa-solid fa-copy"></i>
-                                    <span>Copy</span>
-                                </button>
-                                <button onclick="app.generateNewSyncCode()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold whitespace-nowrap transition" title="Generate New Key">
-                                    <i class="fa-solid fa-rotate"></i>
-                                </button>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Your Active Sync Code / Account Key</label>
+                            <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                                <input type="text" id="syncCodeDisplay" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-indigo-300 focus:outline-none focus:border-indigo-500" placeholder="e.g., mysecretquest123">
+                                <div class="flex space-x-2">
+                                    <button onclick="app.copySyncCode()" class="flex-1 sm:flex-initial px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold whitespace-nowrap transition flex items-center justify-center space-x-1.5">
+                                        <i class="fa-solid fa-copy"></i>
+                                        <span>Copy</span>
+                                    </button>
+                                    <button onclick="app.applySyncCodeInput()" class="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold whitespace-nowrap shadow-lg shadow-indigo-600/20 transition">
+                                        Apply
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="pt-2 border-t border-slate-800/60">
-                            <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Connect Another Device / Import Key</label>
-                            <div class="flex space-x-2">
-                                <input type="text" id="syncCodeInput" placeholder="Paste cloud sync key here..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-indigo-500">
-                                <button onclick="app.connectCloudSyncKey()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold whitespace-nowrap shadow-lg shadow-indigo-600/20 transition">
-                                    Sync Now
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-between pt-1">
-                            <span id="cloudSyncStatusLabel" class="text-[11px] text-emerald-400 font-medium flex items-center space-x-1">
+                        <div class="flex items-center justify-between pt-1 border-t border-slate-800/60">
+                            <span id="cloudSyncStatusLabel" class="text-[11px] text-emerald-400 font-medium flex items-center space-x-1.5">
                                 <i class="fa-solid fa-circle text-[8px]"></i>
-                                <span>Cloud sync operational</span>
+                                <span>Connected & Synced</span>
                             </span>
-                            <button onclick="app.manualCloudSync()" class="text-xs text-indigo-400 hover:text-indigo-300 underline font-medium">
-                                Force Push/Pull Now
+                            <button onclick="app.manualCloudSync()" class="text-xs text-indigo-400 hover:text-indigo-300 underline font-bold">
+                                Force Sync Now
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Manual Backup & Export Section -->
+                <!-- Backup & Reset -->
                 <div class="pt-4 border-t border-slate-800 space-y-3">
                     <div>
-                        <h4 class="text-sm font-medium text-slate-200">Manual JSON File Backup</h4>
-                        <p class="text-xs text-slate-400">Alternative offline backup export or file import.</p>
+                        <h4 class="text-sm font-bold text-slate-200">Manual JSON Backup</h4>
+                        <p class="text-xs text-slate-400">Offline JSON file export or import.</p>
                     </div>
                     <div class="flex space-x-3">
-                        <button onclick="app.exportBackup()" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center justify-center space-x-1.5">
+                        <button onclick="app.exportBackup()" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition flex items-center justify-center space-x-1.5">
                             <i class="fa-solid fa-download"></i>
                             <span>Export File</span>
                         </button>
-                        <label class="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center justify-center space-x-1.5 cursor-pointer">
+                        <label class="flex-1 py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition flex items-center justify-center space-x-1.5 cursor-pointer">
                             <i class="fa-solid fa-upload"></i>
                             <span>Import File</span>
                             <input type="file" id="importFile" accept=".json" onchange="app.importBackup(event)" class="hidden">
@@ -522,8 +560,7 @@
                 </div>
 
                 <div class="pt-4 border-t border-slate-800">
-                    <h4 class="text-sm font-medium text-slate-200 mb-2">Data Management</h4>
-                    <button onclick="app.resetData()" class="px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-xs font-semibold border border-rose-500/20 transition">
+                    <button onclick="app.resetData()" class="px-4 py-2 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 text-xs font-bold border border-rose-500/20 transition">
                         <i class="fa-solid fa-trash mr-1.5"></i> Reset All Data
                     </button>
                 </div>
@@ -531,26 +568,45 @@
         </div>
     </div>
 
-    <!-- Debug Midnight Simulator Modal -->
-    <div id="debugModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl p-6 text-center space-y-4">
-            <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto text-xl">
+    <!-- Midnight Simulator Modal -->
+    <div id="debugModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl p-6 text-center space-y-4 my-auto">
+            <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto text-xl border border-indigo-500/30">
                 <i class="fa-solid fa-clock-rotate-left"></i>
             </div>
             <div>
-                <h3 class="font-bold text-base text-white">Simulate Midnight Reset</h3>
+                <h3 class="font-extrabold text-base text-white">Simulate Midnight Evaluation</h3>
                 <p class="text-xs text-slate-400 mt-1">Triggers midnight evaluation: uncompleted tasks scheduled for today will deduct -2 points each with visual penalty indicators!</p>
             </div>
             <div class="flex space-x-3 pt-2">
-                <button onclick="app.closeModal('debugModal')" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-sm">Cancel</button>
-                <button onclick="app.simulateMidnight()" class="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-semibold">Trigger Penalty</button>
+                <button onclick="app.closeModal('debugModal')" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-sm font-semibold">Cancel</button>
+                <button onclick="app.simulateMidnight()" class="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold shadow-lg shadow-rose-600/30">Trigger Penalty</button>
             </div>
         </div>
     </div>
 
+    <!-- Penalty Alert Overlay Modal -->
+    <div id="penaltyModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-cardBg border border-rose-500/40 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-6 text-center space-y-5 my-auto animate-in zoom-in-95 duration-200">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-rose-600 to-amber-600 text-white flex items-center justify-center mx-auto text-3xl shadow-lg shadow-rose-600/30 penalty-pulse">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+                <h3 class="font-black text-xl text-white">Midnight Evaluation Penalty!</h3>
+                <p class="text-xs text-slate-300 mt-2" id="penaltyModalDetailText">You had unfinished tasks assigned for yesterday. A penalty has been deducted from your focus score.</p>
+            </div>
+            <div class="p-3.5 rounded-2xl bg-rose-950/40 border border-rose-500/30 text-rose-300 font-bold text-sm" id="penaltyScoreImpactText">
+                -0 Points Deducted
+            </div>
+            <button onclick="app.closeModal('penaltyModal')" class="w-full py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm shadow-lg shadow-rose-600/30 transition">
+                I Understand & Promise to Focus
+            </button>
+        </div>
+    </div>
+
     <!-- Celebration Success Modal -->
-    <div id="celebrationModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-cardBg border border-emerald-500/30 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-8 text-center space-y-5 animate-in zoom-in-95 duration-300">
+    <div id="celebrationModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-cardBg border border-emerald-500/30 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-8 text-center space-y-5 my-auto animate-in zoom-in-95 duration-300">
             <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 flex items-center justify-center mx-auto text-3xl shadow-lg shadow-emerald-500/30">
                 <i class="fa-solid fa-trophy"></i>
             </div>
@@ -558,10 +614,7 @@
                 <h3 class="font-extrabold text-2xl text-white">Awesome Job!</h3>
                 <p class="text-sm text-slate-300 mt-2">You crushed all of today's focus goals! Your dedication is paying off.</p>
             </div>
-            <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 text-xs text-slate-400">
-                Streak maintained! Bonus points secured. Keep up the momentum tomorrow.
-            </div>
-            <button onclick="app.closeModal('celebrationModal')" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm shadow-lg shadow-emerald-600/30 transition">
+            <button onclick="app.closeModal('celebrationModal')" class="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-600/30 transition">
                 Continue Winning
             </button>
         </div>
@@ -586,9 +639,7 @@
                 if (!this.enabled) return;
                 try {
                     this.init();
-                    if (this.audioCtx.state === 'suspended') {
-                        this.audioCtx.resume();
-                    }
+                    if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
                     const now = this.audioCtx.currentTime;
                     const osc = this.audioCtx.createOscillator();
                     const gain = this.audioCtx.createGain();
@@ -635,759 +686,524 @@
         class FocusQuestApp {
             constructor() {
                 this.sound = new SoundEngine();
+                this.currentView = 'today'; // 'today', 'planner', 'all'
+                this.currentFilter = 'all'; // 'all', 'active', 'completed'
+                this.selectedCategoryId = null; // Strict category filter
+                this.sidebarCollapsed = false;
+                this.searchQuery = '';
+                this.plannerOffsetWeeks = 0;
+                
                 this.state = {
                     points: 0,
                     level: 1,
-                    tasks: [],
-                    completions: {}, // format: { "task-id_YYYY-MM-DD": true }
+                    rankTitle: 'Procrastinator',
+                    activeTheme: 'theme-midnight',
+                    activeTitle: 'Procrastinator',
+                    lastActiveDate: this.getTodayDateString(),
+                    syncCode: 'quest-' + Math.random().toString(36).substring(2, 8),
+                    tasks: [
+                        {
+                            id: 'task-1',
+                            title: 'Complete Math Assignment & Exercises',
+                            categoryId: 'cat-1',
+                            frequencyType: 'once',
+                            scheduledDate: this.getTodayDateString(),
+                            recurringDays: [],
+                            createdAt: Date.now()
+                        },
+                        {
+                            id: 'task-2',
+                            title: '30 Min Morning Workout & Stretches',
+                            categoryId: 'cat-2',
+                            frequencyType: 'recurring',
+                            scheduledDate: '',
+                            recurringDays: [1, 2, 3, 4, 5, 6, 0], // Every day
+                            createdAt: Date.now() - 10000
+                        },
+                        {
+                            id: 'task-3',
+                            title: 'Read 15 Pages of Personal Development',
+                            categoryId: 'cat-3',
+                            frequencyType: 'once',
+                            scheduledDate: this.getTodayDateString(),
+                            recurringDays: [],
+                            createdAt: Date.now() - 20000
+                        }
+                    ],
+                    completions: {}, // { "taskId_YYYY-MM-DD": true }
                     categories: [
                         { id: 'cat-1', name: 'School & Study', icon: 'fa-book-open', color: '#6366f1' },
                         { id: 'cat-2', name: 'Fitness & Health', icon: 'fa-dumbbell', color: '#10b981' },
                         { id: 'cat-3', name: 'Personal', icon: 'fa-user', color: '#f59e0b' }
                     ],
                     shopItems: [
-                        { id: 'theme-midnight', type: 'themes', name: 'Midnight Blue Theme', description: 'Deep midnight navy gradient UI design.', cost: 0, unlocked: true, value: 'theme-midnight' },
+                        { id: 'theme-midnight', type: 'themes', name: 'Midnight Blue Theme', description: 'Deep navy gradient UI design.', cost: 0, unlocked: true, value: 'theme-midnight' },
                         { id: 'theme-obsidian', type: 'themes', name: 'Obsidian Minimal', description: 'Pure sleek black minimalist interface.', cost: 25, unlocked: false, value: 'theme-obsidian' },
                         { id: 'theme-emerald', type: 'themes', name: 'Emerald Focus', description: 'Calming deep green forest tones.', cost: 45, unlocked: false, value: 'theme-emerald' },
-                        { id: 'theme-dusk', type: 'themes', name: 'Warm Dusk', description: 'Rich indigo and twilight purple aesthetic.', cost: 70, unlocked: false, value: 'theme-dusk' },
+                        { id: 'theme-dusk', type: 'themes', name: 'Warm Dusk', description: 'Twilight purple aesthetic.', cost: 70, unlocked: false, value: 'theme-dusk' },
                         { id: 'theme-sage', type: 'themes', name: 'Sage Green', description: 'Earthy organic sage backdrop.', cost: 95, unlocked: false, value: 'theme-sage' },
-                        { id: 'theme-cyber', type: 'themes', name: 'Cyber Slate', description: 'Futuristic electric blue accent scheme.', cost: 130, unlocked: false, value: 'theme-cyber' },
+                        { id: 'theme-cyber', type: 'themes', name: 'Cyber Slate', description: 'Futuristic electric blue scheme.', cost: 130, unlocked: false, value: 'theme-cyber' },
                         
-                        { id: 'badge-novice', type: 'badges', name: 'Title: Focus Novice', description: 'Your starting badge of dedication.', cost: 10, unlocked: true, value: 'Focus Novice' },
-                        { id: 'badge-master', type: 'badges', name: 'Title: Task Master', description: 'Command your daily tasks with precision.', cost: 40, unlocked: false, value: 'Task Master' },
-                        { id: 'badge-legend', type: 'badges', name: 'Title: Productivity Legend', description: 'Recognized for legendary consistency.', cost: 85, unlocked: false, value: 'Productivity Legend' },
-                        { id: 'badge-streak', type: 'badges', name: 'Title: Streak Lord', description: 'Unstoppable daily task completion streaks.', cost: 140, unlocked: false, value: 'Streak Lord' },
-                        { id: 'badge-titan', type: 'badges', name: 'Title: Focus Titan', description: 'Towering mental endurance and willpower.', cost: 210, unlocked: false, value: 'Focus Titan' },
-                        { id: 'badge-mythic', type: 'badges', name: 'Title: Mythic Achiever', description: 'The absolute pinnacle of productivity status.', cost: 300, unlocked: false, value: 'Mythic Achiever' },
+                        { id: 'badge-novice', type: 'badges', name: 'Title: Focus Novice', description: 'Your starting badge of dedication.', cost: 0, unlocked: true, value: 'Focus Novice' },
+                        { id: 'badge-master', type: 'badges', name: 'Title: Task Master', description: 'Command your daily tasks.', cost: 30, unlocked: false, value: 'Task Master' },
+                        { id: 'badge-legend', type: 'badges', name: 'Title: Productivity Legend', description: 'Legendary consistency.', cost: 75, unlocked: false, value: 'Productivity Legend' },
+                        { id: 'badge-titan', type: 'badges', name: 'Title: Focus Titan', description: 'Endurance and willpower.', cost: 150, unlocked: false, value: 'Focus Titan' },
 
-                        { id: 'perk-glow', type: 'perks', name: 'Glowing Task Borders', description: 'Adds ambient neon glow effect to active task cards.', cost: 50, unlocked: false, value: 'glow-effect' },
-                        { id: 'perk-confetti', type: 'perks', name: 'Celebration FX Boost', description: 'Enhanced celebration animations when crushing today goals.', cost: 90, unlocked: false, value: 'confetti-fx' },
-                        { id: 'perk-speed', type: 'perks', name: 'Quick-Check Accelerator', description: 'Streamlines task toggling with instant visual feedback.', cost: 150, unlocked: false, value: 'speed-fx' },
-                        { id: 'perk-shield', type: 'perks', name: 'Streak Shield Charm', description: 'Symbolic badge protecting against missed midnight penalties.', cost: 220, unlocked: false, value: 'shield-charm' },
-                        { id: 'perk-aura', type: 'perks', name: 'Productivity Aura', description: 'Surrounds your dashboard header with glowing energy.', cost: 310, unlocked: false, value: 'aura-fx' },
-                        { id: 'perk-mastery', type: 'perks', name: 'Mastery Crest', description: 'The ultimate emblem of focus mastery and dedication.', cost: 450, unlocked: false, value: 'mastery-crest' }
-                    ],
-                    activeTheme: 'theme-midnight',
-                    activeBadge: 'Focus Novice',
-                    activePerks: [],
-                    currentView: 'today',
-                    currentCategoryFilter: null,
-                    searchQuery: '',
-                    statusFilter: 'all',
-                    audioEnabled: true,
-                    plannerWeekOffset: 0,
-                    shopTab: 'themes',
-                    cloudSyncCode: '',
-                    sidebarCollapsed: false,
-                    lastPenaltyTriggeredDate: null
+                        { id: 'perk-glow', type: 'perks', name: 'Glowing Task Borders', description: 'Adds ambient neon glow effect.', cost: 50, unlocked: false, value: 'glow-effect' }
+                    ]
                 };
-                this.ranks = [
-                    { level: 1, title: 'Procrastinator' },
-                    { level: 3, title: 'Focus Novice' },
-                    { level: 7, title: 'Task Apprentice' },
-                    { level: 12, title: 'Productivity Adept' },
-                    { level: 20, title: 'Task Master' },
-                    { level: 30, title: 'Focus Titan' },
-                    { level: 45, title: 'Productivity Legend' },
-                    { level: 60, title: 'Mythic Achiever' },
-                    { level: 80, title: 'Ascended Master' }
-                ];
-                this.syncInterval = null;
-                this.isSyncing = false;
-                this.loadState();
+
+                this.init();
+            }
+
+            getTodayDateString() {
+                const today = new Date();
+                return today.toISOString().split('T')[0];
             }
 
             init() {
+                this.loadFromLocalStorage();
+                this.evaluateAutomaticMidnightPenalty();
                 this.applyTheme(this.state.activeTheme);
-                document.getElementById('audioToggle').checked = this.state.audioEnabled;
-                this.sound.enabled = this.state.audioEnabled;
-                this.updateDateBadge();
-                this.renderCategories();
-                this.renderCategorySelectOptions();
-                this.renderTasks();
-                this.updateUserInfo();
-                this.initCloudSync();
-            }
-
-            getLocalDateString(d = new Date()) {
-                const year = d.getFullYear();
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                const day = String(d.getDate()).padStart(2, '0');
-                return `${year}-${month}-${day}`;
-            }
-
-            loadState() {
-                const saved = localStorage.getItem('focusquest_state');
-                const todayStr = this.getLocalDateString();
+                this.renderAll();
+                this.setupCloudSyncPolling();
                 
-                const defaultShopItems = this.state.shopItems;
+                // Set sync display
+                const syncDisplay = document.getElementById('syncCodeDisplay');
+                if (syncDisplay) syncDisplay.value = this.state.syncCode;
 
-                if (saved) {
-                    try {
+                // Handle initial responsive sidebar state on mobile
+                if (window.innerWidth < 768) {
+                    this.sidebarCollapsed = true;
+                    this.applySidebarState();
+                }
+
+                window.addEventListener('resize', () => {
+                    // Auto-adjust layout on resize if needed
+                });
+            }
+
+            loadFromLocalStorage() {
+                try {
+                    const saved = localStorage.getItem('focusQuestData');
+                    if (saved) {
                         const parsed = JSON.parse(saved);
                         this.state = { ...this.state, ...parsed };
-                        if (!this.state.completions) this.state.completions = {};
-                        if (!this.state.activePerks) this.state.activePerks = {};
-                        if (!this.state.categories) this.state.categories = [];
-                        
-                        // Ensure categories have default color properties if missing
-                        this.state.categories.forEach((cat, idx) => {
-                            if (!cat.color) {
-                                const colors = ['#6366f1', '#10b981', '#f59e0b', '#f43f5e', '#3b82f6', '#8b5cf6'];
-                                cat.color = colors[idx % colors.length];
-                            }
-                        });
-
-                        const savedItemsMap = new Map((this.state.shopItems || []).map(i => [i.id, i]));
-                        this.state.shopItems = defaultShopItems.map(defaultItem => {
-                            const savedItem = savedItemsMap.get(defaultItem.id);
-                            if (savedItem) {
-                                return { ...defaultItem, unlocked: !!savedItem.unlocked };
-                            }
-                            return defaultItem;
-                        });
-
-                        this.state.tasks.forEach(t => {
-                            if (!t.date && !t.recurringDays) t.date = todayStr;
-                            if (!t.frequencyType) t.frequencyType = t.recurringDays && t.recurringDays.length > 0 ? 'recurring' : 'once';
-                        });
-                    } catch(e) { console.error(e); }
-                } else {
-                    this.state.tasks = [
-                        { id: 't-1', title: 'Review Calculus Chapter 4', category: 'cat-1', date: todayStr, frequencyType: 'once', recurringDays: [], completed: false },
-                        { id: 't-2', title: '30-minute Cardio Workout', category: 'cat-2', frequencyType: 'recurring', recurringDays: [1, 3, 5], completed: false },
-                        { id: 't-3', title: 'Read 20 pages of a book', category: 'cat-3', date: todayStr, frequencyType: 'once', recurringDays: [], completed: false }
-                    ];
-                    this.state.points = 2;
-                }
-
-                if (!this.state.cloudSyncCode) {
-                    this.state.cloudSyncCode = 'fq_' + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6);
-                }
-                this.saveState();
-            }
-
-            saveState() {
-                localStorage.setItem('focusquest_state', JSON.stringify(this.state));
-                this.triggerCloudPush();
-            }
-
-            toggleSidebar() {
-                this.state.sidebarCollapsed = !this.state.sidebarCollapsed;
-                const sidebar = document.getElementById('sidebar');
-                const mainContent = document.getElementById('mainContent');
-                if (this.state.sidebarCollapsed) {
-                    sidebar.classList.add('collapsed');
-                    mainContent.classList.add('expanded');
-                } else {
-                    sidebar.classList.remove('collapsed');
-                    mainContent.classList.remove('expanded');
+                    }
+                } catch (e) {
+                    console.error("Failed to load local storage", e);
                 }
             }
 
-            initCloudSync() {
-                const codeInput = document.getElementById('syncCodeDisplay');
-                if (codeInput) {
-                    codeInput.value = this.state.cloudSyncCode;
-                }
-                if (this.syncInterval) clearInterval(this.syncInterval);
-                this.syncInterval = setInterval(() => {
-                    this.pullFromCloud(false);
-                }, 10000);
-            }
-
-            generateNewSyncCode() {
-                this.state.cloudSyncCode = 'fq_' + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 6);
-                document.getElementById('syncCodeDisplay').value = this.state.cloudSyncCode;
-                this.saveState();
-                this.showToast("Generated new cloud sync key!", "success");
-            }
-
-            copySyncCode() {
-                const codeInput = document.getElementById('syncCodeDisplay');
-                if (!codeInput) return;
-                codeInput.select();
+            saveToLocalStorage() {
                 try {
-                    document.execCommand('copy');
-                    this.showToast("Cloud sync code copied to clipboard!", "success");
-                } catch(e) {
-                    this.showToast("Failed to copy code.", "error");
+                    localStorage.setItem('focusQuestData', JSON.stringify(this.state));
+                    this.triggerCloudSyncPush();
+                } catch (e) {
+                    console.error("Failed to save local storage", e);
                 }
             }
 
-            connectCloudSyncKey() {
-                const input = document.getElementById('syncCodeInput');
-                if (!input) return;
-                const newCode = input.value.trim();
-                if (!newCode || newCode.length < 5) {
-                    this.showToast("Please enter a valid sync code.", "error");
-                    return;
-                }
-                this.state.cloudSyncCode = newCode;
-                document.getElementById('syncCodeDisplay').value = newCode;
-                this.saveState();
-                this.manualCloudSync();
-                input.value = '';
-            }
+            evaluateAutomaticMidnightPenalty() {
+                const todayStr = this.getTodayDateString();
+                const lastDate = this.state.lastActiveDate;
 
-            triggerCloudPush() {
-                if (this.isSyncing || !this.state.cloudSyncCode) return;
-                const syncKey = this.state.cloudSyncCode;
-                const payload = JSON.stringify(this.state);
-                try {
-                    const storageKey = `focusquest_cloud_${syncKey}`;
-                    localStorage.setItem(storageKey, payload);
-                } catch(e) {}
-            }
-
-            pullFromCloud(showFeedback = true) {
-                if (this.isSyncing || !this.state.cloudSyncCode) return;
-                this.isSyncing = true;
-                const syncKey = this.state.cloudSyncCode;
-                try {
-                    const storageKey = `focusquest_cloud_${syncKey}`;
-                    const remoteDataStr = localStorage.getItem(storageKey);
-                    if (remoteDataStr) {
-                        const remoteState = JSON.parse(remoteDataStr);
-                        if (remoteState && remoteState.tasks && typeof remoteState.points !== 'undefined') {
-                            this.state = { ...this.state, ...remoteState };
-                            this.saveStateToLocalOnly();
-                            this.init();
-                            if (showFeedback) {
-                                this.showToast("Cloud sync successful! Data updated.", "success");
-                            }
+                if (lastDate && lastDate < todayStr) {
+                    let missedCount = 0;
+                    this.state.tasks.forEach(task => {
+                        const isScheduledForLastDate = this.isTaskScheduledForDate(task, lastDate);
+                        const isDone = !!this.state.completions[`${task.id}_${lastDate}`];
+                        if (isScheduledForLastDate && !isDone) {
+                            missedCount++;
                         }
-                    } else if (showFeedback) {
-                        this.showToast("Connected to cloud sync room.", "info");
+                    });
+
+                    if (missedCount > 0) {
+                        const penaltyPoints = missedCount * 2;
+                        this.state.points = Math.max(0, this.state.points - penaltyPoints);
+                        this.recalculateLevel();
+                        this.sound.playPenalty();
+
+                        setTimeout(() => {
+                            const detail = document.getElementById('penaltyModalDetailText');
+                            const impact = document.getElementById('penaltyScoreImpactText');
+                            if (detail) detail.textContent = `You missed ${missedCount} task(s) assigned for yesterday (${lastDate}).`;
+                            if (impact) impact.textContent = `-${penaltyPoints} Points Penalty Applied`;
+                            this.openModal('penaltyModal');
+                        }, 500);
                     }
-                } catch(e) {
-                    if (showFeedback) {
-                        this.showToast("Cloud sync check completed.", "info");
-                    }
-                } finally {
-                    this.isSyncing = false;
+
+                    this.state.lastActiveDate = todayStr;
+                    this.saveToLocalStorage();
+                } else if (!lastDate) {
+                    this.state.lastActiveDate = todayStr;
+                    this.saveToLocalStorage();
                 }
             }
 
-            manualCloudSync() {
-                this.triggerCloudPush();
-                this.pullFromCloud(true);
-            }
+            simulateMidnight() {
+                this.closeModal('debugModal');
+                const todayStr = this.getTodayDateString();
+                let missedCount = 0;
 
-            saveStateToLocalOnly() {
-                localStorage.setItem('focusquest_state', JSON.stringify(this.state));
-            }
-
-            exportBackup() {
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.state, null, 2));
-                const downloadAnchor = document.createElement('a');
-                downloadAnchor.setAttribute("href", dataStr);
-                downloadAnchor.setAttribute("download", `focusquest_backup_${this.getLocalDateString()}.json`);
-                document.body.appendChild(downloadAnchor);
-                downloadAnchor.click();
-                downloadAnchor.remove();
-                this.showToast("Backup exported successfully!", "success");
-            }
-
-            importBackup(event) {
-                const fileReader = new FileReader();
-                if (event.target.files[0]) {
-                    fileReader.readAsText(event.target.files[0], "UTF-8");
-                    fileReader.onload = (e) => {
-                        try {
-                            const imported = JSON.parse(e.target.result);
-                            if (imported && imported.tasks && typeof imported.points !== 'undefined') {
-                                this.state = { ...this.state, ...imported };
-                                this.saveState();
-                                this.init();
-                                this.showToast("Data imported successfully!", "success");
-                            } else {
-                                this.showToast("Invalid backup file structure.", "error");
-                            }
-                        } catch(err) {
-                            this.showToast("Failed to parse JSON backup file.", "error");
-                        }
-                    };
-                }
-            }
-
-            updateDateBadge() {
-                const options = { weekday: 'short', month: 'short', day: 'numeric' };
-                const dateStr = new Date().toLocaleDateString('en-US', options);
-                document.getElementById('headerDateBadge').textContent = dateStr;
-            }
-
-            addPoints(amt) {
-                this.state.points += amt;
-                if (this.state.points < 0) this.state.points = 0;
-                this.checkLevelProgression();
-                this.saveState();
-                this.updateUserInfo();
-            }
-
-            getCostForLevel(level) {
-                if (level === 1) return 10;
-                if (level === 2) return 25;
-                if (level === 3) return 50;
-                if (level === 4) return 90;
-                return Math.floor(10 * Math.pow(level, 1.5));
-            }
-
-            checkLevelProgression() {
-                let currentLevel = 1;
-                let pointsRemaining = this.state.points;
-                while (true) {
-                    let costForNext = this.getCostForLevel(currentLevel);
-                    if (pointsRemaining >= costForNext) {
-                        pointsRemaining -= costForNext;
-                        currentLevel++;
-                    } else {
-                        break;
-                    }
-                }
-
-                if (currentLevel > this.state.level) {
-                    this.state.level = currentLevel;
-                    this.showToast(`Level Up! You reached Level ${currentLevel}!`, 'success');
-                }
-            }
-
-            updateUserInfo() {
-                document.getElementById('userPointsDisplay').textContent = this.state.points;
-                const shopPointsEl = document.getElementById('shopUserPoints');
-                if (shopPointsEl) shopPointsEl.textContent = this.state.points;
-                document.getElementById('userLevelDisplay').textContent = this.state.level;
-
-                let pointsIntoLevel = this.state.points;
-                let lvl = 1;
-                while (lvl < this.state.level) {
-                    pointsIntoLevel -= this.getCostForLevel(lvl);
-                    lvl++;
-                }
-                const currentLevelNeeded = this.getCostForLevel(this.state.level);
-                const currentProgressPoints = Math.max(0, pointsIntoLevel);
-                const pct = Math.min(100, Math.max(0, (currentProgressPoints / currentLevelNeeded) * 100));
-
-                document.getElementById('levelProgressBar').style.width = `${pct}%`;
-                document.getElementById('progressText').textContent = `${currentProgressPoints} / ${currentLevelNeeded} pts to next level`;
-
-                let currentRankTitle = this.state.activeBadge || 'Procrastinator';
-                if (!this.state.activeBadge) {
-                    for (const r of this.ranks) {
-                        if (this.state.level >= r.level) currentRankTitle = r.title;
-                    }
-                }
-                document.getElementById('userRankTitle').textContent = currentRankTitle;
-            }
-
-            switchView(viewName) {
-                this.state.currentView = viewName;
-                this.state.currentCategoryFilter = null;
-                
-                document.getElementById('nav-today').className = viewName === 'today' ? 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
-                document.getElementById('nav-planner').className = viewName === 'planner' ? 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
-                document.getElementById('nav-all').className = viewName === 'all' ? 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
-
-                document.querySelectorAll('.category-nav-btn').forEach(btn => btn.classList.remove('bg-indigo-600/20', 'text-indigo-400', 'border', 'border-indigo-500/30'));
-
-                const titleEl = document.getElementById('currentViewTitle').querySelector('span');
-                const subEl = document.getElementById('currentViewSubtitle');
-                const bannerEl = document.getElementById('todayProgressBanner');
-                const plannerEl = document.getElementById('weeklyPlannerContainer');
-                const filtersAndSearchEl = document.getElementById('filtersAndSearchSection');
-
-                if (viewName === 'today') {
-                    titleEl.textContent = "Today's Focus";
-                    subEl.textContent = "Complete your active bets for today to earn points and avoid midnight penalties.";
-                    bannerEl.style.display = 'flex';
-                    plannerEl.classList.add('hidden');
-                    filtersAndSearchEl.style.display = 'flex';
-                } else if (viewName === 'planner') {
-                    titleEl.textContent = "Weekly Planner";
-                    subEl.textContent = "Schedule and organize tasks across upcoming days. Points trigger when each day arrives.";
-                    bannerEl.style.display = 'none';
-                    plannerEl.classList.remove('hidden');
-                    filtersAndSearchEl.style.display = 'none';
-                    this.renderWeeklyPlanner();
-                } else {
-                    titleEl.textContent = "All Tasks Pool";
-                    subEl.textContent = "Manage your entire task pool across all dates, recurring schedules, and categories.";
-                    bannerEl.style.display = 'none';
-                    plannerEl.classList.add('hidden');
-                    filtersAndSearchEl.style.display = 'flex';
-                }
-                this.renderTasks();
-            }
-
-            filterByCategory(catId) {
-                this.state.currentView = 'category';
-                this.state.currentCategoryFilter = catId;
-                const cat = this.state.categories.find(c => c.id === catId);
-                const titleEl = document.getElementById('currentViewTitle').querySelector('span');
-                const subEl = document.getElementById('currentViewSubtitle');
-                const bannerEl = document.getElementById('todayProgressBanner');
-                const plannerEl = document.getElementById('weeklyPlannerContainer');
-                const filtersAndSearchEl = document.getElementById('filtersAndSearchSection');
-
-                titleEl.textContent = cat ? cat.name : 'Category Tasks';
-                subEl.textContent = "Tasks strictly associated with this category.";
-                bannerEl.style.display = 'none';
-                plannerEl.classList.add('hidden');
-                filtersAndSearchEl.style.display = 'flex';
-
-                document.getElementById('nav-today').className = 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
-                document.getElementById('nav-planner').className = 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
-                document.getElementById('nav-all').className = 'w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
-
-                document.querySelectorAll('.category-nav-btn').forEach(btn => {
-                    if (btn.dataset.catid === catId) {
-                        btn.className = 'category-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30';
-                    } else {
-                        btn.className = 'category-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
+                this.state.tasks.forEach(task => {
+                    const isScheduledForToday = this.isTaskScheduledForDate(task, todayStr);
+                    const isDone = !!this.state.completions[`${task.id}_${todayStr}`];
+                    if (isScheduledForToday && !isDone) {
+                        missedCount++;
                     }
                 });
 
-                this.renderTasks();
+                if (missedCount > 0) {
+                    const penaltyPoints = missedCount * 2;
+                    this.state.points = Math.max(0, this.state.points - penaltyPoints);
+                    this.recalculateLevel();
+                    this.sound.playPenalty();
+
+                    const detail = document.getElementById('penaltyModalDetailText');
+                    const impact = document.getElementById('penaltyScoreImpactText');
+                    if (detail) detail.textContent = `Simulated Midnight: ${missedCount} task(s) left incomplete for today.`;
+                    if (impact) impact.textContent = `-${penaltyPoints} Points Penalty Applied`;
+                    this.openModal('penaltyModal');
+                } else {
+                    this.showToast('No active unfinished tasks for today!', 'info');
+                }
+
+                this.renderAll();
+                this.saveToLocalStorage();
             }
 
-            setFilter(status) {
-                this.state.statusFilter = status;
-                ['all', 'active', 'completed'].forEach(s => {
-                    const btn = document.getElementById(`filter-btn-${s}`);
-                    if (s === status) {
-                        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white transition whitespace-nowrap';
+            toggleSidebar() {
+                this.sidebarCollapsed = !this.sidebarCollapsed;
+                this.applySidebarState();
+            }
+
+            applySidebarState() {
+                const sidebar = document.getElementById('sidebar');
+                const main = document.getElementById('mainContent');
+                const overlay = document.getElementById('sidebarOverlay');
+                const floatingBtn = document.getElementById('floatingSidebarOpenBtn');
+                const isMobile = window.innerWidth < 768;
+
+                if (isMobile) {
+                    if (this.sidebarCollapsed) {
+                        sidebar.classList.remove('translate-x-0');
+                        sidebar.classList.add('-translate-x-full');
+                        if (overlay) overlay.classList.add('hidden');
+                        if (floatingBtn) floatingBtn.classList.remove('hidden');
+                        floatingBtn.style.display = 'flex';
                     } else {
-                        btn.className = 'px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap';
+                        sidebar.classList.remove('-translate-x-full');
+                        sidebar.classList.add('translate-x-0');
+                        if (overlay) overlay.classList.remove('hidden');
+                        if (floatingBtn) floatingBtn.classList.add('hidden');
+                        floatingBtn.style.display = 'none';
+                    }
+                } else {
+                    // Desktop collapsible
+                    if (this.sidebarCollapsed) {
+                        sidebar.classList.add('desktop-collapsed');
+                        if (main) main.style.marginLeft = '0px';
+                        if (overlay) overlay.classList.add('hidden');
+                        if (floatingBtn) floatingBtn.classList.remove('hidden');
+                        floatingBtn.style.display = 'flex';
+                    } else {
+                        sidebar.classList.remove('desktop-collapsed');
+                        if (main) main.style.marginLeft = '0px'; // Flexbox takes care of layout
+                        if (overlay) overlay.classList.add('hidden');
+                        if (floatingBtn) floatingBtn.classList.add('hidden');
+                        floatingBtn.style.display = 'none';
+                    }
+                }
+            }
+
+            recalculateLevel() {
+                const pts = this.state.points;
+                const level = Math.floor(pts / 10) + 1;
+                this.state.level = level;
+            }
+
+            switchView(viewId) {
+                this.currentView = viewId;
+                if (viewId !== 'category') {
+                    this.selectedCategoryId = null;
+                }
+                this.renderAll();
+                if (window.innerWidth < 768) {
+                    this.sidebarCollapsed = true;
+                    this.applySidebarState();
+                }
+            }
+
+            filterByCategory(catId) {
+                this.selectedCategoryId = catId;
+                this.renderAll();
+                if (window.innerWidth < 768) {
+                    this.sidebarCollapsed = true;
+                    this.applySidebarState();
+                }
+            }
+
+            clearCategoryFilter() {
+                this.selectedCategoryId = null;
+                this.renderAll();
+            }
+
+            setFilter(filterType) {
+                this.currentFilter = filterType;
+                ['all', 'active', 'completed'].forEach(f => {
+                    const btn = document.getElementById(`filter-btn-${f}`);
+                    if (btn) {
+                        if (f === filterType) {
+                            btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition whitespace-nowrap shadow-md shadow-indigo-600/20';
+                        } else {
+                            btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap';
+                        }
                     }
                 });
                 this.renderTasks();
             }
 
             handleSearch(query) {
-                this.state.searchQuery = query.toLowerCase();
+                this.searchQuery = query.toLowerCase().trim();
                 this.renderTasks();
             }
 
-            isTaskScheduledForDate(task, dateStr, dateObj) {
-                if (task.frequencyType === 'recurring') {
-                    if (!task.recurringDays || task.recurringDays.length === 0) return false;
-                    const dayOfWeek = dateObj.getDay();
-                    return task.recurringDays.includes(dayOfWeek);
-                } else {
-                    return task.date === dateStr;
-                }
-            }
-
-            isTaskCompletedForDate(taskId, dateStr) {
-                const key = `${taskId}_${dateStr}`;
-                const task = this.state.tasks.find(t => t.id === taskId);
-                if (!task) return false;
+            isTaskScheduledForDate(task, dateStr) {
                 if (task.frequencyType === 'once') {
-                    return !!task.completed;
+                    return task.scheduledDate === dateStr;
+                } else if (task.frequencyType === 'recurring') {
+                    const d = new Date(dateStr + 'T00:00:00');
+                    const dayOfWeek = d.getDay();
+                    return task.recurringDays && task.recurringDays.includes(dayOfWeek);
                 }
-                return !!this.state.completions[key];
+                return false;
             }
 
-            toggleTaskCompleteForDate(taskId, dateStr) {
-                const task = this.state.tasks.find(t => t.id === taskId);
-                if (!task) return;
-
-                const todayStr = this.getLocalDateString();
-                const isCurrentToday = (dateStr === todayStr);
-
+            toggleTaskCompletion(taskId, dateStr) {
                 const key = `${taskId}_${dateStr}`;
-                const currentlyCompleted = this.isTaskCompletedForDate(taskId, dateStr);
-                const newCompletedStatus = !currentlyCompleted;
-
-                if (task.frequencyType === 'once') {
-                    task.completed = newCompletedStatus;
-                } else {
-                    this.state.completions[key] = newCompletedStatus;
-                }
-
-                if (newCompletedStatus) {
-                    this.sound.playChime();
-                    if (isCurrentToday) {
-                        this.addPoints(2);
-                        this.showToast(`Completed Today's Task! +2 Points`, 'success');
-                    } else {
-                        this.showToast(`Task completed for ${dateStr}`, 'success');
-                    }
-                } else {
-                    if (isCurrentToday) {
-                        this.addPoints(-2);
-                        this.showToast(`Today's task reopened. -2 Points`, 'info');
-                    } else {
-                        this.showToast(`Task reopened for ${dateStr}`, 'info');
-                    }
-                }
-
-                this.saveState();
-                this.renderCategories();
-                this.renderTasks();
-                if (this.state.currentView === 'planner') this.renderWeeklyPlanner();
-                if (isCurrentToday) this.checkTodayCelebration();
-            }
-
-            deleteTask(id) {
-                this.state.tasks = this.state.tasks.filter(t => t.id !== id);
-                Object.keys(this.state.completions).forEach(k => {
-                    if (k.startsWith(id + '_')) delete this.state.completions[k];
-                });
-                this.saveState();
-                this.renderCategories();
-                this.renderTasks();
-                if (this.state.currentView === 'planner') this.renderWeeklyPlanner();
-                this.showToast("Task deleted", 'info');
-            }
-
-            handleFrequencyTypeChange(type) {
-                const oneTimeSec = document.getElementById('oneTimeDateSection');
-                const recurringSec = document.getElementById('recurringDaysSection');
-                const todayCbWrapper = document.getElementById('todayCheckboxWrapper');
-
-                if (type === 'recurring') {
-                    oneTimeSec.classList.add('hidden');
-                    recurringSec.classList.remove('hidden');
-                    todayCbWrapper.classList.add('hidden');
-                } else {
-                    oneTimeSec.classList.remove('hidden');
-                    recurringSec.classList.add('hidden');
-                    todayCbWrapper.classList.remove('hidden');
-                }
-            }
-
-            syncModalDateCheckbox(isChecked) {
-                if (isChecked) {
-                    document.getElementById('taskDateInput').value = this.getLocalDateString();
-                }
-            }
-
-            saveTask(event) {
-                event.preventDefault();
-                const title = document.getElementById('taskTitleInput').value.trim();
-                const category = document.getElementById('taskCategorySelect').value;
-                const frequencyType = document.getElementById('taskFrequencyTypeSelect').value;
-                const editId = document.getElementById('editTaskId').value;
-
-                if (!title) return;
-
-                let taskDate = this.getLocalDateString();
-                let recurringDays = [];
-
-                if (frequencyType === 'recurring') {
-                    const checkboxes = document.querySelectorAll('input[name="recurringDay"]:checked');
-                    checkboxes.forEach(cb => recurringDays.push(parseInt(cb.value)));
-                    if (recurringDays.length === 0) {
-                        this.showToast("Please select at least one recurring day of the week.", "error");
-                        return;
-                    }
-                } else {
-                    taskDate = document.getElementById('taskDateInput').value || this.getLocalDateString();
-                }
-
-                if (editId) {
-                    const task = this.state.tasks.find(t => t.id === editId);
-                    if (task) {
-                        task.title = title;
-                        task.category = category;
-                        task.frequencyType = frequencyType;
-                        task.date = taskDate;
-                        task.recurringDays = recurringDays;
-                    }
-                } else {
-                    const newTask = {
-                        id: 't-' + Date.now(),
-                        title,
-                        category,
-                        frequencyType,
-                        date: taskDate,
-                        recurringDays,
-                        completed: false
-                    };
-                    this.state.tasks.push(newTask);
-                }
-
-                this.saveState();
-                this.closeModal('taskModal');
-                this.renderCategories();
-                this.renderTasks();
-                if (this.state.currentView === 'planner') this.renderWeeklyPlanner();
-                this.showToast("Task saved successfully", 'success');
-            }
-
-            saveCategory(event) {
-                event.preventDefault();
-                const name = document.getElementById('categoryNameInput').value.trim();
-                const icon = document.getElementById('categoryIconInput').value.trim() || 'fa-folder';
-                const color = document.getElementById('categoryColorInput').value || '#6366f1';
-                if (!name) return;
-
-                const newCat = {
-                    id: 'cat-' + Date.now(),
-                    name,
-                    icon,
-                    color
-                };
-                this.state.categories.push(newCat);
-                this.saveState();
-                this.closeModal('categoryModal');
-                this.renderCategories();
-                this.renderCategorySelectOptions();
-                if (this.state.currentView === 'planner') this.renderWeeklyPlanner();
-                this.showToast("Category created", 'success');
-            }
-
-            checkTodayCelebration() {
-                const todayStr = this.getLocalDateString();
-                const todayObj = new Date();
-                const todayTasks = this.state.tasks.filter(t => this.isTaskScheduledForDate(t, todayStr, todayObj));
-                if (todayTasks.length > 0 && todayTasks.every(t => this.isTaskCompletedForDate(t.id, todayStr))) {
-                    this.openModal('celebrationModal');
-                }
-            }
-
-            simulateMidnight() {
-                this.closeModal('debugModal');
-                const todayStr = this.getLocalDateString();
-                const todayObj = new Date();
-                let penalizedCount = 0;
+                const isDone = !this.state.completions[key];
                 
-                this.state.tasks.forEach(t => {
-                    if (this.isTaskScheduledForDate(t, todayStr, todayObj) && !this.isTaskCompletedForDate(t.id, todayStr)) {
-                        penalizedCount++;
+                if (isDone) {
+                    this.state.completions[key] = true;
+                    if (dateStr === this.getTodayDateString()) {
+                        this.state.points += 2;
+                        this.sound.playChime();
+                        this.showToast('+2 Points Earned!', 'success');
                     }
-                });
-
-                const bannerIcon = document.getElementById('todayBannerIconWrapper');
-                const bannerContainer = document.getElementById('todayProgressBanner');
-                if (penalizedCount > 0) {
-                    const penaltyAmount = penalizedCount * 2;
-                    this.addPoints(-penaltyAmount);
-                    this.sound.playPenalty();
-
-                    // Visual Penalty Indicator (Red Highlight / Pulse on Banner)
-                    if (bannerContainer) {
-                        bannerContainer.classList.add('border-rose-500', 'bg-rose-950/40', 'animate-pulse');
-                        if (bannerIcon) bannerIcon.className = 'w-12 h-12 rounded-2xl bg-rose-600/30 border border-rose-500/50 flex items-center justify-center text-rose-400 text-xl shadow-inner';
-                        setTimeout(() => {
-                            bannerContainer.classList.remove('border-rose-500', 'bg-rose-950/40', 'animate-pulse');
-                        }, 4000);
-                    }
-
-                    this.showToast(`Midnight Reset! ${penalizedCount} uncompleted today tasks missed. -${penaltyAmount} Points penalty.`, 'error');
                 } else {
-                    this.showToast("Midnight Reset! All today tasks were completed. Clean slate!", 'success');
+                    delete this.state.completions[key];
+                    if (dateStr === this.getTodayDateString()) {
+                        this.state.points = Math.max(0, this.state.points - 2);
+                        this.showToast('-2 Points', 'info');
+                    }
                 }
 
-                this.state.lastPenaltyTriggeredDate = todayStr;
-                this.saveState();
-                this.renderCategories();
+                this.recalculateLevel();
+                this.saveToLocalStorage();
+                this.renderAll();
+
+                if (dateStr === this.getTodayDateString() && this.currentView === 'today') {
+                    const todayTasks = this.state.tasks.filter(t => this.isTaskScheduledForDate(t, dateStr));
+                    const completedToday = todayTasks.filter(t => !!this.state.completions[`${t.id}_${dateStr}`]);
+                    if (todayTasks.length > 0 && todayTasks.length === completedToday.length) {
+                        this.openModal('celebrationModal');
+                    }
+                }
+            }
+
+            renderAll() {
+                this.renderHeader();
+                this.renderSidebarLevel();
+                this.renderCategoriesList();
+                this.renderBadgesCount();
+                this.renderWeeklyPlanner();
                 this.renderTasks();
             }
 
-            changePlannerWeek(direction) {
-                this.state.plannerWeekOffset += direction;
-                this.renderWeeklyPlanner();
+            renderHeader() {
+                const titleEl = document.getElementById('currentViewTitle');
+                const subtitleEl = document.getElementById('currentViewSubtitle');
+                const headerDateBadge = document.getElementById('headerDateBadge');
+                const todayProgressBanner = document.getElementById('todayProgressBanner');
+                const weeklyPlannerContainer = document.getElementById('weeklyPlannerContainer');
+                const activeCategoryFilterBar = document.getElementById('activeCategoryFilterBar');
+
+                if (headerDateBadge) headerDateBadge.textContent = this.getTodayDateString();
+
+                if (this.currentView === 'today') {
+                    if (titleEl) titleEl.firstElementChild.textContent = "Today's Focus";
+                    if (subtitleEl) subtitleEl.textContent = "Complete active bets for today to earn points and avoid midnight penalties.";
+                    if (todayProgressBanner) todayProgressBanner.classList.remove('hidden');
+                    if (weeklyPlannerContainer) weeklyPlannerContainer.classList.add('hidden');
+                } else if (this.currentView === 'planner') {
+                    if (titleEl) titleEl.firstElementChild.textContent = "Weekly Planner";
+                    if (subtitleEl) subtitleEl.textContent = "Drag or view scheduled tasks across the entire calendar week.";
+                    if (todayProgressBanner) todayProgressBanner.classList.add('hidden');
+                    if (weeklyPlannerContainer) weeklyPlannerContainer.classList.remove('hidden');
+                } else if (this.currentView === 'all') {
+                    if (titleEl) titleEl.firstElementChild.textContent = "All Tasks Pool";
+                    if (subtitleEl) subtitleEl.textContent = "Overview of all defined tasks regardless of scheduled date.";
+                    if (todayProgressBanner) todayProgressBanner.classList.add('hidden');
+                    if (weeklyPlannerContainer) weeklyPlannerContainer.classList.add('hidden');
+                }
+
+                if (this.selectedCategoryId) {
+                    const cat = this.state.categories.find(c => c.id === this.selectedCategoryId);
+                    if (activeCategoryFilterBar && cat) {
+                        activeCategoryFilterBar.classList.remove('hidden');
+                        document.getElementById('activeCategoryFilterName').textContent = cat.name;
+                    }
+                } else {
+                    if (activeCategoryFilterBar) activeCategoryFilterBar.classList.add('hidden');
+                }
+
+                ['today', 'planner', 'all'].forEach(v => {
+                    const btn = document.getElementById(`nav-${v}`);
+                    if (btn) {
+                        if (v === this.currentView && !this.selectedCategoryId) {
+                            btn.className = 'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30';
+                        } else {
+                            btn.className = 'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
+                        }
+                    }
+                });
+            }
+
+            renderSidebarLevel() {
+                const userLevelDisplay = document.getElementById('userLevelDisplay');
+                const userPointsDisplay = document.getElementById('userPointsDisplay');
+                const levelProgressBar = document.getElementById('levelProgressBar');
+                const progressText = document.getElementById('progressText');
+                const userRankTitle = document.getElementById('userRankTitle');
+
+                if (userLevelDisplay) userLevelDisplay.textContent = this.state.level;
+                if (userPointsDisplay) userPointsDisplay.textContent = this.state.points;
+                if (userRankTitle) userRankTitle.textContent = this.state.activeTitle || 'Procrastinator';
+
+                const currentPts = this.state.points;
+                const ptsInCurrentLevel = currentPts % 10;
+                const percent = (ptsInCurrentLevel / 10) * 100;
+
+                if (levelProgressBar) levelProgressBar.style.width = `${percent}%`;
+                if (progressText) progressText.textContent = `${ptsInCurrentLevel} / 10 pts to Next Level`;
+            }
+
+            renderCategoriesList() {
+                const container = document.getElementById('categoryListContainer');
+                if (!container) return;
+
+                container.innerHTML = this.state.categories.map(cat => {
+                    const isSelected = this.selectedCategoryId === cat.id;
+                    const catTasks = this.state.tasks.filter(t => t.categoryId === cat.id);
+                    return `
+                        <button onclick="app.filterByCategory('${cat.id}')" class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition ${isSelected ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/40' : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'}">
+                            <div class="flex items-center space-x-2.5 truncate mr-2">
+                                <span class="w-3 h-3 rounded-full shadow-sm shrink-0" style="background-color: ${cat.color || '#6366f1'}"></span>
+                                <i class="fa-solid ${cat.icon || 'fa-folder'} text-[11px] shrink-0" style="color: ${cat.color || '#6366f1'}"></i>
+                                <span class="truncate">${cat.name}</span>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] bg-slate-900/80 text-slate-400 border border-slate-800 shrink-0">${catTasks.length}</span>
+                        </button>
+                    `;
+                }).join('');
+            }
+
+            renderBadgesCount() {
+                const todayStr = this.getTodayDateString();
+                const todayTasks = this.state.tasks.filter(t => this.isTaskScheduledForDate(t, todayStr));
+                const allTasks = this.state.tasks;
+
+                const todayCountBadge = document.getElementById('todayCountBadge');
+                const plannerCountBadge = document.getElementById('plannerCountBadge');
+                const allCountBadge = document.getElementById('allCountBadge');
+
+                if (todayCountBadge) todayCountBadge.textContent = todayTasks.length;
+                if (plannerCountBadge) plannerCountBadge.textContent = allTasks.length;
+                if (allCountBadge) allCountBadge.textContent = allTasks.length;
+
+                const completedToday = todayTasks.filter(t => !!this.state.completions[`${t.id}_${todayStr}`]).length;
+                const completedTodayCount = document.getElementById('completedTodayCount');
+                const totalTodayCount = document.getElementById('totalTodayCount');
+                const todayCompletionPercent = document.getElementById('todayCompletionPercent');
+
+                if (completedTodayCount) completedTodayCount.textContent = completedToday;
+                if (totalTodayCount) totalTodayCount.textContent = todayTasks.length;
+                
+                const pct = todayTasks.length > 0 ? Math.round((completedToday / todayTasks.length) * 100) : 0;
+                if (todayCompletionPercent) todayCompletionPercent.textContent = `${pct}%`;
             }
 
             renderWeeklyPlanner() {
-                const container = document.getElementById('plannerDaysGrid');
-                const labelEl = document.getElementById('plannerWeekRangeLabel');
-                const poolContainer = document.getElementById('plannerCategoryPoolsContainer');
-                if (!container || !labelEl) return;
-                
+                const grid = document.getElementById('plannerDaysGrid');
+                const categoryPools = document.getElementById('plannerCategoryPoolsContainer');
+                if (!grid) return;
+
                 const today = new Date();
+                const dayOfWeek = today.getDay();
                 const startOfWeek = new Date(today);
-                const dayOfWeek = startOfWeek.getDay();
-                const diffToMonday = startOfWeek.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1) + (this.state.plannerWeekOffset * 7);
-                startOfWeek.setDate(diffToMonday);
+                startOfWeek.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1) + (this.plannerOffsetWeeks * 7));
 
-                const weekDays = [];
+                const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                let html = '';
+
                 for (let i = 0; i < 7; i++) {
-                    const d = new Date(startOfWeek);
-                    d.setDate(startOfWeek.getDate() + i);
-                    weekDays.push(d);
-                }
+                    const currentDay = new Date(startOfWeek);
+                    currentDay.setDate(startOfWeek.getDate() + i);
+                    const dateStr = currentDay.toISOString().split('T')[0];
+                    const isToday = dateStr === this.getTodayDateString();
 
-                if (weekDays.length > 0) {
-                    const startStr = weekDays[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    const endStr = weekDays[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    labelEl.textContent = `${startStr} - ${endStr}`;
-                }
+                    const dayTasks = this.state.tasks.filter(t => this.isTaskScheduledForDate(t, dateStr));
 
-                const todayStr = this.getLocalDateString(today);
-                const hasGlow = this.state.activePerks.includes('glow-effect');
-
-                container.innerHTML = weekDays.map(dateObj => {
-                    const dateStr = this.getLocalDateString(dateObj);
-                    const isToday = (dateStr === todayStr);
-                    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-                    const monthDay = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                    
-                    const dayTasks = this.state.tasks.filter(t => this.isTaskScheduledForDate(t, dateStr, dateObj));
-                    const completedCount = dayTasks.filter(t => this.isTaskCompletedForDate(t.id, dateStr)).length;
-
-                    return `
-                        <div class="flex flex-col rounded-2xl bg-cardBg/60 border ${isToday ? 'border-indigo-500/80 shadow-lg shadow-indigo-500/20' : 'border-borderCol/60'} overflow-hidden h-96">
-                            <div class="px-4 py-3 bg-slate-900/60 border-b border-borderCol/50 flex items-center justify-between">
+                    html += `
+                        <div class="p-3 rounded-2xl bg-cardBg/60 border ${isToday ? 'border-indigo-500 shadow-lg shadow-indigo-500/10' : 'border-borderCol/60'} space-y-3 flex flex-col min-h-[160px]">
+                            <div class="flex items-center justify-between pb-2 border-b border-borderCol/40">
                                 <div>
-                                    <span class="font-bold text-sm ${isToday ? 'text-indigo-400' : 'text-slate-200'}">${dayName}</span>
-                                    <span class="text-[11px] text-slate-400 block">${monthDay}</span>
+                                    <div class="text-[10px] font-extrabold uppercase tracking-wider ${isToday ? 'text-indigo-400' : 'text-slate-400'}">${dayNames[i]}</div>
+                                    <div class="text-sm font-black ${isToday ? 'text-white' : 'text-slate-200'}">${currentDay.getDate()}</div>
                                 </div>
-                                <button onclick="app.openTaskModalForDate('${dateStr}')" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white flex items-center justify-center text-xs transition" title="Add task for this date">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
+                                ${isToday ? '<span class="text-[9px] font-extrabold bg-indigo-600 text-white px-2 py-0.5 rounded-full uppercase">Today</span>' : ''}
                             </div>
-                            <div class="flex-1 overflow-y-auto p-3 space-y-2">
-                                ${dayTasks.length === 0 ? `
-                                    <div class="h-full flex items-center justify-center text-center text-xs text-slate-500 py-8">
-                                        No tasks scheduled
-                                    </div>
-                                ` : dayTasks.map(task => {
-                                    const isComp = this.isTaskCompletedForDate(task.id, dateStr);
-                                    const cat = this.state.categories.find(c => c.id === task.category) || { color: '#6366f1' };
-                                    const glowingStyle = isToday ? `box-shadow: 0 0 10px ${cat.color}50; border-color: ${cat.color};` : '';
-                                    
+                            <div class="space-y-2 flex-1">
+                                ${dayTasks.length === 0 ? '<p class="text-[11px] text-slate-500 italic">No tasks</p>' : dayTasks.map(t => {
+                                    const cat = this.state.categories.find(c => c.id === t.categoryId);
+                                    const isDone = !!this.state.completions[`${t.id}_${dateStr}`];
                                     return `
-                                        <div class="p-2.5 rounded-xl bg-slate-900/90 border ${hasGlow && !isComp ? 'border-indigo-500/50' : 'border-slate-800'} text-xs flex items-center justify-between group" style="${glowingStyle}">
-                                            <div class="flex items-center space-x-2 truncate flex-1">
-                                                <button onclick="app.toggleTaskCompleteForDate('${task.id}', '${dateStr}')" class="w-4 h-4 rounded border ${isComp ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'border-slate-600 hover:border-indigo-500 bg-slate-900'} flex items-center justify-center text-[10px] flex-shrink-0">
-                                                    ${isComp ? '<i class="fa-solid fa-check font-bold"></i>' : ''}
-                                                </button>
-                                                <span class="truncate ${isComp ? 'line-through text-slate-500' : 'text-slate-200'}">${task.title}</span>
-                                            </div>
-                                            <button onclick="app.deleteTask('${task.id}')" class="text-slate-500 hover:text-rose-400 ml-2 hidden group-hover:block" title="Delete Task"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                        <div class="p-2 rounded-xl text-xs bg-slate-900/80 border ${isToday ? 'neon-today-card' : 'border-slate-800'} flex items-start space-x-2" style="--category-color: ${cat?.color || '#6366f1'}">
+                                            <button onclick="app.toggleTaskCompletion('${t.id}', '${dateStr}')" class="mt-0.5 text-slate-400 hover:text-emerald-400 shrink-0">
+                                                <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-400' : 'fa-regular fa-circle'}"></i>
+                                            </button>
+                                            <span class="leading-tight truncate ${isDone ? 'line-through text-slate-500' : 'text-slate-200 font-medium'}">${t.title}</span>
                                         </div>
                                     `;
                                 }).join('')}
                             </div>
-                            <div class="px-3 py-2 bg-slate-900/40 border-t border-slate-800/60 text-[10px] text-slate-400 flex justify-between">
-                                <span>${completedCount}/${dayTasks.length} Done</span>
-                                ${isToday ? '<span class="text-indigo-400 font-semibold">Today (2x Points)</span>' : '<span class="text-slate-500">Scheduled</span>'}
-                            </div>
                         </div>
                     `;
-                }).join('');
+                }
 
-                // Render Task Pool by Category Blocks Below Weekly Planner
-                if (poolContainer) {
-                    poolContainer.innerHTML = this.state.categories.map(cat => {
-                        const catTasks = this.state.tasks.filter(t => t.category === cat.id);
+                grid.innerHTML = html;
+
+                const weekEnd = new Date(startOfWeek);
+                weekEnd.setDate(startOfWeek.getDate() + 6);
+                const label = document.getElementById('plannerWeekRangeLabel');
+                if (label) label.textContent = `${startOfWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+
+                if (categoryPools) {
+                    categoryPools.innerHTML = this.state.categories.map(cat => {
+                        const catTasks = this.state.tasks.filter(t => t.categoryId === cat.id);
                         return `
-                            <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col space-y-3">
-                                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-                                    <div class="flex items-center space-x-2">
-                                        <div class="w-3 h-3 rounded-full" style="background-color: ${cat.color || '#6366f1'}"></div>
-                                        <span class="font-bold text-xs text-white">${cat.name}</span>
-                                    </div>
-                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">${catTasks.length} tasks</span>
+                            <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-2">
+                                <div class="flex items-center space-x-2 pb-2 border-b border-slate-800 truncate">
+                                    <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${cat.color}"></span>
+                                    <span class="font-bold text-xs text-white truncate">${cat.name}</span>
+                                    <span class="text-[10px] text-slate-400 shrink-0">(${catTasks.length})</span>
                                 </div>
-                                <div class="space-y-2 max-h-48 overflow-y-auto">
-                                    ${catTasks.length === 0 ? '<div class="text-[11px] text-slate-500 text-center py-3">No tasks in this category</div>' : catTasks.map(t => `
-                                        <div class="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-950/60 border border-slate-800/80">
-                                            <span class="text-slate-300 truncate">${t.title}</span>
-                                            <button onclick="app.deleteTask('${t.id}')" class="text-slate-500 hover:text-rose-400 ml-2"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                                <div class="space-y-1.5">
+                                    ${catTasks.map(ct => `
+                                        <div class="text-xs text-slate-300 flex items-center justify-between p-1.5 rounded-lg bg-slate-950/50">
+                                            <span class="truncate mr-2">${ct.title}</span>
+                                            <span class="text-[10px] text-indigo-400 font-mono shrink-0">${ct.frequencyType === 'once' ? ct.scheduledDate : 'Recurring'}</span>
                                         </div>
                                     `).join('')}
                                 </div>
@@ -1397,156 +1213,76 @@
                 }
             }
 
-            openTaskModalForDate(dateStr) {
-                document.getElementById('taskForm').reset();
-                document.getElementById('editTaskId').value = '';
-                document.getElementById('taskModalTitle').textContent = `Schedule Task for ${dateStr}`;
-                document.getElementById('taskFrequencyTypeSelect').value = 'once';
-                this.handleFrequencyTypeChange('once');
-                document.getElementById('taskDateInput').value = dateStr;
-                const todayStr = this.getLocalDateString();
-                document.getElementById('taskIsTodayInput').checked = (dateStr === todayStr);
-                this.openModal('taskModal');
-            }
-
-            renderCategories() {
-                const container = document.getElementById('categoryListContainer');
-                if (!container) return;
-                container.innerHTML = this.state.categories.map(cat => {
-                    const count = this.state.tasks.filter(t => t.category === cat.id && !t.completed).length;
-                    const isSelected = this.state.currentCategoryFilter === cat.id;
-                    const className = isSelected ? 
-                        'category-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 
-                        'category-nav-btn w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
-                    
-                    const colorDot = `<span class="w-2.5 h-2.5 rounded-full inline-block mr-2 shadow-sm" style="background-color: ${cat.color || '#6366f1'}"></span>`;
-
-                    return `
-                        <button onclick="app.filterByCategory('${cat.id}')" data-catid="${cat.id}" class="${className}">
-                            <div class="flex items-center space-x-2 truncate">
-                                ${colorDot}
-                                <div class="w-7 h-7 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center">
-                                    <i class="fa-solid ${cat.icon} text-xs"></i>
-                                </div>
-                                <span class="truncate">${cat.name}</span>
-                            </div>
-                            <span class="px-2 py-0.5 rounded-full text-xs bg-slate-800 text-slate-400 font-semibold">${count}</span>
-                        </button>
-                    `;
-                }).join('');
-            }
-
-            renderCategorySelectOptions() {
-                const select = document.getElementById('taskCategorySelect');
-                if (!select) return;
-                select.innerHTML = this.state.categories.map(cat => `
-                    <option value="${cat.id}">${cat.name}</option>
-                `).join('');
+            changePlannerWeek(delta) {
+                this.plannerOffsetWeeks += delta;
+                this.renderWeeklyPlanner();
             }
 
             renderTasks() {
                 const container = document.getElementById('taskContainer');
                 if (!container) return;
+
+                const todayStr = this.getTodayDateString();
                 let filtered = [...this.state.tasks];
-                const todayStr = this.getLocalDateString();
-                const todayObj = new Date();
 
-                // STRICT FILTER BUG FIX: When in category view, ONLY show tasks belonging strictly to that category
-                if (this.state.currentView === 'today') {
-                    filtered = filtered.filter(t => this.isTaskScheduledForDate(t, todayStr, todayObj));
-                } else if (this.state.currentView === 'category') {
-                    filtered = filtered.filter(t => t.category === this.state.currentCategoryFilter);
+                if (this.selectedCategoryId) {
+                    filtered = filtered.filter(t => t.categoryId === this.selectedCategoryId);
                 }
 
-                if (this.state.statusFilter === 'active') {
-                    filtered = filtered.filter(t => {
-                        if (this.state.currentView === 'today') {
-                            return !this.isTaskCompletedForDate(t.id, todayStr);
-                        }
-                        return !t.completed;
-                    });
-                } else if (this.state.statusFilter === 'completed') {
-                    filtered = filtered.filter(t => {
-                        if (this.state.currentView === 'today') {
-                            return this.isTaskCompletedForDate(t.id, todayStr);
-                        }
-                        return t.completed;
-                    });
+                if (this.currentView === 'today') {
+                    filtered = filtered.filter(t => this.isTaskScheduledForDate(t, todayStr));
                 }
 
-                if (this.state.searchQuery) {
-                    filtered = filtered.filter(t => t.title.toLowerCase().includes(this.state.searchQuery));
+                if (this.currentFilter === 'active') {
+                    filtered = filtered.filter(t => !this.state.completions[`${t.id}_${todayStr}`]);
+                } else if (this.currentFilter === 'completed') {
+                    filtered = filtered.filter(t => !!this.state.completions[`${t.id}_${todayStr}`]);
                 }
 
-                const todayTasksList = this.state.tasks.filter(t => this.isTaskScheduledForDate(t, todayStr, todayObj));
-                const todayTotal = todayTasksList.length;
-                const todayCompleted = todayTasksList.filter(t => this.isTaskCompletedForDate(t.id, todayStr)).length;
-                
-                document.getElementById('todayCountBadge').textContent = todayTotal;
-                document.getElementById('plannerCountBadge').textContent = this.state.tasks.length;
-                document.getElementById('allCountBadge').textContent = this.state.tasks.length;
-                document.getElementById('completedTodayCount').textContent = todayCompleted;
-                document.getElementById('totalTodayCount').textContent = todayTotal;
-                
-                const pct = todayTotal > 0 ? Math.round((todayCompleted / todayTotal) * 100) : 0;
-                document.getElementById('todayCompletionPercent').textContent = `${pct}%`;
+                if (this.searchQuery) {
+                    filtered = filtered.filter(t => t.title.toLowerCase().includes(this.searchQuery));
+                }
 
                 if (filtered.length === 0) {
                     container.innerHTML = `
-                        <div class="p-12 text-center rounded-2xl bg-cardBg/30 border border-slate-800/80 flex flex-col items-center justify-center space-y-3">
-                            <div class="w-12 h-12 rounded-2xl bg-slate-800 text-slate-500 flex items-center justify-center text-lg">
-                                <i class="fa-solid fa-clipboard-check"></i>
+                        <div class="p-12 text-center rounded-2xl bg-cardBg/30 border border-borderCol/40 space-y-3">
+                            <div class="w-12 h-12 rounded-2xl bg-slate-800 text-slate-500 flex items-center justify-center mx-auto text-xl">
+                                <i class="fa-solid fa-list-check"></i>
                             </div>
-                            <div>
-                                <h4 class="font-semibold text-slate-300 text-sm">No tasks found</h4>
-                                <p class="text-xs text-slate-500 mt-0.5">Create a new task or schedule tasks in the Weekly Planner.</p>
-                            </div>
+                            <h4 class="font-bold text-slate-300 text-sm">No Tasks Found</h4>
+                            <p class="text-xs text-slate-500">Create a task or clear filters to view your focus items.</p>
                         </div>
                     `;
                     return;
                 }
 
-                const hasGlow = this.state.activePerks.includes('glow-effect');
+                container.innerHTML = filtered.map(t => {
+                    const cat = this.state.categories.find(c => c.id === t.categoryId);
+                    const isDone = !!this.state.completions[`${t.id}_${todayStr}`];
+                    const isTodayScheduled = this.isTaskScheduledForDate(t, todayStr);
 
-                container.innerHTML = filtered.map(task => {
-                    const cat = this.state.categories.find(c => c.id === task.category) || { name: 'General', icon: 'fa-folder', color: '#6366f1' };
-                    const isTodayView = (this.state.currentView === 'today');
-                    const activeCheckDate = isTodayView ? todayStr : (task.date || todayStr);
-                    const isComp = this.isTaskCompletedForDate(task.id, activeCheckDate);
-                    const pointVal = isTodayView ? 2 : 1;
-
-                    let scheduleLabel = `Date: ${task.date || 'Recurring'}`;
-                    if (task.frequencyType === 'recurring' && task.recurringDays) {
-                        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                        const daysStr = task.recurringDays.map(d => dayNames[d]).join(', ');
-                        scheduleLabel = `Repeats: ${daysStr}`;
-                    }
-
-                    const badgeStyle = `border-left: 4px solid ${cat.color || '#6366f1'};`;
-                    
                     return `
-                        <div class="group flex items-center justify-between p-4 rounded-2xl bg-cardBg/60 hover:bg-cardBg border ${hasGlow && !isComp ? 'border-indigo-500/50 shadow-md shadow-indigo-500/10' : 'border-borderCol/60'} hover:border-slate-700 transition shadow-sm" style="${badgeStyle}">
-                            <div class="flex items-center space-x-4 min-w-0 flex-1">
-                                <button onclick="app.toggleTaskCompleteForDate('${task.id}', '${activeCheckDate}')" class="w-6 h-6 rounded-lg border ${isComp ? 'bg-emerald-500 border-emerald-500 text-slate-950' : 'border-slate-600 hover:border-indigo-500 bg-slate-900'} flex items-center justify-center transition flex-shrink-0">
-                                    ${isComp ? '<i class="fa-solid fa-check text-xs font-bold"></i>' : ''}
+                        <div class="p-4 rounded-2xl bg-cardBg/80 border ${isTodayScheduled ? 'neon-today-card' : 'border-borderCol/60'} shadow-md flex items-center justify-between gap-3 transition hover:border-slate-600" style="--category-color: ${cat?.color || '#6366f1'}">
+                            <div class="flex items-center space-x-3.5 flex-1 min-w-0">
+                                <button onclick="app.toggleTaskCompletion('${t.id}', '${todayStr}')" class="text-xl transition transform active:scale-90 shrink-0">
+                                    <i class="${isDone ? 'fa-solid fa-circle-check text-emerald-400' : 'fa-regular fa-circle text-slate-500 hover:text-slate-300'}"></i>
                                 </button>
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex items-center space-x-2">
-                                        <h4 class="font-medium text-sm text-slate-200 truncate ${isComp ? 'line-through text-slate-500' : ''}">${task.title}</h4>
-                                        <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 font-medium">${task.frequencyType === 'recurring' ? 'Recurring' : 'One-time'}</span>
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                                        <span class="text-xs font-bold px-2.5 py-0.5 rounded-full text-white border border-white/10 truncate max-w-[150px]" style="background-color: ${cat?.color || '#6366f1'}">
+                                            <i class="fa-solid ${cat?.icon || 'fa-folder'} text-[10px] mr-1"></i> ${cat?.name || 'General'}
+                                        </span>
+                                        ${t.frequencyType === 'recurring' ? '<span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20"><i class="fa-solid fa-repeat mr-1"></i> Recurring</span>' : ''}
                                     </div>
-                                    <div class="flex items-center space-x-3 mt-1 text-xs text-slate-400">
-                                        <span class="flex items-center space-x-1" style="color: ${cat.color || '#6366f1'}"><i class="fa-solid ${cat.icon} text-[10px]"></i><span>${cat.name}</span></span>
-                                        <span>•</span>
-                                        <span class="text-slate-400"><i class="fa-regular fa-calendar mr-1"></i>${scheduleLabel}</span>
-                                        <span>•</span>
-                                        <span class="text-indigo-400 font-medium">+${pointVal} pts</span>
-                                    </div>
+                                    <h4 class="font-bold text-sm mt-1.5 truncate ${isDone ? 'line-through text-slate-500' : 'text-white'}">${t.title}</h4>
                                 </div>
                             </div>
-                            <div class="flex items-center space-x-2 ml-4 flex-shrink-0">
-                                <button onclick="app.deleteTask('${task.id}')" title="Delete Task" class="p-2 rounded-xl bg-slate-800/60 text-slate-400 hover:text-rose-400 transition text-xs">
-                                    <i class="fa-solid fa-trash"></i>
+                            <div class="flex items-center space-x-1 shrink-0">
+                                <button onclick="app.openEditTaskModal('${t.id}')" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                                    <i class="fa-solid fa-pen text-xs"></i>
+                                </button>
+                                <button onclick="app.deleteTask('${t.id}')" class="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition">
+                                    <i class="fa-solid fa-trash text-xs"></i>
                                 </button>
                             </div>
                         </div>
@@ -1554,58 +1290,184 @@
                 }).join('');
             }
 
-            switchShopTab(tabName) {
-                this.state.shopTab = tabName;
-                ['themes', 'badges', 'perks'].forEach(t => {
-                    const btn = document.getElementById(`shop-tab-${t}`);
-                    if (!btn) return;
-                    if (t === tabName) {
-                        btn.className = 'pb-2 text-xs font-semibold border-b-2 border-indigo-500 text-indigo-400';
-                    } else {
-                        btn.className = 'pb-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200';
+            openModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    if (modalId === 'taskModal') {
+                        this.populateCategorySelect();
+                        document.getElementById('taskForm').reset();
+                        document.getElementById('editTaskId').value = '';
+                        document.getElementById('taskModalTitle').textContent = 'Create New Task';
+                        document.getElementById('taskDateInput').value = this.getTodayDateString();
+                    } else if (modalId === 'shopModal') {
+                        this.renderShop();
                     }
-                });
-                this.renderShop();
+                }
             }
 
-            renderShop() {
-                const container = document.getElementById('shopItemsContainer');
-                if (!container) return;
-                
-                const currentTab = this.state.shopTab || 'themes';
-                const items = (this.state.shopItems || []).filter(i => i.type === currentTab);
+            closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) modal.classList.add('hidden');
+            }
 
-                if (items.length === 0) {
-                    container.innerHTML = `
-                        <div class="p-8 text-center text-slate-400 text-xs">No items found in this category.</div>
-                    `;
-                    return;
+            populateCategorySelect() {
+                const select = document.getElementById('taskCategorySelect');
+                if (!select) return;
+                select.innerHTML = this.state.categories.map(c => `
+                    <option value="${c.id}">${c.name}</option>
+                `).join('');
+            }
+
+            handleFrequencyTypeChange(type) {
+                const oneTimeSec = document.getElementById('oneTimeDateSection');
+                const recurringSec = document.getElementById('recurringDaysSection');
+                if (type === 'recurring') {
+                    oneTimeSec.classList.add('hidden');
+                    recurringSec.classList.remove('hidden');
+                } else {
+                    oneTimeSec.classList.remove('hidden');
+                    recurringSec.classList.add('hidden');
                 }
+            }
+
+            syncModalDateCheckbox(checked) {
+                const dateInput = document.getElementById('taskDateInput');
+                if (checked && dateInput) {
+                    dateInput.value = this.getTodayDateString();
+                }
+            }
+
+            saveTask(event) {
+                event.preventDefault();
+                const editId = document.getElementById('editTaskId').value;
+                const title = document.getElementById('taskTitleInput').value.trim();
+                const categoryId = document.getElementById('taskCategorySelect').value;
+                const frequencyType = document.getElementById('taskFrequencyTypeSelect').value;
+                const scheduledDate = document.getElementById('taskDateInput').value;
+
+                const recurringDays = [];
+                if (frequencyType === 'recurring') {
+                    document.querySelectorAll('input[name="recurringDay"]:checked').forEach(cb => {
+                        recurringDays.push(parseInt(cb.value));
+                    });
+                }
+
+                if (editId) {
+                    const idx = this.state.tasks.findIndex(t => t.id === editId);
+                    if (idx !== -1) {
+                        this.state.tasks[idx] = {
+                            ...this.state.tasks[idx],
+                            title, categoryId, frequencyType, scheduledDate, recurringDays
+                        };
+                    }
+                } else {
+                    const newTask = {
+                        id: 'task-' + Date.now(),
+                        title, categoryId, frequencyType, scheduledDate, recurringDays,
+                        createdAt: Date.now()
+                    };
+                    this.state.tasks.unshift(newTask);
+                }
+
+                this.saveToLocalStorage();
+                this.renderAll();
+                this.closeModal('taskModal');
+                this.showToast('Task saved successfully!', 'success');
+            }
+
+            openEditTaskModal(taskId) {
+                const task = this.state.tasks.find(t => t.id === taskId);
+                if (!task) return;
+
+                this.openModal('taskModal');
+                document.getElementById('editTaskId').value = task.id;
+                document.getElementById('taskTitleInput').value = task.title;
+                document.getElementById('taskCategorySelect').value = task.categoryId;
+                document.getElementById('taskFrequencyTypeSelect').value = task.frequencyType;
+                document.getElementById('taskModalTitle').textContent = 'Edit Task';
+
+                this.handleFrequencyTypeChange(task.frequencyType);
+
+                if (task.frequencyType === 'once') {
+                    document.getElementById('taskDateInput').value = task.scheduledDate || this.getTodayDateString();
+                } else if (task.frequencyType === 'recurring') {
+                    document.querySelectorAll('input[name="recurringDay"]').forEach(cb => {
+                        cb.checked = task.recurringDays && task.recurringDays.includes(parseInt(cb.value));
+                    });
+                }
+            }
+
+            deleteTask(taskId) {
+                this.state.tasks = this.state.tasks.filter(t => t.id !== taskId);
+                this.saveToLocalStorage();
+                this.renderAll();
+                this.showToast('Task deleted', 'info');
+            }
+
+            saveCategory(event) {
+                event.preventDefault();
+                const name = document.getElementById('categoryNameInput').value.trim();
+                const icon = document.getElementById('categoryIconInput').value.trim() || 'fa-folder';
+                const color = document.getElementById('categoryColorInput').value;
+
+                const newCat = {
+                    id: 'cat-' + Date.now(),
+                    name, icon, color
+                };
+
+                this.state.categories.push(newCat);
+                this.saveToLocalStorage();
+                this.renderAll();
+                this.closeModal('categoryModal');
+                this.showToast('Category created!', 'success');
+            }
+
+            switchShopTab(tab) {
+                ['themes', 'badges', 'perks'].forEach(t => {
+                    const btn = document.getElementById(`shop-tab-${t}`);
+                    if (btn) {
+                        if (t === tab) {
+                            btn.className = 'pb-2 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 whitespace-nowrap';
+                        } else {
+                            btn.className = 'pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap';
+                        }
+                    }
+                });
+                this.renderShop(tab);
+            }
+
+            renderShop(tab = 'themes') {
+                const container = document.getElementById('shopItemsContainer');
+                const ptsEl = document.getElementById('shopUserPoints');
+                if (ptsEl) ptsEl.textContent = this.state.points;
+                if (!container) return;
+
+                const items = this.state.shopItems.filter(i => i.type === tab);
 
                 container.innerHTML = items.map(item => {
                     const canAfford = this.state.points >= item.cost;
                     const isUnlocked = item.unlocked;
-
-                    let btnHtml = '';
-                    if (isUnlocked) {
-                        let isActive = false;
-                        if (item.type === 'themes') isActive = (this.state.activeTheme === item.value);
-                        else if (item.type === 'badges') isActive = (this.state.activeBadge === item.value);
-                        else if (item.type === 'perks') isActive = (this.state.activePerks.includes(item.value));
-
-                        btnHtml = `<button onclick="app.equipShopItem('${item.id}')" class="px-4 py-2 rounded-xl text-xs font-semibold ${isActive ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'} transition">${isActive ? 'Equipped' : (item.type === 'perks' ? 'Toggle' : 'Equip')}</button>`;
-                    } else {
-                        btnHtml = `<button onclick="app.buyShopItem('${item.id}')" ${!canAfford ? 'disabled' : ''} class="px-4 py-2 rounded-xl text-xs font-semibold ${canAfford ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20' : 'bg-slate-800 text-slate-600 cursor-not-allowed'} transition">Buy (${item.cost} pts)</button>`;
-                    }
+                    const isActive = (item.type === 'themes' && this.state.activeTheme === item.value) ||
+                                     (item.type === 'badges' && this.state.activeTitle === item.value);
 
                     return `
-                        <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition">
-                            <div class="pr-4">
-                                <h4 class="font-medium text-sm text-white">${item.name}</h4>
-                                <p class="text-xs text-slate-400 mt-0.5">${item.description}</p>
-                                <span class="inline-block mt-2 text-[10px] text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20"><i class="fa-solid fa-coins mr-1"></i>${item.cost} points</span>
+                        <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between gap-4">
+                            <div class="min-w-0 mr-2">
+                                <h4 class="font-extrabold text-sm text-white truncate">${item.name}</h4>
+                                <p class="text-xs text-slate-400 mt-0.5 line-clamp-2">${item.description}</p>
                             </div>
-                            <div class="flex-shrink-0">${btnHtml}</div>
+                            <div class="shrink-0">
+                                ${isUnlocked ? `
+                                    <button onclick="app.equipShopItem('${item.id}')" class="px-4 py-2 rounded-xl ${isActive ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:text-white'} text-xs font-bold transition whitespace-nowrap">
+                                        ${isActive ? 'Equipped' : 'Equip'}
+                                    </button>
+                                ` : `
+                                    <button onclick="app.buyShopItem('${item.id}')" ${!canAfford ? 'disabled' : ''} class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:opacity-40 text-slate-950 font-black text-xs shadow-md shadow-amber-500/20 transition whitespace-nowrap">
+                                        ${item.cost} pts
+                                    </button>
+                                `}
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -1613,14 +1475,11 @@
 
             buyShopItem(itemId) {
                 const item = this.state.shopItems.find(i => i.id === itemId);
-                if (!item || item.unlocked || this.state.points < item.cost) return;
+                if (!item || this.state.points < item.cost) return;
 
                 this.state.points -= item.cost;
                 item.unlocked = true;
                 this.equipShopItem(itemId);
-                this.saveState();
-                this.renderShop();
-                this.updateUserInfo();
                 this.sound.playChime();
                 this.showToast(`Unlocked ${item.name}!`, 'success');
             }
@@ -1633,86 +1492,159 @@
                     this.state.activeTheme = item.value;
                     this.applyTheme(item.value);
                 } else if (item.type === 'badges') {
-                    this.state.activeBadge = item.value;
-                    this.updateUserInfo();
-                } else if (item.type === 'perks') {
-                    if (this.state.activePerks.includes(item.value)) {
-                        this.state.activePerks = this.state.activePerks.filter(p => p !== item.value);
-                    } else {
-                        this.state.activePerks.push(item.value);
+                    this.state.activeTitle = item.value;
+                }
+
+                this.saveToLocalStorage();
+                this.renderAll();
+                this.renderShop(item.type);
+            }
+
+            applyTheme(themeClass) {
+                document.body.className = `${themeClass} bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white`;
+            }
+
+            setupCloudSyncPolling() {
+                setInterval(() => {
+                    this.triggerCloudSyncPull();
+                }, 15000);
+            }
+
+            async triggerCloudSyncPush() {
+                const code = this.state.syncCode;
+                if (!code) return;
+
+                try {
+                    const response = await fetch(`https://api.jsonbin.io/v3/b/${encodeURIComponent(code)}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Master-Key': '$2a$10$v0sX5/U.9R8GkPjJ9ZgW5e2N1g2c3d4e5f6g7h8i9j0'
+                        },
+                        body: JSON.stringify(this.state)
+                    });
+                    this.updateCloudStatus(true);
+                } catch (e) {
+                    this.updateCloudStatus(false);
+                }
+            }
+
+            async triggerCloudSyncPull() {
+                const code = this.state.syncCode;
+                if (!code) return;
+
+                try {
+                    const response = await fetch(`https://api.jsonbin.io/v3/b/${encodeURIComponent(code)}/latest`, {
+                        headers: {
+                            'X-Master-Key': '$2a$10$v0sX5/U.9R8GkPjJ9ZgW5e2N1g2c3d4e5f6g7h8i9j0'
+                        }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.record) {
+                            this.state = { ...this.state, ...data.record };
+                            this.applyTheme(this.state.activeTheme);
+                            this.renderAll();
+                            this.updateCloudStatus(true);
+                        }
                     }
-                }
-                this.saveState();
-                this.renderShop();
-                this.renderTasks();
-                if (this.state.currentView === 'planner') this.renderWeeklyPlanner();
-                this.showToast(`Updated equipment: ${item.name}`, 'info');
-            }
-
-            applyTheme(themeName) {
-                document.body.className = `${themeName} bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white`;
-            }
-
-            toggleAudio(enabled) {
-                this.state.audioEnabled = enabled;
-                this.sound.enabled = enabled;
-                this.saveState();
-            }
-
-            resetData() {
-                if (confirm("Are you sure you want to reset all data and points?")) {
-                    localStorage.removeItem('focusquest_state');
-                    location.reload();
+                } catch (e) {
+                    this.updateCloudStatus(false);
                 }
             }
 
-            openModal(modalId) {
-                if (modalId === 'shopModal') {
-                    this.renderShop();
-                }
-                if (modalId === 'settingsModal') {
-                    const codeInput = document.getElementById('syncCodeDisplay');
-                    if (codeInput) codeInput.value = this.state.cloudSyncCode;
-                }
-                if (modalId === 'taskModal' && !document.getElementById('editTaskId').value) {
-                    document.getElementById('taskForm').reset();
-                    document.getElementById('taskFrequencyTypeSelect').value = 'once';
-                    this.handleFrequencyTypeChange('once');
-                    document.getElementById('taskDateInput').value = this.getLocalDateString();
-                    document.getElementById('taskIsTodayInput').checked = true;
-                    document.getElementById('taskModalTitle').textContent = "Create New Task";
-                }
-                document.getElementById(modalId).classList.remove('hidden');
+            manualCloudSync() {
+                this.triggerCloudSyncPush();
+                this.showToast('Cloud Sync triggered!', 'info');
             }
 
-            closeModal(modalId) {
-                document.getElementById(modalId).classList.add('hidden');
+            applySyncCodeInput() {
+                const input = document.getElementById('syncCodeDisplay');
+                if (input && input.value.trim()) {
+                    this.state.syncCode = input.value.trim();
+                    this.saveToLocalStorage();
+                    this.triggerCloudSyncPull();
+                    this.showToast(`Sync Code updated to: ${this.state.syncCode}`, 'success');
+                }
+            }
+
+            copySyncCode() {
+                const input = document.getElementById('syncCodeDisplay');
+                if (input) {
+                    document.execCommand('copy');
+                    this.showToast('Sync Code copied to clipboard!', 'info');
+                }
+            }
+
+            updateCloudStatus(online) {
+                const label = document.getElementById('cloudSyncStatusLabel');
+                const text = document.getElementById('cloudStatusText');
+                if (online) {
+                    if (label) label.className = 'text-[11px] text-emerald-400 font-medium flex items-center space-x-1.5';
+                    if (text) text.textContent = 'Synced';
+                } else {
+                    if (label) label.className = 'text-[11px] text-amber-400 font-medium flex items-center space-x-1.5';
+                    if (text) text.textContent = 'Offline';
+                }
             }
 
             showToast(message, type = 'info') {
                 const container = document.getElementById('toastContainer');
                 if (!container) return;
+
                 const toast = document.createElement('div');
-                const bgCol = type === 'success' ? 'bg-emerald-600/90 border-emerald-500 text-white' : type === 'error' ? 'bg-rose-600/90 border-rose-500 text-white' : 'bg-slate-800/90 border-slate-700 text-slate-200';
-                
-                toast.className = `px-4 py-3 rounded-xl border ${bgCol} shadow-xl backdrop-blur-md text-xs font-medium flex items-center space-x-2 animate-in slide-in-from-bottom-5 duration-300 pointer-events-auto`;
+                toast.className = `px-4 py-3 rounded-2xl text-xs font-bold text-white shadow-2xl flex items-center space-x-2 animate-in slide-in-from-bottom-5 duration-200 pointer-events-auto ${type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-indigo-600'}`;
                 toast.innerHTML = `
-                    <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-info'} text-sm"></i>
+                    <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}"></i>
                     <span>${message}</span>
                 `;
+
                 container.appendChild(toast);
                 setTimeout(() => {
-                    toast.style.opacity = '0';
-                    toast.style.transition = 'opacity 0.3s ease';
-                    setTimeout(() => toast.remove(), 300);
+                    toast.remove();
                 }, 3000);
+            }
+
+            toggleAudio(enabled) {
+                this.sound.enabled = enabled;
+            }
+
+            exportBackup() {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(this.state, null, 2));
+                const anchor = document.createElement('a');
+                anchor.setAttribute("href", dataStr);
+                anchor.setAttribute("download", `focusquest_backup_${this.getTodayDateString()}.json`);
+                anchor.click();
+            }
+
+            importBackup(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        this.state = { ...this.state, ...imported };
+                        this.saveToLocalStorage();
+                        this.renderAll();
+                        this.closeModal('settingsModal');
+                        this.showToast('Backup imported successfully!', 'success');
+                    } catch (err) {
+                        this.showToast('Invalid JSON file', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            resetData() {
+                localStorage.removeItem('focusQuestData');
+                location.reload();
             }
         }
 
-        let app;
         window.onload = function() {
-            app = new FocusQuestApp();
-            app.init();
+            window.app = new FocusQuestApp();
         };
     </script>
 </body>
