@@ -252,7 +252,7 @@
                         </div>
                         <div>
                             <h3 class="font-extrabold text-sm sm:text-base text-white">Daily Bet Active</h3>
-                            <p class="text-xs text-slate-300 mt-0.5">Tasks scheduled for today earn <span class="text-emerald-400 font-bold">+2 Points</span> upon completion. Unfinished tasks deduct <span class="text-rose-400 font-bold">-2 Points</span> automatically at midnight.</p>
+                            <p class="text-xs text-slate-300 mt-0.5">Tasks scheduled for today earn <span class="text-emerald-400 font-bold">+2 Points</span> upon completion. Early/extra completions earn <span class="text-indigo-400 font-bold">+1 Point</span> bonus.</p>
                         </div>
                     </div>
                     <div class="flex items-center justify-between sm:justify-start space-x-3 bg-slate-950/70 px-4 py-2.5 rounded-xl border border-slate-800 shrink-0">
@@ -366,7 +366,7 @@
                 <div id="oneTimeDateSection">
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Scheduled Date</label>
                     <input type="date" id="taskDateInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
-                    <p class="text-[11px] text-slate-400 mt-1">Points (+2 gain / -2 penalty) apply when this scheduled date arrives as Today.</p>
+                    <p class="text-[11px] text-slate-400 mt-1">Scheduled tasks earn +2 pts (or -2 penalty at midnight). Completing early/extra earns +1 pt.</p>
                 </div>
 
                 <!-- Recurring Days Multi-Select Section -->
@@ -576,7 +576,7 @@
             </div>
             <div>
                 <h3 class="font-extrabold text-base text-white">Simulate Midnight Evaluation</h3>
-                <p class="text-xs text-slate-400 mt-1">Triggers midnight evaluation: uncompleted tasks scheduled for today will deduct -2 points each with visual penalty indicators!</p>
+                <p class="text-xs text-slate-400 mt-1">Triggers midnight evaluation: uncompleted mandatory tasks scheduled for today will deduct -2 points each!</p>
             </div>
             <div class="flex space-x-3 pt-2">
                 <button onclick="app.closeModal('debugModal')" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-sm font-semibold">Cancel</button>
@@ -825,7 +825,7 @@
                         setTimeout(() => {
                             const detail = document.getElementById('penaltyModalDetailText');
                             const impact = document.getElementById('penaltyScoreImpactText');
-                            if (detail) detail.textContent = `You missed ${missedCount} task(s) assigned for yesterday (${lastDate}).`;
+                            if (detail) detail.textContent = `You missed ${missedCount} mandatory task(s) assigned for yesterday (${lastDate}).`;
                             if (impact) impact.textContent = `-${penaltyPoints} Points Penalty Applied`;
                             this.openModal('penaltyModal');
                         }, 500);
@@ -860,11 +860,11 @@
 
                     const detail = document.getElementById('penaltyModalDetailText');
                     const impact = document.getElementById('penaltyScoreImpactText');
-                    if (detail) detail.textContent = `Simulated Midnight: ${missedCount} task(s) left incomplete for today.`;
+                    if (detail) detail.textContent = `Simulated Midnight: ${missedCount} mandatory task(s) left incomplete for today.`;
                     if (impact) impact.textContent = `-${penaltyPoints} Points Penalty Applied`;
                     this.openModal('penaltyModal');
                 } else {
-                    this.showToast('No active unfinished tasks for today!', 'info');
+                    this.showToast('No active unfinished scheduled tasks for today!', 'info');
                 }
 
                 this.renderAll();
@@ -981,19 +981,30 @@
             toggleTaskCompletion(taskId, dateStr) {
                 const key = `${taskId}_${dateStr}`;
                 const isDone = !this.state.completions[key];
+                const task = this.state.tasks.find(t => t.id === taskId);
+                const isScheduledForDate = task ? this.isTaskScheduledForDate(task, dateStr) : false;
                 
                 if (isDone) {
                     this.state.completions[key] = true;
-                    if (dateStr === this.getTodayDateString()) {
+                    if (isScheduledForDate) {
+                        // Mandatory task scheduled for today/target date
                         this.state.points += 2;
                         this.sound.playChime();
-                        this.showToast('+2 Points Earned!', 'success');
+                        this.showToast('+2 Points Earned (Mandatory Task)!', 'success');
+                    } else {
+                        // Extra / Early task completed
+                        this.state.points += 1;
+                        this.sound.playChime();
+                        this.showToast('+1 Point Bonus (Extra/Early Task)!', 'success');
                     }
                 } else {
                     delete this.state.completions[key];
-                    if (dateStr === this.getTodayDateString()) {
+                    if (isScheduledForDate) {
                         this.state.points = Math.max(0, this.state.points - 2);
                         this.showToast('-2 Points', 'info');
+                    } else {
+                        this.state.points = Math.max(0, this.state.points - 1);
+                        this.showToast('-1 Point', 'info');
                     }
                 }
 
@@ -1271,6 +1282,7 @@
                                             <i class="fa-solid ${cat?.icon || 'fa-folder'} text-[10px] mr-1"></i> ${cat?.name || 'General'}
                                         </span>
                                         ${t.frequencyType === 'recurring' ? '<span class="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20"><i class="fa-solid fa-repeat mr-1"></i> Recurring</span>' : ''}
+                                        ${!isTodayScheduled ? '<span class="text-[10px] font-bold text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20"><i class="fa-solid fa-star mr-1"></i> Bonus (+1 Pt)</span>' : ''}
                                     </div>
                                     <h4 class="font-bold text-sm mt-1.5 truncate ${isDone ? 'line-through text-slate-500' : 'text-white'}">${t.title}</h4>
                                 </div>
