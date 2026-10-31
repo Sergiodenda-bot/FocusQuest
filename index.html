@@ -168,7 +168,7 @@
                 <div id="levelProgressBar" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-full rounded-full transition-all duration-500 shadow-md" style="width: 0%"></div>
             </div>
             <div class="flex justify-between items-center mt-2.5 text-[11px] text-slate-300 font-medium">
-                <span id="progressText" class="font-semibold text-indigo-200">0 / 10 pts to next level</span>
+                <span id="progressText" class="font-semibold text-indigo-200">0 / 20 pts to next level</span>
                 <button onclick="app.openModal('debugModal')" class="text-rose-400 hover:text-rose-300 underline font-semibold transition">Simulate Midnight</button>
             </div>
         </div>
@@ -887,6 +887,11 @@ class FocusQuestApp {
         if (storedCats) this.categories = JSON.parse(storedCats);
         if (storedUser) this.user = { ...this.user, ...JSON.parse(storedUser) };
 
+        // Ensure completionHistory is initialized on all tasks
+        this.tasks.forEach(t => {
+            if (!t.completionHistory) t.completionHistory = {};
+        });
+
         // Apply theme saved in user
         if (this.user.activeTheme) {
             document.body.className = `${this.user.activeTheme} bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
@@ -917,9 +922,28 @@ class FocusQuestApp {
         return false;
     }
 
-    /* Midnight Auto Settlement Mechanics */
+    isTaskCompletedOnDate(task, dateISO) {
+        if (!dateISO) dateISO = this.getTodayISO();
+        if (task.completionHistory && task.completionHistory[dateISO] !== undefined) {
+            return task.completionHistory[dateISO];
+        }
+        if (dateISO === this.getTodayISO()) {
+            return !!task.completed;
+        }
+        return false;
+    }
+
+    /* Midnight Auto Settlement Mechanics & Reset Daily Recurring Tasks */
     checkMidnightAutoSettlement() {
         const todayStr = this.getTodayISO();
+        
+        // Reset daily recurring tasks if completed on a previous day
+        this.tasks.forEach(task => {
+            if (task.frequencyType === 'recurring' && task.completed && task.lastCompletedDate !== todayStr) {
+                task.completed = false;
+            }
+        });
+
         if (this.user.lastSettlementDate !== todayStr) {
             // Check if there was a previous settlement date recorded
             if (this.user.lastSettlementDate) {
@@ -936,7 +960,7 @@ class FocusQuestApp {
 
         this.tasks.forEach(task => {
             // Uncompleted tasks assigned for today
-            if (task.isToday && !task.completed) {
+            if (task.isToday && !this.isTaskCompletedOnDate(task, this.getTodayISO())) {
                 penalties += 2;
                 task.isToday = false; // Uncheck Today's Focus
                 
@@ -1168,6 +1192,8 @@ class FocusQuestApp {
                 recurringDays,
                 isToday,
                 completed: false,
+                lastCompletedDate: null,
+                completionHistory: {},
                 favorite: false,
                 createdAt: Date.now()
             };
@@ -1207,21 +1233,31 @@ class FocusQuestApp {
         this.openModal('taskModal');
     }
 
-    toggleTaskComplete(taskId) {
+    toggleTaskComplete(taskId, dateISO) {
         const task = this.tasks.find(t => t.id === taskId);
         if (!task) return;
 
-        task.completed = !task.completed;
+        if (!dateISO) dateISO = this.getTodayISO();
+        if (!task.completionHistory) task.completionHistory = {};
 
-        // Points logic
-        if (task.completed) {
-            const isTodayBet = this.isTaskScheduledForToday(task);
+        const isCurrentlyCompleted = this.isTaskCompletedOnDate(task, dateISO);
+        const nextState = !isCurrentlyCompleted;
+
+        task.completionHistory[dateISO] = nextState;
+
+        if (dateISO === this.getTodayISO()) {
+            task.completed = nextState;
+        }
+
+        if (nextState) {
+            task.lastCompletedDate = dateISO;
+            const isTodayBet = (dateISO === this.getTodayISO()) && this.isTaskScheduledForToday(task);
             const pointsEarned = isTodayBet ? 2 : 1;
             this.user.points += pointsEarned;
             this.user.xp += pointsEarned * 10;
             this.playChime();
         } else {
-            const isTodayBet = this.isTaskScheduledForToday(task);
+            const isTodayBet = (dateISO === this.getTodayISO()) && this.isTaskScheduledForToday(task);
             const pointsDeducted = isTodayBet ? 2 : 1;
             this.user.points = Math.max(0, this.user.points - pointsDeducted);
             this.user.xp = Math.max(0, this.user.xp - pointsDeducted * 10);
@@ -1287,10 +1323,33 @@ class FocusQuestApp {
     }
 
     /* Level & Ranking Computations */
+    getLevelThresholds(level) {
+        // Progressive thresholds starting at Level 1 -> Level 2 = 20 pts
+        // Level 1: 0 to 20 pts
+        // Level 2: 20 to 50 pts (+30 pts)
+        // Level 3: 50 to 90 pts (+40 pts)
+        // Level L: start = 20*(L-1) + 10*(L-1)*(L-2)/2
+        const getStartForLevel = (l) => {
+            if (l <= 1) return 0;
+            const n = l - 1;
+            return 20 * n + (10 * n * (n - 1)) / 2;
+        };
+        const start = getStartForLevel(level);
+        const end = getStartForLevel(level + 1);
+        return { start, end, range: end - start };
+    }
+
     calculateLevelProgress() {
-        // Level formula: level = Math.floor(xp / 50) + 1
-        const newLevel = Math.floor(this.user.xp / 50) + 1;
-        this.user.level = newLevel;
+        let level = 1;
+        while (true) {
+            const thresh = this.getLevelThresholds(level);
+            if (this.user.points >= thresh.end) {
+                level++;
+            } else {
+                break;
+            }
+        }
+        this.user.level = level;
     }
 
     /* Category Operations with Inline Delete Buttons */
@@ -1440,7 +1499,7 @@ class FocusQuestApp {
 
     /* Debug Midnight Settlement Modal */
     renderDebugSummary() {
-        const uncompletedToday = this.tasks.filter(t => t.isToday && !t.completed);
+        const uncompletedToday = this.tasks.filter(t => t.isToday && !this.isTaskCompletedOnDate(t, this.getTodayISO()));
         const container = document.getElementById('debugUncompletedSummary');
         if (container) {
             if (uncompletedToday.length === 0) {
@@ -1484,17 +1543,19 @@ class FocusQuestApp {
     }
 
     renderSidebarInfo() {
+        this.calculateLevelProgress();
         document.getElementById('userLevelDisplay').textContent = this.user.level;
         document.getElementById('userPointsDisplay').textContent = this.user.points;
         document.getElementById('userRankTitle').textContent = this.user.activeTitle || 'Procrastinator';
 
-        // XP Progress to next level
-        const currentLevelXpStart = (this.user.level - 1) * 50;
-        const currentLevelXpProgress = this.user.xp - currentLevelXpStart;
-        const percent = Math.min(100, Math.max(0, (currentLevelXpProgress / 50) * 100));
+        // Progressive points thresholds for UI bar display
+        const thresh = this.getLevelThresholds(this.user.level);
+        const currentInLevel = Math.max(0, this.user.points - thresh.start);
+        const ptsToNext = thresh.end - this.user.points;
+        const percent = Math.min(100, Math.max(0, (currentInLevel / thresh.range) * 100));
 
         document.getElementById('levelProgressBar').style.width = `${percent}%`;
-        document.getElementById('progressText').textContent = `${currentLevelXpProgress} / 50 pts to Level ${this.user.level + 1}`;
+        document.getElementById('progressText').textContent = `${currentInLevel} / ${thresh.range} pts to Level ${this.user.level + 1}`;
     }
 
     renderCategoryList() {
@@ -1503,7 +1564,7 @@ class FocusQuestApp {
 
         container.innerHTML = this.categories.map(cat => {
             const isSelected = this.currentView === cat.id || this.activeCategoryFilter === cat.id;
-            const catTaskCount = this.tasks.filter(t => t.categoryId === cat.id && !t.completed).length;
+            const catTaskCount = this.tasks.filter(t => t.categoryId === cat.id && !this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
 
             return `
                 <div onclick="app.filterByCategory('${cat.id}')" class="group flex items-center justify-between px-3.5 py-2 rounded-xl text-sm font-medium transition cursor-pointer ${isSelected ? 'bg-slate-800 text-white border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'}">
@@ -1556,7 +1617,7 @@ class FocusQuestApp {
         todayBanner.classList.remove('hidden');
 
         const todayTasks = this.tasks.filter(t => this.isTaskScheduledForToday(t));
-        const completedCount = todayTasks.filter(t => t.completed).length;
+        const completedCount = todayTasks.filter(t => this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
         const totalCount = todayTasks.length;
         const percent = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
 
@@ -1613,9 +1674,15 @@ class FocusQuestApp {
                     <div class="space-y-2 flex-1 overflow-y-auto max-h-[180px]">
                         ${dayTasks.map(t => {
                             const cat = this.categories.find(c => c.id === t.categoryId) || { color: '#6366f1' };
+                            const isDoneOnDay = this.isTaskCompletedOnDate(t, isoStr);
                             return `
-                                <div onclick="app.openTaskDetail('${t.id}')" class="p-2 rounded-xl bg-slate-800/80 border-l-4 hover:bg-slate-700/80 transition cursor-pointer text-xs" style="border-left-color: ${cat.color}">
-                                    <div class="font-bold text-slate-200 truncate ${t.completed ? 'line-through text-slate-500' : ''}">${t.title}</div>
+                                <div class="p-2 rounded-xl bg-slate-800/80 border-l-4 hover:bg-slate-700/80 transition flex items-center justify-between space-x-2 text-xs" style="border-left-color: ${cat.color}">
+                                    <div onclick="app.openTaskDetail('${t.id}')" class="font-bold text-slate-200 truncate cursor-pointer flex-1 ${isDoneOnDay ? 'line-through text-slate-500' : ''}">
+                                        ${t.title}
+                                    </div>
+                                    <button onclick="app.toggleTaskComplete('${t.id}', '${isoStr}')" class="w-4 h-4 rounded border flex items-center justify-center shrink-0 transition ${isDoneOnDay ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-600 bg-slate-900/60 hover:border-indigo-500'}">
+                                        ${isDoneOnDay ? '<i class="fa-solid fa-check text-[9px]"></i>' : ''}
+                                    </button>
                                 </div>
                             `;
                         }).join('')}
@@ -1628,7 +1695,7 @@ class FocusQuestApp {
         const poolsContainer = document.getElementById('plannerCategoryPoolsContainer');
         if (poolsContainer) {
             poolsContainer.innerHTML = this.categories.map(cat => {
-                const catTasks = this.tasks.filter(t => t.categoryId === cat.id && !t.completed);
+                const catTasks = this.tasks.filter(t => t.categoryId === cat.id && !this.isTaskCompletedOnDate(t, this.getTodayISO()));
                 return `
                     <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
                         <div class="flex items-center space-x-2 font-bold text-xs text-white">
@@ -1677,9 +1744,9 @@ class FocusQuestApp {
 
         // Completion status filter
         if (this.filterState === 'active') {
-            filtered = filtered.filter(t => !t.completed);
+            filtered = filtered.filter(t => !this.isTaskCompletedOnDate(t, this.getTodayISO()));
         } else if (this.filterState === 'completed') {
-            filtered = filtered.filter(t => t.completed);
+            filtered = filtered.filter(t => this.isTaskCompletedOnDate(t, this.getTodayISO()));
         }
 
         // Search query filter
@@ -1703,18 +1770,19 @@ class FocusQuestApp {
         container.innerHTML = filtered.map(task => {
             const category = this.categories.find(c => c.id === task.categoryId) || { name: 'General', color: '#6366f1', icon: 'fa-folder' };
             const isTodayBet = this.isTaskScheduledForToday(task);
+            const isCompletedToday = this.isTaskCompletedOnDate(task, this.getTodayISO());
 
             return `
-                <div class="p-4 rounded-2xl bg-cardBg/80 border transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${task.completed ? 'opacity-60 border-slate-800' : (isTodayBet ? 'border-indigo-500/50 hover:border-indigo-500 penalty-pulse' : 'border-borderCol/60 hover:border-slate-600')}">
+                <div class="p-4 rounded-2xl bg-cardBg/80 border transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isCompletedToday ? 'opacity-60 border-slate-800' : (isTodayBet ? 'border-indigo-500/50 hover:border-indigo-500 penalty-pulse' : 'border-borderCol/60 hover:border-slate-600')}">
                     <div class="flex items-start space-x-3.5 min-w-0">
                         <!-- Custom Checkbox -->
-                        <button onclick="app.toggleTaskComplete('${task.id}')" class="mt-0.5 w-5 h-5 rounded-lg border flex items-center justify-center transition shrink-0 ${task.completed ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-600 hover:border-indigo-500 bg-slate-900/60'}">
-                            ${task.completed ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
+                        <button onclick="app.toggleTaskComplete('${task.id}')" class="mt-0.5 w-5 h-5 rounded-lg border flex items-center justify-center transition shrink-0 ${isCompletedToday ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-600 hover:border-indigo-500 bg-slate-900/60'}">
+                            ${isCompletedToday ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
                         </button>
                         
                         <div class="min-w-0 space-y-1">
                             <div class="flex items-center space-x-2 flex-wrap gap-y-1">
-                                <span onclick="app.openTaskDetail('${task.id}')" class="font-extrabold text-sm sm:text-base text-white cursor-pointer hover:text-indigo-400 transition truncate ${task.completed ? 'line-through text-slate-400' : ''}">${task.title}</span>
+                                <span onclick="app.openTaskDetail('${task.id}')" class="font-extrabold text-sm sm:text-base text-white cursor-pointer hover:text-indigo-400 transition truncate ${isCompletedToday ? 'line-through text-slate-400' : ''}">${task.title}</span>
                                 
                                 <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white shrink-0" style="background-color: ${category.color}20; color: ${category.color}; border: 1px solid ${category.color}40">
                                     <i class="fa-solid ${category.icon} mr-1"></i>${category.name}
@@ -1750,9 +1818,9 @@ class FocusQuestApp {
     }
 
     updateNavigationBadges() {
-        const todayCount = this.tasks.filter(t => this.isTaskScheduledForToday(t) && !t.completed).length;
-        const allCount = this.tasks.filter(t => !t.completed).length;
-        const favCount = this.tasks.filter(t => t.favorite && !t.completed).length;
+        const todayCount = this.tasks.filter(t => this.isTaskScheduledForToday(t) && !this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
+        const allCount = this.tasks.filter(t => !this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
+        const favCount = this.tasks.filter(t => t.favorite && !this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
 
         document.getElementById('todayCountBadge').textContent = todayCount;
         document.getElementById('allCountBadge').textContent = allCount;
