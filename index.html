@@ -1025,6 +1025,19 @@ class FocusQuestApp {
             document.getElementById('sidebarOverlay').classList.add('hidden');
         }
 
+        // Active State in Sidebar Umschalten
+        const navItems = ['today', 'planner', 'all', 'favorites'];
+        navItems.forEach(item => {
+            const btn = document.getElementById(`nav-${item}`);
+            if (btn) {
+                if (item === viewName) {
+                    btn.className = 'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30';
+                } else {
+                    btn.className = 'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
+                }
+            }
+        });
+
         this.render();
     }
 
@@ -1063,8 +1076,11 @@ class FocusQuestApp {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.remove('hidden');
-            if (modalId === 'taskModal' && !document.getElementById('editTaskId').value) {
-                this.resetTaskForm();
+            if (modalId === 'taskModal') {
+                const editIdInput = document.getElementById('editTaskId');
+                if (!editIdInput || !editIdInput.value) {
+                    this.resetTaskForm();
+                }
             } else if (modalId === 'shopModal') {
                 this.renderShop();
             } else if (modalId === 'debugModal') {
