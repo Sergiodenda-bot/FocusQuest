@@ -266,7 +266,7 @@
                 </div>
             </div>
             <div class="flex items-center space-x-3 shrink-0">
-                <button onclick="app.openModal('taskModal')" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2 transition transform active:scale-95">
+                <button onclick="app.openCreateTaskModal()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/25 flex items-center justify-center space-x-2 transition transform active:scale-95">
                     <i class="fa-solid fa-plus text-xs"></i>
                     <span>New Task</span>
                 </button>
@@ -1072,16 +1072,16 @@ class FocusQuestApp {
     }
 
     /* Modal Controls */
+    openCreateTaskModal() {
+        this.resetTaskForm();
+        this.openModal('taskModal');
+    }
+
     openModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.remove('hidden');
-            if (modalId === 'taskModal') {
-                const editIdInput = document.getElementById('editTaskId');
-                if (!editIdInput || !editIdInput.value) {
-                    this.resetTaskForm();
-                }
-            } else if (modalId === 'shopModal') {
+            if (modalId === 'shopModal') {
                 this.renderShop();
             } else if (modalId === 'debugModal') {
                 this.renderDebugSummary();
@@ -1091,7 +1091,12 @@ class FocusQuestApp {
 
     closeModal(modalId) {
         const modal = document.getElementById(modalId);
-        if (modal) modal.classList.add('hidden');
+        if (modal) {
+            modal.classList.add('hidden');
+            if (modalId === 'taskModal') {
+                this.resetTaskForm();
+            }
+        }
     }
 
     confirmDelete(message, onConfirm) {
@@ -1111,20 +1116,34 @@ class FocusQuestApp {
 
     /* Task Operations */
     resetTaskForm() {
-        document.getElementById('editTaskId').value = '';
-        document.getElementById('taskTitleInput').value = '';
-        document.getElementById('taskDescriptionInput').value = '';
-        document.getElementById('taskUrlInput').value = '';
-        document.getElementById('taskModalTitle').textContent = 'Create New Task';
+        const editIdInput = document.getElementById('editTaskId');
+        if (editIdInput) editIdInput.value = '';
+
+        const titleInput = document.getElementById('taskTitleInput');
+        if (titleInput) titleInput.value = '';
+
+        const descInput = document.getElementById('taskDescriptionInput');
+        if (descInput) descInput.value = '';
+
+        const urlInput = document.getElementById('taskUrlInput');
+        if (urlInput) urlInput.value = '';
+
+        const titleHeader = document.getElementById('taskModalTitle');
+        if (titleHeader) titleHeader.textContent = 'Create New Task';
         
         // Default category
         const catSelect = document.getElementById('taskCategorySelect');
         this.populateCategoryDropdown(catSelect);
 
         // Date defaults
-        document.getElementById('taskFrequencyTypeSelect').value = 'once';
-        document.getElementById('taskDateInput').value = this.getTodayISO();
-        document.getElementById('taskIsTodayInput').checked = true;
+        const freqSelect = document.getElementById('taskFrequencyTypeSelect');
+        if (freqSelect) freqSelect.value = 'once';
+
+        const dateInput = document.getElementById('taskDateInput');
+        if (dateInput) dateInput.value = this.getTodayISO();
+
+        const isTodayInput = document.getElementById('taskIsTodayInput');
+        if (isTodayInput) isTodayInput.checked = true;
 
         // Uncheck all recurring boxes
         document.querySelectorAll('input[name="recurringDay"]').forEach(cb => cb.checked = false);
@@ -1340,11 +1359,6 @@ class FocusQuestApp {
 
     /* Level & Ranking Computations */
     getLevelThresholds(level) {
-        // Progressive thresholds starting at Level 1 -> Level 2 = 20 pts
-        // Level 1: 0 to 20 pts
-        // Level 2: 20 to 50 pts (+30 pts)
-        // Level 3: 50 to 90 pts (+40 pts)
-        // Level L: start = 20*(L-1) + 10*(L-1)*(L-2)/2
         const getStartForLevel = (l) => {
             if (l <= 1) return 0;
             const n = l - 1;
@@ -1564,10 +1578,8 @@ class FocusQuestApp {
         document.getElementById('userPointsDisplay').textContent = this.user.points;
         document.getElementById('userRankTitle').textContent = this.user.activeTitle || 'Procrastinator';
 
-        // Progressive points thresholds for UI bar display
         const thresh = this.getLevelThresholds(this.user.level);
         const currentInLevel = Math.max(0, this.user.points - thresh.start);
-        const ptsToNext = thresh.end - this.user.points;
         const percent = Math.min(100, Math.max(0, (currentInLevel / thresh.range) * 100));
 
         document.getElementById('levelProgressBar').style.width = `${percent}%`;
@@ -1657,7 +1669,6 @@ class FocusQuestApp {
 
         const todayStr = this.getTodayISO();
         
-        // Update week range label
         const weekStartStr = days[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const weekEndStr = days[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         document.getElementById('plannerWeekRangeLabel').textContent = `${weekStartStr} - ${weekEndStr}`;
@@ -1669,7 +1680,6 @@ class FocusQuestApp {
             const isToday = isoStr === todayStr;
             const dayIdx = dayDate.getDay();
 
-            // Find tasks matching this day
             const dayTasks = this.tasks.filter(t => {
                 if (t.frequencyType === 'once' && t.dueDate === isoStr) return true;
                 if (t.frequencyType === 'recurring' && Array.isArray(t.recurringDays) && t.recurringDays.includes(dayIdx)) return true;
@@ -1707,7 +1717,6 @@ class FocusQuestApp {
             `;
         }).join('');
 
-        // Category blocks in planner
         const poolsContainer = document.getElementById('plannerCategoryPoolsContainer');
         if (poolsContainer) {
             poolsContainer.innerHTML = this.categories.map(cat => {
@@ -1744,7 +1753,6 @@ class FocusQuestApp {
 
         let filtered = [...this.tasks];
 
-        // View Filtering
         if (this.currentView === 'today') {
             filtered = filtered.filter(t => this.isTaskScheduledForToday(t));
         } else if (this.currentView === 'favorites') {
@@ -1753,19 +1761,16 @@ class FocusQuestApp {
             filtered = filtered.filter(t => t.categoryId === this.currentView);
         }
 
-        // Category Bar Filter
         if (this.activeCategoryFilter) {
             filtered = filtered.filter(t => t.categoryId === this.activeCategoryFilter);
         }
 
-        // Completion status filter
         if (this.filterState === 'active') {
             filtered = filtered.filter(t => !this.isTaskCompletedOnDate(t, this.getTodayISO()));
         } else if (this.filterState === 'completed') {
             filtered = filtered.filter(t => this.isTaskCompletedOnDate(t, this.getTodayISO()));
         }
 
-        // Search query filter
         if (this.searchQuery) {
             filtered = filtered.filter(t => t.title.toLowerCase().includes(this.searchQuery) || (t.description && t.description.toLowerCase().includes(this.searchQuery)));
         }
@@ -1791,7 +1796,6 @@ class FocusQuestApp {
             return `
                 <div class="p-4 rounded-2xl bg-cardBg/80 border transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isCompletedToday ? 'opacity-60 border-slate-800' : (isTodayBet ? 'border-indigo-500/50 hover:border-indigo-500 penalty-pulse' : 'border-borderCol/60 hover:border-slate-600')}">
                     <div class="flex items-start space-x-3.5 min-w-0">
-                        <!-- Custom Checkbox -->
                         <button onclick="app.toggleTaskComplete('${task.id}')" class="mt-0.5 w-5 h-5 rounded-lg border flex items-center justify-center transition shrink-0 ${isCompletedToday ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-600 hover:border-indigo-500 bg-slate-900/60'}">
                             ${isCompletedToday ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
                         </button>
@@ -1816,7 +1820,6 @@ class FocusQuestApp {
                         </div>
                     </div>
 
-                    <!-- Task Action Icons -->
                     <div class="flex items-center space-x-1 shrink-0 justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800">
                         <button onclick="app.toggleTaskFavorite('${task.id}')" class="p-2 rounded-xl text-slate-400 hover:text-amber-400 hover:bg-slate-800 transition" title="Star Task">
                             <i class="${task.favorite ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star'}"></i>
