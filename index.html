@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FocusQuest</title>
     
-    <!-- Embedded Favicon (FocusQuest Glowing Target SVG Icon) -->
+    <!-- Embedded Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10' stroke='%236366f1'/><circle cx='12' cy='12' r='6' stroke='%2322d3ee'/><circle cx='12' cy='12' r='2' fill='%23818cf8' stroke='none'/><line x1='12' y1='2' x2='12' y2='4' stroke='%2322d3ee'/><line x1='12' y1='20' x2='12' y2='22' stroke='%2322d3ee'/><line x1='2' y1='12' x2='4' y2='12' stroke='%2322d3ee'/><line x1='20' y1='12' x2='22' y2='12' stroke='%2322d3ee'/></svg>">
 
     <!-- Tailwind CSS CDN -->
@@ -43,20 +43,24 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* Themes */
-        body.theme-midnight { background-color: #090d16; }
-        body.theme-obsidian { background-color: #000000; }
-        body.theme-emerald { background-color: #022c22; }
-        body.theme-dusk { background-color: #1e1b4b; }
-        body.theme-sage { background-color: #13221a; }
-        body.theme-cyber { background-color: #070d1a; }
+        /* Color Themes & Gradients */
+        body.theme-midnight { background: #090d16; }
+        body.theme-obsidian { background: #000000; }
+        body.theme-emerald { background: linear-gradient(135deg, #022c22 0%, #064e3b 100%); attachment: fixed; }
+        body.theme-dusk { background: linear-gradient(135deg, #1e1b4b 0%, #311042 100%); }
+        body.theme-ruby { background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 50%, #180505 100%); }
+        body.theme-ocean { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0284c7 100%); }
+        body.theme-sunset { background: linear-gradient(135deg, #451a03 0%, #78350f 50%, #9a3412 100%); }
+        body.theme-cyber { background: linear-gradient(135deg, #070d1a 0%, #1e1b4b 50%, #4c1d95 100%); }
+        body.theme-rose { background: linear-gradient(135deg, #4c0519 0%, #881337 50%, #be123c 100%); }
+        body.theme-lavender { background: linear-gradient(135deg, #2e1065 0%, #581c87 50%, #3b0764 100%); }
+        body.theme-mint { background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #022c22 100%); }
 
-        /* Sidebar Collapsible Transitions & Strict Hidden State */
+        /* Sidebar Collapsible Transitions */
         #sidebar {
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             will-change: transform, width;
         }
-
         #sidebar.desktop-collapsed {
             width: 0px !important;
             min-width: 0px !important;
@@ -81,6 +85,23 @@
         .penalty-pulse {
             animation: subtlePulse 2s infinite ease-in-out;
         }
+
+        @keyframes floatPet {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-4px) rotate(3deg); }
+        }
+        .pet-bounce {
+            animation: floatPet 2.5s infinite ease-in-out;
+        }
+
+        /* Rank Badge Gradients */
+        .rank-bronze { background: linear-gradient(135deg, #78350f, #b45309); color: #fef3c7; border: 1px solid #d97706; }
+        .rank-silver { background: linear-gradient(135deg, #475569, #94a3b8); color: #f8fafc; border: 1px solid #cbd5e1; }
+        .rank-gold { background: linear-gradient(135deg, #b45309, #f59e0b); color: #78350f; border: 1px solid #fde047; }
+        .rank-diamond { background: linear-gradient(135deg, #0284c7, #38bdf8); color: #0c4a6e; border: 1px solid #bae6fd; }
+        .rank-mythic { background: linear-gradient(135deg, #7e22ce, #c084fc); color: #3b0764; border: 1px solid #e9d5ff; }
+        .rank-legendary { background: linear-gradient(135deg, #b91c1c, #f87171); color: #450a0a; border: 1px solid #fca5a5; }
+        .rank-masters { background: linear-gradient(135deg, #15803d, #4ade80); color: #052e16; border: 1px solid #86efac; }
     </style>
 </head>
 <body class="theme-midnight bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden">
@@ -98,16 +119,14 @@
                     <circle cx="12" cy="12" r="10" class="stroke-indigo-500" />
                     <circle cx="12" cy="12" r="6" class="stroke-cyan-400" />
                     <circle cx="12" cy="12" r="2" class="fill-indigo-400 stroke-none" />
-                    <line x1="12" y1="2" x2="12" y2="4" class="stroke-cyan-400" />
-                    <line x1="12" y1="20" x2="12" y2="22" class="stroke-cyan-400" />
-                    <line x1="2" y1="12" x2="4" y2="12" class="stroke-cyan-400" />
-                    <line x1="20" y1="12" x2="22" y2="12" class="stroke-cyan-400" />
                 </svg>
             </div>
             <span class="font-bold text-base tracking-tight">FocusQuest</span>
+            <!-- Mobile Active Pet -->
+            <span id="mobileActivePetIcon" class="text-xl pet-bounce ml-1 cursor-pointer" onclick="app.openModal('shopModal')">🐱</span>
         </div>
-        <div class="flex items-center space-x-3">
-            <button onclick="app.openModal('shopModal')" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-xs shadow-md shadow-amber-500/20 flex items-center space-x-1.5 transition transform active:scale-95">
+        <div class="flex items-center space-x-2">
+            <button onclick="app.openModal('shopModal')" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold text-xs shadow-md flex items-center space-x-1.5 transition transform active:scale-95">
                 <i class="fa-solid fa-store text-sm"></i>
                 <span>Shop</span>
             </button>
@@ -121,27 +140,26 @@
 
     <!-- Collapsible Sidebar Navigation -->
     <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 w-72 md:w-72 bg-cardBg/95 md:bg-cardBg/70 backdrop-blur-xl border-r border-borderCol flex flex-col transform -translate-x-full md:translate-x-0 shadow-2xl shrink-0 overflow-y-auto">
-        <!-- Brand Area & Sidebar Toggle -->
+        <!-- Brand Area & Active Pet -->
         <div class="p-5 flex items-center justify-between border-b border-borderCol/50 shrink-0">
-            <div class="flex items-center space-x-3">
-                <button onclick="app.toggleSidebar()" class="hidden md:flex p-2.5 rounded-xl bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition" title="Toggle Sidebar Width">
+            <div class="flex items-center space-x-3 min-w-0">
+                <button onclick="app.toggleSidebar()" class="hidden md:flex p-2.5 rounded-xl bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700 transition" title="Toggle Sidebar">
                     <i class="fa-solid fa-angles-left text-sm" id="sidebarCollapseIcon"></i>
                 </button>
-                <!-- Target / Focus SVG Logo Icon -->
-                <div class="w-10 h-10 rounded-2xl bg-slate-900/90 border border-indigo-500/40 p-2 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <div class="w-10 h-10 rounded-2xl bg-slate-900/90 border border-indigo-500/40 p-2 flex items-center justify-center shadow-lg shadow-indigo-500/20 shrink-0">
                     <svg class="w-full h-full text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="10" class="stroke-indigo-500" />
                         <circle cx="12" cy="12" r="6" class="stroke-cyan-400" />
                         <circle cx="12" cy="12" r="2" class="fill-indigo-400 stroke-none" />
-                        <line x1="12" y1="2" x2="12" y2="4" class="stroke-cyan-400" />
-                        <line x1="12" y1="20" x2="12" y2="22" class="stroke-cyan-400" />
-                        <line x1="2" y1="12" x2="4" y2="12" class="stroke-cyan-400" />
-                        <line x1="20" y1="12" x2="22" y2="12" class="stroke-cyan-400" />
                     </svg>
                 </div>
-                <div>
-                    <h1 class="font-black text-base tracking-tight leading-none text-white">FocusQuest</h1>
-                    <span id="userRankTitle" class="text-xs text-indigo-400 font-semibold mt-1 block">Procrastinator</span>
+                <!-- Pet Display Companion -->
+                <div class="flex items-center space-x-1.5 min-w-0">
+                    <span id="sidebarPetDisplay" class="text-2xl pet-bounce cursor-pointer shrink-0" title="Active Pet Companion" onclick="app.openModal('shopModal')">🐱</span>
+                    <div class="min-w-0">
+                        <h1 class="font-black text-base tracking-tight leading-none text-white truncate">FocusQuest</h1>
+                        <span id="userRankTitle" class="text-[11px] text-indigo-400 font-semibold mt-1 block truncate">Procrastinator</span>
+                    </div>
                 </div>
             </div>
             <!-- Mobile Close Button -->
@@ -150,26 +168,33 @@
             </button>
         </div>
 
-        <!-- Level & Progress UI -->
-        <div class="p-4 mx-4 mt-4 rounded-2xl bg-gradient-to-br from-indigo-950/80 via-slate-900/90 to-slate-900 border border-indigo-500/40 shadow-xl shrink-0">
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center space-x-2">
-                    <span class="px-3 py-1 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-black text-xs shadow-md shadow-indigo-500/30 border border-indigo-400/40 tracking-wider">
-                        LEVEL <span id="userLevelDisplay" class="text-amber-300 text-base ml-0.5">1</span>
-                    </span>
-                    <span class="text-xs text-indigo-200 font-semibold"><span id="userPointsDisplay" class="text-amber-400 font-extrabold text-base">0</span> pts</span>
+        <!-- Level & Rank UI -->
+        <div class="p-4 mx-4 mt-4 rounded-2xl bg-gradient-to-br from-indigo-950/80 via-slate-900/90 to-slate-900 border border-indigo-500/40 shadow-xl shrink-0 space-y-3">
+            <div class="flex items-center justify-between">
+                <!-- Rank Badge Emblem -->
+                <div id="userRankBadge" class="rank-bronze px-2.5 py-1 rounded-xl font-black text-xs uppercase tracking-wider flex items-center space-x-1.5 shadow-md">
+                    <i class="fa-solid fa-shield-halved text-xs" id="rankBadgeIcon"></i>
+                    <span id="userRankTierLabel">Bronze I</span>
                 </div>
-                <button onclick="app.openModal('shopModal')" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/30 flex items-center space-x-1.5 transition transform hover:scale-105 active:scale-95 uppercase tracking-wider">
-                    <i class="fa-solid fa-store text-sm"></i>
+                <div class="text-xs text-indigo-200 font-semibold"><span id="userPointsDisplay" class="text-amber-400 font-extrabold text-base">0</span> pts</div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs">
+                <span class="px-2.5 py-0.5 rounded-lg bg-indigo-500/20 text-indigo-300 font-bold border border-indigo-500/30">
+                    LEVEL <span id="userLevelDisplay" class="text-amber-300 text-sm font-black ml-0.5">1</span>
+                </span>
+                <button onclick="app.openModal('shopModal')" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-xs shadow-md flex items-center space-x-1 transition transform hover:scale-105 active:scale-95 uppercase tracking-wider">
+                    <i class="fa-solid fa-store text-xs"></i>
                     <span>SHOP</span>
                 </button>
             </div>
-            <div class="w-full bg-slate-950 rounded-full h-3.5 overflow-hidden border border-indigo-500/30 shadow-inner p-0.5">
+
+            <div class="w-full bg-slate-950 rounded-full h-3 overflow-hidden border border-indigo-500/30 shadow-inner p-0.5">
                 <div id="levelProgressBar" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-full rounded-full transition-all duration-500 shadow-md" style="width: 0%"></div>
             </div>
-            <div class="flex justify-between items-center mt-2.5 text-[11px] text-slate-300 font-medium">
-                <span id="progressText" class="font-semibold text-indigo-200">0 / 20 pts to next level</span>
-                <button onclick="app.openModal('debugModal')" class="text-rose-400 hover:text-rose-300 underline font-semibold transition">Simulate Midnight</button>
+            <div class="flex justify-between items-center text-[10px] text-slate-300 font-medium">
+                <span id="progressText" class="font-semibold text-indigo-200 truncate">0 / 20 pts to Level 2</span>
+                <button onclick="app.openModal('debugModal')" class="text-rose-400 hover:text-rose-300 underline font-semibold transition shrink-0 ml-1">Simulate Midnight</button>
             </div>
         </div>
 
@@ -236,7 +261,7 @@
                 <i class="fa-solid fa-gear"></i>
                 <span>Settings & Sync</span>
             </button>
-            <div class="flex items-center space-x-1.5 text-xs text-indigo-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-800" id="cloudSyncIndicator" title="Cloud Sync Active">
+            <div class="flex items-center space-x-1.5 text-xs text-indigo-400 bg-slate-900/80 px-2.5 py-1 rounded-full border border-slate-800" id="cloudSyncIndicator">
                 <span class="relative flex h-2 w-2">
                   <span id="syncDotPing" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span id="syncDotStatic" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
@@ -282,7 +307,7 @@
                     </div>
                     <div>
                         <h3 class="font-extrabold text-sm sm:text-base text-white">Daily Bet Active</h3>
-                        <p class="text-xs text-slate-300 mt-0.5">Tasks for Today earn <span class="text-amber-400 font-bold">+2 Points</span> (and incur -2 penalty at midnight if uncompleted). Extra completions earn <span class="text-indigo-400 font-bold">+1 Point</span>.</p>
+                        <p class="text-xs text-slate-300 mt-0.5">Tasks scheduled for Today earn <span class="text-amber-400 font-bold">+2 Points</span> (and incur -2 penalty at midnight if uncompleted).</p>
                     </div>
                 </div>
                 <div class="flex items-center justify-between sm:justify-start space-x-3 bg-slate-950/70 px-4 py-2.5 rounded-xl border border-slate-800 shrink-0">
@@ -294,36 +319,46 @@
                 </div>
             </div>
 
-            <!-- Weekly Planner Section -->
+            <!-- Weekly Planner Section (With Outlook Day Zoom support) -->
             <div id="weeklyPlannerContainer" class="hidden space-y-6">
+                <!-- Top Toolbar -->
                 <div class="p-4 rounded-2xl bg-cardBg/60 border border-borderCol/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h3 class="font-extrabold text-base text-white flex items-center space-x-2">
-                            <i class="fa-solid fa-calendar-week text-indigo-400"></i>
-                            <span>Weekly Calendar Planner</span>
-                        </h3>
-                        <p class="text-xs text-slate-400 mt-0.5">Plan tasks in advance for any day of the week. Today's tasks feature a glowing neon border.</p>
+                    <div class="flex items-center space-x-3">
+                        <!-- Return Button for Zoom View -->
+                        <button id="exitDayZoomBtn" onclick="app.exitDayZoomView()" class="hidden px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition flex items-center space-x-1.5">
+                            <i class="fa-solid fa-arrow-left"></i>
+                            <span>Back to Weekly Calendar</span>
+                        </button>
+                        <div>
+                            <h3 id="plannerHeaderTitle" class="font-extrabold text-base text-white flex items-center space-x-2">
+                                <i class="fa-solid fa-calendar-week text-indigo-400"></i>
+                                <span>Weekly Calendar Planner</span>
+                            </h3>
+                            <p id="plannerHeaderSubtitle" class="text-xs text-slate-400 mt-0.5">Double-tap or double-click any day to zoom into full day view. Tasks are strictly sorted by start time.</p>
+                        </div>
                     </div>
-                    <div class="flex items-center space-x-2">
+                    <div id="weeklyNavControls" class="flex items-center space-x-2">
                         <button onclick="app.changePlannerWeek(-1)" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition"><i class="fa-solid fa-chevron-left mr-1"></i> Prev</button>
                         <span id="plannerWeekRangeLabel" class="text-xs font-bold text-indigo-400 px-3 bg-indigo-950/50 py-1 rounded-lg border border-indigo-500/20"></span>
                         <button onclick="app.changePlannerWeek(1)" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition">Next <i class="fa-solid fa-chevron-right ml-1"></i></button>
                     </div>
                 </div>
                 
+                <!-- Weekly Grid or Zoomed Day Single View Container -->
                 <div id="plannerDaysGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
                     <!-- Dynamically populated -->
                 </div>
 
-                <div class="p-5 rounded-2xl bg-cardBg/40 border border-borderCol/60 space-y-4">
+                <!-- Category Blocks -->
+                <div id="categoryBlocksWrapper" class="p-5 rounded-2xl bg-cardBg/40 border border-borderCol/60 space-y-4">
                     <div class="flex items-center justify-between">
                         <h4 class="font-extrabold text-sm text-white flex items-center space-x-2">
                             <i class="fa-solid fa-layer-group text-indigo-400"></i>
                             <span>Category Task Blocks</span>
                         </h4>
-                        <span class="text-xs text-slate-400 hidden sm:inline">Filtered view of all active category schedules</span>
+                        <span class="text-xs text-slate-400 hidden sm:inline">Active category schedules</span>
                     </div>
-                    <div id="plannerCategoryPoolsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div id="plannerCategoryPoolsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                         <!-- Category blocks injected dynamically -->
                     </div>
                 </div>
@@ -359,7 +394,7 @@
     </main>
 </div>
 
-<!-- Task Modal (Create & Edit Task) -->
+<!-- Task Modal (Create & Edit Task with Time Slot) -->
 <div id="taskModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-md overflow-hidden shadow-2xl my-auto max-h-[90vh] flex flex-col">
         <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50 shrink-0">
@@ -377,12 +412,25 @@
 
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Instructions / Notes (Optional)</label>
-                <textarea id="taskDescriptionInput" rows="2" placeholder="e.g., 3x10 pushups, page 104..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                <textarea id="taskDescriptionInput" rows="2" placeholder="e.g., Read pages 40-55..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+            </div>
+
+            <!-- Optional Time Slot Selection -->
+            <div class="grid grid-cols-2 gap-3 p-3 rounded-xl bg-slate-900/70 border border-slate-800">
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Start Time (Optional)</label>
+                    <input type="time" id="taskStartTimeInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">End Time (Optional)</label>
+                    <input type="time" id="taskEndTimeInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <p class="text-[10px] text-slate-400 col-span-2">Tasks with time slots are sorted chronologically. Undated/untimed tasks appear below.</p>
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">External Link / URL (Optional)</label>
-                <input type="url" id="taskUrlInput" placeholder="https://youtube.com/watch?v=..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                <input type="url" id="taskUrlInput" placeholder="https://..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -408,48 +456,44 @@
                 <p class="text-[11px] text-slate-400 mt-1">Scheduled tasks earn +2 points upon completion (or -2 penalty at midnight).</p>
             </div>
 
-            <!-- Multiple Days Picker Section -->
             <div id="multipleDaysSection" class="hidden space-y-2">
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Select Specific Dates</label>
                 <div class="flex items-center space-x-2">
                     <input type="date" id="multipleDatePickerInput" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
                     <button type="button" onclick="app.addSelectedMultipleDate()" class="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs">Add Date</button>
                 </div>
-                <div id="selectedDatesChips" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pt-1">
-                    <!-- Date chips inserted dynamically -->
-                </div>
-                <p class="text-[11px] text-slate-400">Creates independent one-time slots on each selected date (does not repeat automatically).</p>
+                <div id="selectedDatesChips" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pt-1"></div>
             </div>
 
             <div id="recurringDaysSection" class="hidden space-y-2">
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Repeat on Days of Week</label>
                 <div class="grid grid-cols-4 gap-2">
                     <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
-                        <input type="checkbox" name="recurringDay" value="1" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                        <input type="checkbox" name="recurringDay" value="1" class="rounded bg-slate-900 border-slate-700 text-indigo-600">
                         <span>Mon</span>
                     </label>
                     <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
-                        <input type="checkbox" name="recurringDay" value="2" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                        <input type="checkbox" name="recurringDay" value="2" class="rounded bg-slate-900 border-slate-700 text-indigo-600">
                         <span>Tue</span>
                     </label>
                     <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
-                        <input type="checkbox" name="recurringDay" value="3" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                        <input type="checkbox" name="recurringDay" value="3" class="rounded bg-slate-900 border-slate-700 text-indigo-600">
                         <span>Wed</span>
                     </label>
                     <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
-                        <input type="checkbox" name="recurringDay" value="4" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                        <input type="checkbox" name="recurringDay" value="4" class="rounded bg-slate-900 border-slate-700 text-indigo-600">
                         <span>Thu</span>
                     </label>
                     <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
-                        <input type="checkbox" name="recurringDay" value="5" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                        <input type="checkbox" name="recurringDay" value="5" class="rounded bg-slate-900 border-slate-700 text-indigo-600">
                         <span>Fri</span>
                     </label>
                     <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
-                        <input type="checkbox" name="recurringDay" value="6" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                        <input type="checkbox" name="recurringDay" value="6" class="rounded bg-slate-900 border-slate-700 text-indigo-600">
                         <span>Sat</span>
                     </label>
                     <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
-                        <input type="checkbox" name="recurringDay" value="0" class="rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
+                        <input type="checkbox" name="recurringDay" value="0" class="rounded bg-slate-900 border-slate-700 text-indigo-600">
                         <span>Sun</span>
                     </label>
                 </div>
@@ -482,7 +526,6 @@
             <p id="dailyCleanupQuestion" class="text-xs text-slate-300 mt-1">Delete all completed tasks from yesterday?</p>
         </div>
         
-        <!-- Checklist container when selecting No -->
         <div id="dailyCleanupChecklistWrapper" class="hidden space-y-2 pt-2 border-t border-slate-800 max-h-48 overflow-y-auto text-left">
             <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Select completed tasks to delete:</p>
             <div id="dailyCleanupChecklist" class="space-y-1.5"></div>
@@ -535,6 +578,7 @@
             <div>
                 <span id="detailTaskCategoryBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full text-white inline-block mb-2">Category</span>
                 <h2 id="detailTaskTitle" class="text-xl font-black text-white">Task Title</h2>
+                <div id="detailTaskTimeSlot" class="text-xs text-indigo-400 font-semibold mt-1"></div>
             </div>
 
             <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
@@ -599,17 +643,17 @@
     </div>
 </div>
 
-<!-- Shop Modal -->
+<!-- Massive Shop Modal (Pets, Loot Boxes, Themes, Badges, Seasonal) -->
 <div id="shopModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden shadow-2xl my-auto">
+    <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden shadow-2xl my-auto">
         <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50 shrink-0">
             <div class="flex items-center space-x-3">
-                <div class="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
-                    <i class="fa-solid fa-store text-lg"></i>
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                    <i class="fa-solid fa-store text-xl"></i>
                 </div>
                 <div>
-                    <h3 class="font-extrabold text-sm sm:text-base text-white">Reward & Customization Shop</h3>
-                    <p class="text-xs text-slate-400 hidden sm:block">Spend focus points to unlock UI themes, titles, and perks.</p>
+                    <h3 class="font-extrabold text-base text-white">FocusQuest Marketplace</h3>
+                    <p class="text-xs text-slate-400">Unlock pets, mystery loot boxes, gradients, and focus ranks.</p>
                 </div>
             </div>
             <div class="flex items-center space-x-3">
@@ -619,14 +663,33 @@
                 <button onclick="app.closeModal('shopModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
         </div>
-        <div class="flex border-b border-borderCol px-6 pt-3 bg-slate-900/30 gap-4 shrink-0 overflow-x-auto">
-            <button onclick="app.switchShopTab('themes')" id="shop-tab-themes" class="pb-2 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 whitespace-nowrap">Themes</button>
-            <button onclick="app.switchShopTab('badges')" id="shop-tab-badges" class="pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Badges & Titles</button>
-            <button onclick="app.switchShopTab('perks')" id="shop-tab-perks" class="pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Perks & FX</button>
+        <!-- Shop Navigation Tabs -->
+        <div class="flex border-b border-borderCol px-4 pt-3 bg-slate-900/40 gap-2 shrink-0 overflow-x-auto">
+            <button onclick="app.switchShopTab('pets')" id="shop-tab-pets" class="px-3 pb-2 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 whitespace-nowrap">Pets & Companions</button>
+            <button onclick="app.switchShopTab('lootboxes')" id="shop-tab-lootboxes" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Mystery Boxes</button>
+            <button onclick="app.switchShopTab('themes')" id="shop-tab-themes" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Themes & Gradients</button>
+            <button onclick="app.switchShopTab('seasonal')" id="shop-tab-seasonal" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Seasonal Collections</button>
+            <button onclick="app.switchShopTab('badges')" id="shop-tab-badges" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Quest Ranks & Titles</button>
         </div>
         <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4" id="shopItemsContainer">
             <!-- Dynamically populated -->
         </div>
+    </div>
+</div>
+
+<!-- Loot Box Reveal Overlay Modal -->
+<div id="lootBoxModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-cardBg border border-amber-500/40 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-6 text-center space-y-5 my-auto">
+        <div class="w-20 h-20 rounded-3xl bg-amber-500/20 border-2 border-amber-400/50 flex items-center justify-center mx-auto text-4xl shadow-2xl shadow-amber-500/30 pet-bounce" id="lootBoxDisplayIcon">
+            🎁
+        </div>
+        <div>
+            <h3 class="font-black text-xl text-white" id="lootBoxTitle">Loot Box Unlocked!</h3>
+            <p class="text-xs text-amber-300 font-semibold mt-1" id="lootBoxItemName">You received a item!</p>
+        </div>
+        <button onclick="app.closeModal('lootBoxModal')" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-amber-500/30 transition transform hover:scale-105 active:scale-95">
+            Claim Reward
+        </button>
     </div>
 </div>
 
@@ -642,10 +705,9 @@
         </div>
         <div class="p-6 space-y-4">
             <p class="text-xs text-slate-300 leading-relaxed">
-                Manually trigger midnight check. Uncompleted scheduled tasks for today will deduct <strong class="text-rose-400">-2 points each</strong>, unchecking today status and shifting scheduled date to tomorrow.
+                Manually trigger midnight check. Uncompleted scheduled tasks for today will deduct <strong class="text-rose-400">-2 points each</strong>, unchecking today status and shifting single tasks to unrated pool.
             </p>
             <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-400" id="debugUncompletedSummary">
-                <!-- Summary of uncompleted tasks -->
             </div>
             <div class="flex justify-end space-x-3 pt-2">
                 <button onclick="app.closeModal('debugModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cancel</button>
@@ -681,14 +743,14 @@
                         <i class="fa-solid fa-cloud-arrow-up"></i>
                         <span>Firebase Realtime Cloud Sync</span>
                     </h4>
-                    <p class="text-xs text-slate-300 mt-1">Sync tasks, points, levels, and unlocks instantly between devices using a shared Account Key / Sync Code.</p>
+                    <p class="text-xs text-slate-300 mt-1">Sync tasks, points, levels, pets, and unlocks instantly between devices using a shared Account Key / Sync Code.</p>
                 </div>
 
                 <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Your Active Sync Code / Account Key</label>
                         <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                            <input type="text" id="syncCodeDisplay" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-indigo-300 focus:outline-none focus:border-indigo-500" placeholder="e.g., Sergio">
+                            <input type="text" id="syncCodeDisplay" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-indigo-300 focus:outline-none focus:border-indigo-500" placeholder="e.g., FQ-XYZ">
                             <div class="flex space-x-2">
                                 <button onclick="app.copySyncCode()" class="flex-1 sm:flex-initial px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold whitespace-nowrap transition flex items-center justify-center space-x-1.5">
                                     <i class="fa-solid fa-copy"></i>
@@ -700,7 +762,6 @@
                             </div>
                         </div>
                     </div>
-                    <p class="text-[11px] text-slate-400">To pair multiple phones or laptops, enter the exact same Sync Code on all devices.</p>
                 </div>
             </div>
         </div>
@@ -709,8 +770,8 @@
 
 <script>
 /**
- * FocusQuest Application Logic
- * Senior Frontend Architecture with Realtime Firebase Sync
+ * FocusQuest Extended Logic
+ * Senior Frontend Architecture with Realtime Firebase Sync & Customizations
  */
 
 const FIREBASE_CONFIG = {
@@ -724,22 +785,56 @@ const FIREBASE_CONFIG = {
     measurementId: "G-HTCYWZKX18"
 };
 
-// Available Shop Catalogue
+// Expanded Shop Catalogue
 const SHOP_ITEMS = [
-    // Themes
-    { id: 'theme-midnight', type: 'theme', name: 'Midnight Navy', cost: 0, themeClass: 'theme-midnight', desc: 'Default slick deep navy atmosphere.' },
-    { id: 'theme-obsidian', type: 'theme', name: 'Pure Obsidian', cost: 25, themeClass: 'theme-obsidian', desc: 'Minimalist pitch black theme for OLED screens.' },
-    { id: 'theme-cyber', type: 'theme', name: 'Cyberpunk Neon', cost: 40, themeClass: 'theme-cyber', desc: 'Futuristic glowing cyber slate.' },
-    { id: 'theme-emerald', type: 'theme', name: 'Emerald Forest', cost: 50, themeClass: 'theme-emerald', desc: 'Calming deep emerald green background.' },
-    { id: 'theme-dusk', type: 'theme', name: 'Dusk Purple', cost: 60, themeClass: 'theme-dusk', desc: 'Royal dark violet aura.' },
+    // Pets (Standard, Wild, Mythical)
+    { id: 'pet-cat', type: 'pet', name: 'Focus Kitten', cost: 15, icon: '🐱', desc: 'A cozy house cat that cheers your focus.' },
+    { id: 'pet-dog', type: 'pet', name: 'Loyal Puppy', cost: 20, icon: '🐶', desc: 'Always stays by your side while studying.' },
+    { id: 'pet-fish', type: 'pet', name: 'Goldfish', cost: 10, icon: '🐠', desc: 'Calm underwater friend.' },
+    { id: 'pet-owl', type: 'pet', name: 'Wisdom Owl', cost: 35, icon: '🦉', desc: 'Boosts your intellectual aura.' },
+    { id: 'pet-lion', type: 'pet', name: 'Royal Lion', cost: 75, icon: '🦁', desc: 'A fierce wild king of productivity.' },
+    { id: 'pet-cheetah', type: 'pet', name: 'Speedy Cheetah', cost: 90, icon: '🐆', desc: 'Sprint through your task lists.' },
+    { id: 'pet-whale', type: 'pet', name: 'Cosmic Whale', cost: 120, icon: '🐋', desc: 'Deep focus ocean giant.' },
+    { id: 'pet-dragon', type: 'pet', name: 'Inferno Dragon', cost: 250, icon: '🐉', desc: 'Mythical fire breathing companion.' },
+    { id: 'pet-phoenix', type: 'pet', name: 'Solar Phoenix', cost: 300, icon: '🐦‍🔥', desc: 'Rises from procrastination ashes.' },
 
-    // Badges / Titles
-    { id: 'title-novice', type: 'badge', name: 'Title: Focus Novice', cost: 10, title: 'Focus Novice', desc: 'Show off your initial commitment.' },
-    { id: 'title-warrior', type: 'badge', name: 'Title: Discipline Warrior', cost: 50, title: 'Discipline Warrior', desc: 'Earned by disciplined task execution.' },
-    { id: 'title-master', type: 'badge', name: 'Title: Focus Mastermind', cost: 100, title: 'Focus Mastermind', desc: 'Elite status reserved for top achievers.' },
+    // Themes & Gradients
+    { id: 'theme-midnight', type: 'theme', name: 'Midnight Navy', cost: 0, themeClass: 'theme-midnight', desc: 'Default slick deep navy background.' },
+    { id: 'theme-obsidian', type: 'theme', name: 'Pure Obsidian OLED', cost: 25, themeClass: 'theme-obsidian', desc: 'Pitch black screen saver.' },
+    { id: 'theme-ruby', type: 'theme', name: 'Ruby Crimson Gradient', cost: 45, themeClass: 'theme-ruby', desc: 'Deep red to dark scarlet gradient.' },
+    { id: 'theme-ocean', type: 'theme', name: 'Deep Ocean Blue', cost: 45, themeClass: 'theme-ocean', desc: 'Deep navy to cyan blue transition.' },
+    { id: 'theme-emerald', type: 'theme', name: 'Emerald Forest', cost: 50, themeClass: 'theme-emerald', desc: 'Lush dark green gradient.' },
+    { id: 'theme-sunset', type: 'theme', name: 'Amber Sunset', cost: 50, themeClass: 'theme-sunset', desc: 'Warm burnt orange & bronze glow.' },
+    { id: 'theme-rose', type: 'theme', name: 'Rose Quartz', cost: 55, themeClass: 'theme-rose', desc: 'Dark magenta to crimson.' },
+    { id: 'theme-lavender', type: 'theme', name: 'Lavender Mist', cost: 60, themeClass: 'theme-lavender', desc: 'Deep purple velvet glow.' },
+    { id: 'theme-cyber', type: 'theme', name: 'Cyberpunk Neon', cost: 65, themeClass: 'theme-cyber', desc: 'Futuristic glowing slate.' },
 
-    // Perks
-    { id: 'perk-shield', type: 'perk', name: 'Streak Saver Shield', cost: 75, perkId: 'shield', desc: 'Protects points penalty on 1 missed today task.' }
+    // Loot Boxes
+    { id: 'box-basic', type: 'box', name: 'Basic Mystery Box', cost: 20, boxTier: 'basic', icon: '📦', desc: 'Contains random common titles or standard pets.' },
+    { id: 'box-rare', type: 'box', name: 'Rare Mystery Box', cost: 45, boxTier: 'rare', icon: '🎁', desc: 'Higher chance for unique color themes & wild pets.' },
+    { id: 'box-epic', type: 'box', name: 'Epic Mystery Box', cost: 80, boxTier: 'epic', icon: '💎', desc: 'Unlocks rare pets, focus ranks, or premium gradients.' },
+    { id: 'box-legendary', type: 'box', name: 'Legendary Mystery Box', cost: 150, boxTier: 'legendary', icon: '👑', desc: 'Guaranteed mythical companion or top title.' },
+
+    // Seasonal Items
+    { id: 'sea-autumn', type: 'theme', name: 'Autumn Harvest Theme', cost: 40, themeClass: 'theme-sunset', desc: 'Golden leaves atmosphere.' },
+    { id: 'sea-winter', type: 'pet', name: 'Penguin Companion', cost: 50, icon: '🐧', desc: 'Winter Wonderland frozen buddy.' },
+    { id: 'sea-spring', type: 'pet', name: 'Spring Bunny', cost: 40, icon: '🐰', desc: 'Spring Garden playful mascot.' },
+    { id: 'sea-summer', type: 'pet', name: 'Summer Crab', cost: 35, icon: '🦀', desc: 'Summer Paradise beach sidekick.' },
+    { id: 'sea-halloween', type: 'pet', name: 'Spooky Bat', cost: 60, icon: '🦇', desc: 'Halloween Night creature.' },
+    { id: 'sea-christmas', type: 'pet', name: 'Santa Reindeer', cost: 70, icon: '🦌', desc: 'Christmas Festivity helper.' },
+
+    // Quest Ranks & Titles
+    { id: 'rank-bronze', type: 'rank', name: 'Bronze Rank Emblem', cost: 0, rankTier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved', desc: 'Bronze rank badge emblem.' },
+    { id: 'rank-silver', type: 'rank', name: 'Silver Rank Emblem', cost: 30, rankTier: 'Silver I', cssClass: 'rank-silver', icon: 'fa-shield', desc: 'Silver rank badge emblem.' },
+    { id: 'rank-gold', type: 'rank', name: 'Gold Rank Emblem', cost: 60, rankTier: 'Gold I', cssClass: 'rank-gold', icon: 'fa-crown', desc: 'Gold rank badge emblem.' },
+    { id: 'rank-diamond', type: 'rank', name: 'Diamond Rank Emblem', cost: 100, rankTier: 'Diamond I', cssClass: 'rank-diamond', icon: 'fa-gem', desc: 'Diamond rank badge emblem.' },
+    { id: 'rank-mythic', type: 'rank', name: 'Mythic Rank Emblem', cost: 175, rankTier: 'Mythic I', cssClass: 'rank-mythic', icon: 'fa-bolt', desc: 'Mythic rank badge emblem.' },
+    { id: 'rank-legendary', type: 'rank', name: 'Legendary Rank Emblem', cost: 250, rankTier: 'Legendary', cssClass: 'rank-legendary', icon: 'fa-fire', desc: 'Legendary rank badge emblem.' },
+    { id: 'rank-masters', type: 'rank', name: 'Masters Rank Emblem', cost: 400, rankTier: 'Masters', cssClass: 'rank-masters', icon: 'fa-trophy', desc: 'Masters rank badge emblem.' },
+
+    { id: 'title-novice', type: 'badge', name: 'Title: Focus Novice', cost: 10, title: 'Focus Novice', desc: 'Initial commitment title.' },
+    { id: 'title-warrior', type: 'badge', name: 'Title: Discipline Warrior', cost: 50, title: 'Discipline Warrior', desc: 'Disciplined task execution title.' },
+    { id: 'title-master', type: 'badge', name: 'Title: Focus Mastermind', cost: 100, title: 'Focus Mastermind', desc: 'Elite status achiever title.' }
 ];
 
 class FocusQuestApp {
@@ -758,23 +853,28 @@ class FocusQuestApp {
             xp: 0,
             activeTitle: 'Procrastinator',
             activeTheme: 'theme-midnight',
-            inventory: ['theme-midnight'],
+            activePet: '🐱',
+            activeRank: { tier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved' },
+            inventory: ['theme-midnight', 'pet-cat', 'rank-bronze'],
             lastSettlementDate: null
         };
 
         this.syncCode = localStorage.getItem('focusquest_sync_code') || this.generateSyncCode();
         this.sidebarCollapsed = false;
-        this.currentView = 'today'; // 'today', 'planner', 'all', 'favorites', or category ID
-        this.filterState = 'all'; // 'all', 'active', 'completed'
+        this.currentView = 'today';
+        this.filterState = 'all';
         this.searchQuery = '';
         this.activeCategoryFilter = null;
         this.plannerWeekOffset = 0;
-        this.shopTab = 'themes';
+        this.shopTab = 'pets';
         this.audioEnabled = localStorage.getItem('focusquest_audio') !== 'false';
         this.activeDetailTaskId = null;
         this.pendingDeleteAction = null;
         this.selectedMultipleDates = [];
         this.yesterdayCleanupTasks = [];
+
+        // Outlook Day Zoom View State
+        this.zoomedDayISO = null;
 
         this.firebaseApp = null;
         this.db = null;
@@ -790,7 +890,6 @@ class FocusQuestApp {
         this.checkMidnightAutoSettlement();
         this.render();
         
-        // Interval check for automatic midnight rollover
         setInterval(() => this.checkMidnightAutoSettlement(), 60000);
     }
 
@@ -808,14 +907,13 @@ class FocusQuestApp {
         }
     }
 
-    /* Web Audio Synthesizer for Chime */
+    /* Web Audio Synthesizer */
     playChime() {
         if (!this.audioEnabled) return;
         try {
             const AudioCtx = window.AudioContext || window.webkitAudioContext;
             if (!AudioCtx) return;
             const ctx = new AudioCtx();
-            
             const now = ctx.currentTime;
             const osc1 = ctx.createOscillator();
             const osc2 = ctx.createOscillator();
@@ -823,12 +921,11 @@ class FocusQuestApp {
 
             osc1.type = 'sine';
             osc2.type = 'triangle';
+            osc1.frequency.setValueAtTime(523.25, now);
+            osc1.frequency.exponentialRampToValueAtTime(659.25, now + 0.12);
+            osc1.frequency.exponentialRampToValueAtTime(783.99, now + 0.24);
 
-            osc1.frequency.setValueAtTime(523.25, now); // C5
-            osc1.frequency.exponentialRampToValueAtTime(659.25, now + 0.12); // E5
-            osc1.frequency.exponentialRampToValueAtTime(783.99, now + 0.24); // G5
-
-            osc2.frequency.setValueAtTime(261.63, now); // C4
+            osc2.frequency.setValueAtTime(261.63, now);
             osc2.frequency.exponentialRampToValueAtTime(329.63, now + 0.12);
 
             gain.gain.setValueAtTime(0.15, now);
@@ -842,9 +939,7 @@ class FocusQuestApp {
             osc2.start(now);
             osc1.stop(now + 0.5);
             osc2.stop(now + 0.5);
-        } catch(e) {
-            console.log('Audio playback prevented or unsupported');
-        }
+        } catch(e) {}
     }
 
     /* Firebase Cloud Realtime Sync */
@@ -858,19 +953,16 @@ class FocusQuestApp {
             this.db = firebase.database();
             this.connectFirebaseSync();
         } catch (e) {
-            console.warn('Firebase init fallback to local:', e);
             this.updateSyncBadge(false, 'Local Mode');
         }
     }
 
     connectFirebaseSync() {
         if (!this.db || !this.syncCode) return;
-        
         this.updateSyncBadge(true, 'Syncing...');
         const sanitizedCode = this.syncCode.replace(/[.#$/[\]]/g, "_");
         this.dbRef = this.db.ref('users/' + sanitizedCode);
 
-        // Realtime Listener
         this.dbRef.on('value', (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -881,8 +973,7 @@ class FocusQuestApp {
                 this.render();
             }
             this.updateSyncBadge(true, 'Synced');
-        }, (error) => {
-            console.error('Firebase sync error:', error);
+        }, () => {
             this.updateSyncBadge(false, 'Offline');
         });
     }
@@ -895,7 +986,7 @@ class FocusQuestApp {
             user: this.user,
             updatedAt: Date.now()
         };
-        this.dbRef.set(payload).catch(err => console.error('Cloud write error:', err));
+        this.dbRef.set(payload).catch(() => {});
     }
 
     updateSyncBadge(active, text) {
@@ -914,7 +1005,6 @@ class FocusQuestApp {
         }
     }
 
-    /* Local Storage Management */
     saveLocalStorage(pushToCloud = true) {
         localStorage.setItem('focusquest_tasks', JSON.stringify(this.tasks));
         localStorage.setItem('focusquest_categories', JSON.stringify(this.categories));
@@ -932,14 +1022,12 @@ class FocusQuestApp {
         if (storedCats) this.categories = JSON.parse(storedCats);
         if (storedUser) this.user = { ...this.user, ...JSON.parse(storedUser) };
 
-        // Ensure completionHistory is initialized on all tasks
         this.tasks.forEach(t => {
             if (!t.completionHistory) t.completionHistory = {};
         });
 
-        // Apply theme saved in user
         if (this.user.activeTheme) {
-            document.body.className = `${this.user.activeTheme} bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
+            document.body.className = `${this.user.activeTheme} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
         }
 
         const syncDisplay = document.getElementById('syncCodeDisplay');
@@ -956,10 +1044,6 @@ class FocusQuestApp {
         const d = new Date();
         d.setDate(d.getDate() - 1);
         return d.toISOString().split('T')[0];
-    }
-
-    getDayOfWeekIndex(dateObj = new Date()) {
-        return dateObj.getDay(); // 0 = Sun, 1 = Mon ...
     }
 
     isTaskScheduledForDate(task, dateISO) {
@@ -990,11 +1074,19 @@ class FocusQuestApp {
         return false;
     }
 
-    /* Midnight Auto Settlement Mechanics & Daily Cleanup Prompt */
+    /* Time Slot Sorting Utility */
+    sortTasksByStartTime(taskList) {
+        return taskList.sort((a, b) => {
+            if (!a.startTime && !b.startTime) return 0;
+            if (!a.startTime) return 1;
+            if (!b.startTime) return -1;
+            return a.startTime.localeCompare(b.startTime);
+        });
+    }
+
+    /* Midnight Auto Settlement */
     checkMidnightAutoSettlement() {
         const todayStr = this.getTodayISO();
-        
-        // Reset daily recurring tasks if completed on a previous day
         this.tasks.forEach(task => {
             if (task.frequencyType === 'recurring' && task.completed && task.lastCompletedDate !== todayStr) {
                 task.completed = false;
@@ -1002,14 +1094,11 @@ class FocusQuestApp {
         });
 
         if (this.user.lastSettlementDate !== todayStr) {
-            // Check if there was a previous settlement date recorded
             if (this.user.lastSettlementDate) {
                 this.executeMidnightSettlementLogic(this.user.lastSettlementDate);
             }
             this.user.lastSettlementDate = todayStr;
             this.saveLocalStorage();
-
-            // Prompt daily cleanup on a new day if yesterday had completed tasks
             this.checkAndPromptDailyCleanup();
         }
     }
@@ -1022,18 +1111,12 @@ class FocusQuestApp {
             const scheduledForSettlementDay = this.isTaskScheduledForDate(task, settlementDate);
             const completedOnSettlementDay = this.isTaskCompletedOnDate(task, settlementDate);
 
-            // Uncompleted scheduled task on settlement date -> apply penalty
             if (scheduledForSettlementDay && !completedOnSettlementDay) {
                 penalties += 2;
-                
-                // Track explicitly in completion history as missed (uncompleted)
                 if (!task.completionHistory) task.completionHistory = {};
                 task.completionHistory[settlementDate] = false;
-
-                // Uncheck today status
                 task.isToday = false;
 
-                // Uncompleted single tasks move to Unrated / All Tasks Pool (undated)
                 if (task.frequencyType === 'once') {
                     task.frequencyType = 'undated';
                     task.dueDate = '';
@@ -1064,9 +1147,7 @@ class FocusQuestApp {
     }
 
     handleDailyCleanupYes() {
-        const yesterdayISO = this.getYesterdayISO();
         const taskIdsToDelete = this.yesterdayCleanupTasks.map(t => t.id);
-        
         this.confirmDelete("Are you sure you want to completely delete all completed tasks from yesterday?", () => {
             this.tasks = this.tasks.filter(t => !taskIdsToDelete.includes(t.id));
             this.saveLocalStorage();
@@ -1108,7 +1189,7 @@ class FocusQuestApp {
         });
     }
 
-    /* UI Navigation & Sidebar Controls */
+    /* UI Navigation */
     toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebarOverlay');
@@ -1116,7 +1197,6 @@ class FocusQuestApp {
         const floatBtn = document.getElementById('floatingSidebarOpenBtn');
 
         if (window.innerWidth < 768) {
-            // Mobile Overlay Toggle
             const isHidden = sidebar.classList.contains('-translate-x-full');
             if (isHidden) {
                 sidebar.classList.remove('-translate-x-full');
@@ -1126,7 +1206,6 @@ class FocusQuestApp {
                 overlay.classList.add('hidden');
             }
         } else {
-            // Desktop Width Collapse Toggle
             this.sidebarCollapsed = !this.sidebarCollapsed;
             if (this.sidebarCollapsed) {
                 sidebar.classList.add('desktop-collapsed');
@@ -1149,16 +1228,14 @@ class FocusQuestApp {
     switchView(viewName) {
         this.currentView = viewName;
         this.activeCategoryFilter = null;
-        
-        // Hide sidebar on mobile after selecting a view
+        this.zoomedDayISO = null;
+
         if (window.innerWidth < 768) {
             document.getElementById('sidebar').classList.add('-translate-x-full');
             document.getElementById('sidebarOverlay').classList.add('hidden');
         }
 
-        // Active State in Sidebar Umschalten
-        const navItems = ['today', 'planner', 'all', 'favorites'];
-        navItems.forEach(item => {
+        ['today', 'planner', 'all', 'favorites'].forEach(item => {
             const btn = document.getElementById(`nav-${item}`);
             if (btn) {
                 if (item === viewName) {
@@ -1202,7 +1279,6 @@ class FocusQuestApp {
         this.renderTaskList();
     }
 
-    /* Modal Controls */
     openCreateTaskModal() {
         this.resetTaskForm();
         this.openModal('taskModal');
@@ -1245,41 +1321,24 @@ class FocusQuestApp {
         this.closeModal('deleteConfirmModal');
     }
 
-    /* Task Operations */
     resetTaskForm() {
-        const editIdInput = document.getElementById('editTaskId');
-        if (editIdInput) editIdInput.value = '';
+        document.getElementById('editTaskId').value = '';
+        document.getElementById('taskTitleInput').value = '';
+        document.getElementById('taskDescriptionInput').value = '';
+        document.getElementById('taskStartTimeInput').value = '';
+        document.getElementById('taskEndTimeInput').value = '';
+        document.getElementById('taskUrlInput').value = '';
+        document.getElementById('taskModalTitle').textContent = 'Create New Task';
 
-        const titleInput = document.getElementById('taskTitleInput');
-        if (titleInput) titleInput.value = '';
-
-        const descInput = document.getElementById('taskDescriptionInput');
-        if (descInput) descInput.value = '';
-
-        const urlInput = document.getElementById('taskUrlInput');
-        if (urlInput) urlInput.value = '';
-
-        const titleHeader = document.getElementById('taskModalTitle');
-        if (titleHeader) titleHeader.textContent = 'Create New Task';
-        
-        // Default category
         const catSelect = document.getElementById('taskCategorySelect');
         this.populateCategoryDropdown(catSelect);
 
-        // Date defaults
-        const freqSelect = document.getElementById('taskFrequencyTypeSelect');
-        if (freqSelect) freqSelect.value = 'once';
-
-        const dateInput = document.getElementById('taskDateInput');
-        if (dateInput) dateInput.value = this.getTodayISO();
-
-        const isTodayInput = document.getElementById('taskIsTodayInput');
-        if (isTodayInput) isTodayInput.checked = true;
+        document.getElementById('taskFrequencyTypeSelect').value = 'once';
+        document.getElementById('taskDateInput').value = this.getTodayISO();
+        document.getElementById('taskIsTodayInput').checked = true;
 
         this.selectedMultipleDates = [];
         this.renderSelectedMultipleDates();
-
-        // Uncheck all recurring boxes
         document.querySelectorAll('input[name="recurringDay"]').forEach(cb => cb.checked = false);
 
         this.handleFrequencyTypeChange('once');
@@ -1301,13 +1360,9 @@ class FocusQuestApp {
         multSec.classList.add('hidden');
         recurSec.classList.add('hidden');
 
-        if (val === 'once') {
-            dateSec.classList.remove('hidden');
-        } else if (val === 'multiple') {
-            multSec.classList.remove('hidden');
-        } else if (val === 'recurring') {
-            recurSec.classList.remove('hidden');
-        }
+        if (val === 'once') dateSec.classList.remove('hidden');
+        else if (val === 'multiple') multSec.classList.remove('hidden');
+        else if (val === 'recurring') recurSec.classList.remove('hidden');
     }
 
     addSelectedMultipleDate() {
@@ -1353,6 +1408,8 @@ class FocusQuestApp {
         const taskId = document.getElementById('editTaskId').value;
         const title = document.getElementById('taskTitleInput').value.trim();
         const description = document.getElementById('taskDescriptionInput').value.trim();
+        const startTime = document.getElementById('taskStartTimeInput').value;
+        const endTime = document.getElementById('taskEndTimeInput').value;
         const url = document.getElementById('taskUrlInput').value.trim();
         const categoryId = document.getElementById('taskCategorySelect').value;
         const frequencyType = document.getElementById('taskFrequencyTypeSelect').value;
@@ -1369,11 +1426,12 @@ class FocusQuestApp {
         const multipleDates = frequencyType === 'multiple' ? [...this.selectedMultipleDates] : [];
 
         if (taskId) {
-            // Edit existing
             const task = this.tasks.find(t => t.id === taskId);
             if (task) {
                 task.title = title;
                 task.description = description;
+                task.startTime = startTime;
+                task.endTime = endTime;
                 task.url = url;
                 task.categoryId = categoryId;
                 task.frequencyType = frequencyType;
@@ -1383,11 +1441,12 @@ class FocusQuestApp {
                 task.isToday = isToday;
             }
         } else {
-            // New Task
             const newTask = {
                 id: 'task-' + Date.now(),
                 title,
                 description,
+                startTime,
+                endTime,
                 url,
                 categoryId,
                 frequencyType,
@@ -1416,6 +1475,8 @@ class FocusQuestApp {
         document.getElementById('editTaskId').value = task.id;
         document.getElementById('taskTitleInput').value = task.title;
         document.getElementById('taskDescriptionInput').value = task.description || '';
+        document.getElementById('taskStartTimeInput').value = task.startTime || '';
+        document.getElementById('taskEndTimeInput').value = task.endTime || '';
         document.getElementById('taskUrlInput').value = task.url || '';
         document.getElementById('taskModalTitle').textContent = 'Edit Task';
 
@@ -1502,6 +1563,13 @@ class FocusQuestApp {
         document.getElementById('detailTaskTitle').textContent = task.title;
         document.getElementById('detailTaskDescription').textContent = task.description || 'No additional instructions provided.';
         
+        const timeSlotElem = document.getElementById('detailTaskTimeSlot');
+        if (task.startTime) {
+            timeSlotElem.textContent = `⏰ Scheduled Time: ${task.startTime}${task.endTime ? ' - ' + task.endTime : ''}`;
+        } else {
+            timeSlotElem.textContent = '';
+        }
+
         const catBadge = document.getElementById('detailTaskCategoryBadge');
         catBadge.textContent = category.name;
         catBadge.style.backgroundColor = category.color;
@@ -1554,20 +1622,14 @@ class FocusQuestApp {
         this.user.level = level;
     }
 
-    /* Category Operations with Inline Delete Buttons */
+    /* Category Operations */
     saveCategory(e) {
         e.preventDefault();
         const name = document.getElementById('categoryNameInput').value.trim();
         const icon = document.getElementById('categoryIconInput').value.trim() || 'fa-folder';
         const color = document.getElementById('categoryColorInput').value;
 
-        const newCat = {
-            id: 'cat-' + Date.now(),
-            name,
-            icon,
-            color
-        };
-
+        const newCat = { id: 'cat-' + Date.now(), name, icon, color };
         this.categories.push(newCat);
         this.saveLocalStorage();
         this.closeModal('categoryModal');
@@ -1578,7 +1640,6 @@ class FocusQuestApp {
         if (event) event.stopPropagation();
         this.confirmDelete('Deleting this category will set associated tasks to General.', () => {
             this.categories = this.categories.filter(c => c.id !== catId);
-            // Re-assign tasks to default category
             this.tasks.forEach(t => {
                 if (t.categoryId === catId) t.categoryId = 'cat-general';
             });
@@ -1590,13 +1651,13 @@ class FocusQuestApp {
     /* Shop Tab & Purchase Mechanics */
     switchShopTab(tabName) {
         this.shopTab = tabName;
-        ['themes', 'badges', 'perks'].forEach(t => {
+        ['pets', 'lootboxes', 'themes', 'seasonal', 'badges'].forEach(t => {
             const btn = document.getElementById(`shop-tab-${t}`);
             if (btn) {
                 if (t === tabName) {
-                    btn.className = 'pb-2 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 whitespace-nowrap';
+                    btn.className = 'px-3 pb-2 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 whitespace-nowrap';
                 } else {
-                    btn.className = 'pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap';
+                    btn.className = 'px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap';
                 }
             }
         });
@@ -1608,23 +1669,46 @@ class FocusQuestApp {
         document.getElementById('shopUserPoints').textContent = this.user.points;
         if (!container) return;
 
-        const filteredItems = SHOP_ITEMS.filter(item => item.type === (this.shopTab === 'themes' ? 'theme' : (this.shopTab === 'badges' ? 'badge' : 'perk')));
+        let filteredItems = [];
+        if (this.shopTab === 'pets') filteredItems = SHOP_ITEMS.filter(i => i.type === 'pet');
+        else if (this.shopTab === 'lootboxes') filteredItems = SHOP_ITEMS.filter(i => i.type === 'box');
+        else if (this.shopTab === 'themes') filteredItems = SHOP_ITEMS.filter(i => i.type === 'theme' && !i.id.startsWith('sea-'));
+        else if (this.shopTab === 'seasonal') filteredItems = SHOP_ITEMS.filter(i => i.id.startsWith('sea-'));
+        else if (this.shopTab === 'badges') filteredItems = SHOP_ITEMS.filter(i => i.type === 'badge' || i.type === 'rank');
 
         container.innerHTML = filteredItems.map(item => {
             const isOwned = (this.user.inventory || []).includes(item.id);
-            const isEquipped = item.type === 'theme' ? this.user.activeTheme === item.themeClass : this.user.activeTitle === item.title;
+            const isEquipped = item.type === 'theme' ? this.user.activeTheme === item.themeClass : 
+                               (item.type === 'pet' ? this.user.activePet === item.icon : 
+                               (item.type === 'rank' ? (this.user.activeRank && this.user.activeRank.tier === item.rankTier) : this.user.activeTitle === item.title));
+
+            // Render rank icon HTML correctly using font awesome tag if provided
+            let visualElement = item.icon ? item.icon : '🎨';
+            if (item.type === 'rank' && item.icon) {
+                visualElement = `<i class="fa-solid ${item.icon}"></i>`;
+            }
 
             return `
                 <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-4">
-                    <div class="space-y-1 min-w-0">
-                        <div class="flex items-center space-x-2">
-                            <span class="font-extrabold text-sm text-white">${item.name}</span>
-                            ${isEquipped ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">EQUIPPED</span>' : ''}
+                    <div class="flex items-center space-x-3.5 min-w-0">
+                        <div class="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-2xl shrink-0 shadow-inner">
+                            ${visualElement}
                         </div>
-                        <p class="text-xs text-slate-400 truncate">${item.desc}</p>
+                        <div class="space-y-1 min-w-0">
+                            <div class="flex items-center space-x-2">
+                                <span class="font-extrabold text-sm text-white">${item.name}</span>
+                                ${isEquipped ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">EQUIPPED</span>' : ''}
+                            </div>
+                            <p class="text-xs text-slate-400 truncate">${item.desc || 'Exclusive Shop Customization'}</p>
+                        </div>
                     </div>
                     <div class="shrink-0">
-                        ${isEquipped ? `
+                        ${item.type === 'box' ? `
+                            <button onclick="app.buyLootBox('${item.id}')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-xs shadow-md flex items-center space-x-1.5 transition">
+                                <i class="fa-solid fa-gift"></i>
+                                <span>Open (${item.cost} pts)</span>
+                            </button>
+                        ` : (isEquipped ? `
                             <button disabled class="px-4 py-2 rounded-xl bg-slate-800 text-slate-500 text-xs font-bold cursor-not-allowed">Active</button>
                         ` : (isOwned ? `
                             <button onclick="app.equipShopItem('${item.id}')" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition">Equip</button>
@@ -1633,7 +1717,7 @@ class FocusQuestApp {
                                 <i class="fa-solid fa-coins text-xs"></i>
                                 <span>${item.cost} pts</span>
                             </button>
-                        `)}
+                        `))}
                     </div>
                 </div>
             `;
@@ -1656,15 +1740,50 @@ class FocusQuestApp {
         this.equipShopItem(itemId);
     }
 
+    buyLootBox(boxId) {
+        const box = SHOP_ITEMS.find(i => i.id === boxId);
+        if (!box) return;
+
+        if (this.user.points < box.cost) {
+            this.confirmDelete('You do not have enough points for this Loot Box!', null);
+            return;
+        }
+
+        this.user.points -= box.cost;
+        
+        const availableRewards = SHOP_ITEMS.filter(i => i.type !== 'box' && !(this.user.inventory || []).includes(i.id));
+        let reward = availableRewards[Math.floor(Math.random() * availableRewards.length)];
+        
+        if (!reward) {
+            this.user.points += box.cost;
+            reward = { name: `${box.cost} Bonus Points Refund`, icon: '💰' };
+        } else {
+            if (!this.user.inventory) this.user.inventory = [];
+            this.user.inventory.push(reward.id);
+        }
+
+        this.saveLocalStorage();
+        this.render();
+
+        document.getElementById('lootBoxDisplayIcon').textContent = reward.icon || '🎁';
+        document.getElementById('lootBoxTitle').textContent = 'Mystery Box Opened!';
+        document.getElementById('lootBoxItemName').textContent = `Unlocked: ${reward.name}`;
+        this.openModal('lootBoxModal');
+    }
+
     equipShopItem(itemId) {
         const item = SHOP_ITEMS.find(i => i.id === itemId);
         if (!item) return;
 
         if (item.type === 'theme') {
             this.user.activeTheme = item.themeClass;
-            document.body.className = `${item.themeClass} bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
+            document.body.className = `${item.themeClass} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
         } else if (item.type === 'badge') {
             this.user.activeTitle = item.title;
+        } else if (item.type === 'pet') {
+            this.user.activePet = item.icon;
+        } else if (item.type === 'rank') {
+            this.user.activeRank = { tier: item.rankTier, cssClass: item.cssClass, icon: item.icon };
         }
 
         this.saveLocalStorage();
@@ -1699,7 +1818,7 @@ class FocusQuestApp {
         }
     }
 
-    /* Debug Midnight Settlement Modal */
+    /* Debug Settlement */
     renderDebugSummary() {
         const uncompletedToday = this.tasks.filter(t => this.isTaskScheduledForToday(t) && !this.isTaskCompletedOnDate(t, this.getTodayISO()));
         const container = document.getElementById('debugUncompletedSummary');
@@ -1718,7 +1837,17 @@ class FocusQuestApp {
         this.closeModal('debugModal');
     }
 
-    /* Calendar Weekly Planner Navigation */
+    /* Outlook Style Day Zoom Mechanics */
+    zoomIntoDay(dateISO) {
+        this.zoomedDayISO = dateISO;
+        this.renderPlanner();
+    }
+
+    exitDayZoomView() {
+        this.zoomedDayISO = null;
+        this.renderPlanner();
+    }
+
     changePlannerWeek(direction) {
         this.plannerWeekOffset += direction;
         this.renderPlanner();
@@ -1749,6 +1878,23 @@ class FocusQuestApp {
         document.getElementById('userLevelDisplay').textContent = this.user.level;
         document.getElementById('userPointsDisplay').textContent = this.user.points;
         document.getElementById('userRankTitle').textContent = this.user.activeTitle || 'Procrastinator';
+
+        // Active Pet Update
+        const activePet = this.user.activePet || '🐱';
+        document.getElementById('sidebarPetDisplay').textContent = activePet;
+        document.getElementById('mobileActivePetIcon').textContent = activePet;
+
+        // Active Rank Badge Emblem Update
+        const rankBadge = document.getElementById('userRankBadge');
+        const rankLabel = document.getElementById('userRankTierLabel');
+        const rankIcon = document.getElementById('rankBadgeIcon');
+        const activeRank = this.user.activeRank || { tier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved' };
+        
+        if (rankBadge && rankLabel) {
+            rankBadge.className = `${activeRank.cssClass} px-2.5 py-1 rounded-xl font-black text-xs uppercase tracking-wider flex items-center space-x-1.5 shadow-md`;
+            rankLabel.textContent = activeRank.tier;
+            if (rankIcon) rankIcon.className = `fa-solid ${activeRank.icon || 'fa-shield-halved'} text-xs`;
+        }
 
         const thresh = this.getLevelThresholds(this.user.level);
         const currentInLevel = Math.max(0, this.user.points - thresh.start);
@@ -1794,10 +1940,10 @@ class FocusQuestApp {
             subElem.textContent = "Complete active daily tasks for double points (+2 pts) and prevent midnight penalties.";
         } else if (this.currentView === 'planner') {
             titleElem.firstElementChild.textContent = "Weekly Planner";
-            subElem.textContent = "Schedule and organize tasks across calendar days and categories.";
+            subElem.textContent = "Schedule and organize tasks across calendar days. Double tap a day to zoom into full view.";
         } else if (this.currentView === 'all') {
             titleElem.firstElementChild.textContent = "All Tasks Pool";
-            subElem.textContent = "Comprehensive view of all active and completed tasks.";
+            subElem.textContent = "Tasks strictly sorted by category order (General, Work/Study, Health & Fitness, Personal).";
         } else if (this.currentView === 'favorites') {
             titleElem.firstElementChild.textContent = "Starred Favorites";
             subElem.textContent = "High priority starred task items.";
@@ -1828,24 +1974,94 @@ class FocusQuestApp {
 
     renderPlanner() {
         const grid = document.getElementById('plannerDaysGrid');
+        const exitZoomBtn = document.getElementById('exitDayZoomBtn');
+        const headerTitle = document.getElementById('plannerHeaderTitle');
+        const headerSubtitle = document.getElementById('plannerHeaderSubtitle');
+        const navControls = document.getElementById('weeklyNavControls');
+        const catBlocks = document.getElementById('categoryBlocksWrapper');
         if (!grid) return;
 
         const curr = new Date();
         const firstDayOfWeek = curr.getDate() - curr.getDay() + (this.plannerWeekOffset * 7);
-        
         const days = [];
         for (let i = 0; i < 7; i++) {
-            const dayDate = new Date(curr.setDate(firstDayOfWeek + i));
-            days.push(dayDate);
+            days.push(new Date(curr.setDate(firstDayOfWeek + i)));
         }
 
         const todayStr = this.getTodayISO();
-        
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        // OUTLOOK DAY ZOOM VIEW MODE
+        if (this.zoomedDayISO) {
+            exitZoomBtn.classList.remove('hidden');
+            navControls.classList.add('hidden');
+            if (catBlocks) catBlocks.classList.add('hidden');
+
+            const zoomedDateObj = new Date(this.zoomedDayISO + 'T00:00:00');
+            const dayName = dayNames[zoomedDateObj.getDay()];
+            headerTitle.innerHTML = `<i class="fa-solid fa-calendar-day text-indigo-400 mr-2"></i>Day Zoom: ${dayName}, ${this.zoomedDayISO}`;
+            headerSubtitle.textContent = "Full-page detailed schedule view. Double-tap to exit zoom mode.";
+
+            grid.className = "grid grid-cols-1 gap-4";
+
+            const dayTasks = this.sortTasksByStartTime(this.tasks.filter(t => this.isTaskScheduledForDate(t, this.zoomedDayISO)));
+            const isToday = this.zoomedDayISO === todayStr;
+            const isPastDay = this.zoomedDayISO < todayStr;
+
+            grid.innerHTML = `
+                <div class="p-6 rounded-3xl bg-slate-900/90 border-2 ${isToday ? 'border-indigo-500 shadow-2xl shadow-indigo-500/20' : 'border-slate-800'} space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl font-black text-white">${dayName}</span>
+                            <span class="text-sm font-bold text-slate-400">${this.zoomedDayISO}</span>
+                        </div>
+                        <span class="text-xs font-semibold text-slate-400">${dayTasks.length} task(s) assigned</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        ${dayTasks.length === 0 ? `
+                            <div class="p-8 text-center text-slate-500 font-semibold text-sm">No tasks scheduled for this day.</div>
+                        ` : dayTasks.map(t => {
+                            const cat = this.categories.find(c => c.id === t.categoryId) || { color: '#6366f1' };
+                            const isDoneOnDay = this.isTaskCompletedOnDate(t, this.zoomedDayISO);
+                            const isMissedOnPastDay = isPastDay && !isDoneOnDay;
+
+                            return `
+                                <div class="p-4 rounded-2xl bg-slate-800/80 border-l-4 flex items-center justify-between space-x-4 transition hover:bg-slate-700/80" style="border-left-color: ${cat.color}">
+                                    <div class="space-y-1 min-w-0 flex-1">
+                                        <div onclick="app.openTaskDetail('${t.id}')" class="font-extrabold text-base cursor-pointer truncate ${isDoneOnDay ? 'line-through text-slate-500' : (isMissedOnPastDay ? 'text-rose-400' : 'text-white')}">
+                                            ${t.title}
+                                        </div>
+                                        <div class="flex items-center space-x-3 text-xs text-slate-400">
+                                            ${t.startTime ? `<span class="font-bold text-indigo-400"><i class="fa-solid fa-clock mr-1"></i>${t.startTime}${t.endTime ? ' - ' + t.endTime : ''}</span>` : '<span class="text-slate-500">No specific time slot</span>'}
+                                            ${t.description ? `<span class="truncate">${t.description}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <button onclick="app.toggleTaskComplete('${t.id}', '${this.zoomedDayISO}')" class="w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition ${isDoneOnDay ? 'bg-indigo-600 border-indigo-600 text-white' : (isMissedOnPastDay ? 'border-rose-500/50 bg-rose-950/40 text-rose-400' : 'border-slate-600 bg-slate-900/60 hover:border-indigo-500')}">
+                                        ${isDoneOnDay ? '<i class="fa-solid fa-check text-xs"></i>' : (isMissedOnPastDay ? '<i class="fa-solid fa-xmark text-xs"></i>' : '')}
+                                    </button>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        // FULL WEEKLY CALENDAR GRID VIEW
+        exitZoomBtn.classList.add('hidden');
+        navControls.classList.remove('hidden');
+        if (catBlocks) catBlocks.classList.remove('hidden');
+
+        headerTitle.innerHTML = `<i class="fa-solid fa-calendar-week text-indigo-400 mr-2"></i>Weekly Calendar Planner`;
+        headerSubtitle.textContent = "Plan tasks in advance for any day of the week. Double-tap/click any day to zoom in.";
+
         const weekStartStr = days[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const weekEndStr = days[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         document.getElementById('plannerWeekRangeLabel').textContent = `${weekStartStr} - ${weekEndStr}`;
 
-        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        grid.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3";
 
         grid.innerHTML = days.map(dayDate => {
             const isoStr = dayDate.toISOString().split('T')[0];
@@ -1853,12 +2069,10 @@ class FocusQuestApp {
             const isPastDay = isoStr < todayStr;
             const dayIdx = dayDate.getDay();
 
-            const dayTasks = this.tasks.filter(t => {
-                return this.isTaskScheduledForDate(t, isoStr);
-            });
+            const dayTasks = this.sortTasksByStartTime(this.tasks.filter(t => this.isTaskScheduledForDate(t, isoStr)));
 
             return `
-                <div class="p-3.5 rounded-2xl bg-slate-900/90 border ${isToday ? 'neon-today-card border-indigo-500' : 'border-slate-800'} flex flex-col space-y-3 min-h-[160px]">
+                <div ondblclick="app.zoomIntoDay('${isoStr}')" class="p-3.5 rounded-2xl bg-slate-900/90 border ${isToday ? 'neon-today-card border-indigo-500' : 'border-slate-800'} flex flex-col space-y-3 min-h-[170px] cursor-pointer hover:border-indigo-500/50 transition">
                     <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
                         <div>
                             <span class="text-xs font-bold uppercase tracking-wider ${isToday ? 'text-indigo-400' : 'text-slate-400'}">${dayNames[dayIdx]}</span>
@@ -1875,9 +2089,11 @@ class FocusQuestApp {
 
                             return `
                                 <div class="p-2 rounded-xl bg-slate-800/80 border-l-4 hover:bg-slate-700/80 transition flex items-center justify-between space-x-2 text-xs" style="border-left-color: ${cat.color}">
-                                    <div onclick="app.openTaskDetail('${t.id}')" class="font-bold cursor-pointer flex-1 ${isDoneOnDay ? 'line-through text-slate-500' : (isMissedOnPastDay ? 'text-rose-400/90' : 'text-slate-200')}">
-                                        ${t.title}
-                                        ${isMissedOnPastDay ? '<span class="text-[9px] font-extrabold ml-1 px-1 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">MISSED</span>' : ''}
+                                    <div onclick="app.openTaskDetail('${t.id}')" class="space-y-0.5 flex-1 min-w-0">
+                                        <div class="font-bold truncate ${isDoneOnDay ? 'line-through text-slate-500' : (isMissedOnPastDay ? 'text-rose-400/90' : 'text-slate-200')}">
+                                            ${t.title}
+                                        </div>
+                                        ${t.startTime ? `<div class="text-[10px] font-semibold text-indigo-400">${t.startTime}</div>` : ''}
                                     </div>
                                     <button onclick="app.toggleTaskComplete('${t.id}', '${isoStr}')" class="w-4 h-4 rounded border flex items-center justify-center shrink-0 transition ${isDoneOnDay ? 'bg-indigo-600 border-indigo-600 text-white' : (isMissedOnPastDay ? 'border-rose-500/50 bg-rose-950/40 text-rose-400' : 'border-slate-600 bg-slate-900/60 hover:border-indigo-500')}">
                                         ${isDoneOnDay ? '<i class="fa-solid fa-check text-[9px]"></i>' : (isMissedOnPastDay ? '<i class="fa-solid fa-xmark text-[9px]"></i>' : '')}
@@ -1902,7 +2118,10 @@ class FocusQuestApp {
                         </div>
                         <div class="space-y-1.5">
                             ${catTasks.map(t => `
-                                <div class="p-2 rounded-lg bg-slate-800/50 text-xs text-slate-300 truncate">${t.title}</div>
+                                <div class="p-2 rounded-lg bg-slate-800/50 text-xs text-slate-300 truncate flex items-center justify-between">
+                                    <span class="truncate">${t.title}</span>
+                                    ${t.startTime ? `<span class="text-[10px] font-semibold text-indigo-400 ml-1">${t.startTime}</span>` : ''}
+                                </div>
                             `).join('')}
                         </div>
                     </div>
@@ -1948,6 +2167,24 @@ class FocusQuestApp {
             filtered = filtered.filter(t => t.title.toLowerCase().includes(this.searchQuery) || (t.description && t.description.toLowerCase().includes(this.searchQuery)));
         }
 
+        if (this.currentView === 'all') {
+            const categoryOrder = ['cat-general', 'cat-work', 'cat-health', 'cat-personal'];
+            filtered.sort((a, b) => {
+                let idxA = categoryOrder.indexOf(a.categoryId);
+                let idxB = categoryOrder.indexOf(b.categoryId);
+                if (idxA === -1) idxA = 99;
+                if (idxB === -1) idxB = 99;
+                if (idxA !== idxB) return idxA - idxB;
+                
+                if (!a.startTime && !b.startTime) return 0;
+                if (!a.startTime) return 1;
+                if (!b.startTime) return -1;
+                return a.startTime.localeCompare(b.startTime);
+            });
+        } else {
+            this.sortTasksByStartTime(filtered);
+        }
+
         if (filtered.length === 0) {
             container.innerHTML = `
                 <div class="p-12 text-center rounded-2xl bg-cardBg/30 border border-borderCol/40 space-y-3">
@@ -1981,13 +2218,15 @@ class FocusQuestApp {
                                     <i class="fa-solid ${category.icon} mr-1"></i>${category.name}
                                 </span>
 
+                                ${task.startTime ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-500/40 shrink-0"><i class="fa-solid fa-clock mr-1"></i>${task.startTime}${task.endTime ? ' - ' + task.endTime : ''}</span>` : ''}
+
                                 ${isTodayBet ? '<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">+2 PTS BET</span>' : ''}
                             </div>
 
                             ${task.description ? `<p class="text-xs text-slate-400 line-clamp-1 truncate">${task.description}</p>` : ''}
                             
                             <div class="flex items-center space-x-3 text-[11px] text-slate-400 pt-0.5">
-                                ${task.dueDate ? `<span><i class="fa-solid fa-clock mr-1 text-slate-500"></i>${task.dueDate}</span>` : ''}
+                                ${task.dueDate ? `<span><i class="fa-solid fa-calendar mr-1 text-slate-500"></i>${task.dueDate}</span>` : ''}
                                 ${task.frequencyType === 'multiple' && Array.isArray(task.multipleDates) ? `<span><i class="fa-solid fa-calendar-days mr-1 text-slate-500"></i>${task.multipleDates.length} selected date(s)</span>` : ''}
                                 ${task.url ? `<a href="${task.url}" target="_blank" class="text-indigo-400 hover:underline"><i class="fa-solid fa-link mr-1"></i>Link</a>` : ''}
                             </div>
