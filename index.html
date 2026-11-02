@@ -395,6 +395,7 @@
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Frequency Type</label>
                     <select id="taskFrequencyTypeSelect" onchange="app.handleFrequencyTypeChange(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
                         <option value="once">One-time / Scheduled Date</option>
+                        <option value="multiple">Multiple Days</option>
                         <option value="recurring">Recurring Weekly Days</option>
                         <option value="undated">Undated / Someday</option>
                     </select>
@@ -405,6 +406,19 @@
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Scheduled Date</label>
                 <input type="date" id="taskDateInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
                 <p class="text-[11px] text-slate-400 mt-1">Scheduled tasks earn +2 points upon completion (or -2 penalty at midnight).</p>
+            </div>
+
+            <!-- Multiple Days Picker Section -->
+            <div id="multipleDaysSection" class="hidden space-y-2">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Select Specific Dates</label>
+                <div class="flex items-center space-x-2">
+                    <input type="date" id="multipleDatePickerInput" class="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <button type="button" onclick="app.addSelectedMultipleDate()" class="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs">Add Date</button>
+                </div>
+                <div id="selectedDatesChips" class="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pt-1">
+                    <!-- Date chips inserted dynamically -->
+                </div>
+                <p class="text-[11px] text-slate-400">Creates independent one-time slots on each selected date (does not repeat automatically).</p>
             </div>
 
             <div id="recurringDaysSection" class="hidden space-y-2">
@@ -454,6 +468,35 @@
                 <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-600/20">Save Task</button>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Daily Cleanup Modal -->
+<div id="dailyCleanupModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-md overflow-hidden shadow-2xl p-6 space-y-4 my-auto">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto text-xl border border-indigo-500/30">
+            <i class="fa-solid fa-broom"></i>
+        </div>
+        <div class="text-center">
+            <h3 class="font-extrabold text-base text-white">Daily Cleanup</h3>
+            <p id="dailyCleanupQuestion" class="text-xs text-slate-300 mt-1">Delete all completed tasks from yesterday?</p>
+        </div>
+        
+        <!-- Checklist container when selecting No -->
+        <div id="dailyCleanupChecklistWrapper" class="hidden space-y-2 pt-2 border-t border-slate-800 max-h-48 overflow-y-auto text-left">
+            <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Select completed tasks to delete:</p>
+            <div id="dailyCleanupChecklist" class="space-y-1.5"></div>
+        </div>
+
+        <div id="dailyCleanupInitialButtons" class="flex space-x-3 pt-2">
+            <button onclick="app.handleDailyCleanupNo()" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold transition">No</button>
+            <button onclick="app.handleDailyCleanupYes()" class="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-600/20 transition">Yes</button>
+        </div>
+
+        <div id="dailyCleanupSelectButtons" class="hidden flex space-x-3 pt-2">
+            <button onclick="app.closeModal('dailyCleanupModal')" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition">Cancel</button>
+            <button onclick="app.confirmSelectedDailyCleanup()" class="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold transition">Confirm</button>
+        </div>
     </div>
 </div>
 
@@ -599,7 +642,7 @@
         </div>
         <div class="p-6 space-y-4">
             <p class="text-xs text-slate-300 leading-relaxed">
-                Manually trigger midnight check. Uncompleted tasks for today will deduct <strong class="text-rose-400">-2 points each</strong>, unchecking today status and shifting scheduled date to tomorrow.
+                Manually trigger midnight check. Uncompleted scheduled tasks for today will deduct <strong class="text-rose-400">-2 points each</strong>, unchecking today status and shifting scheduled date to tomorrow.
             </p>
             <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-400" id="debugUncompletedSummary">
                 <!-- Summary of uncompleted tasks -->
@@ -730,6 +773,8 @@ class FocusQuestApp {
         this.audioEnabled = localStorage.getItem('focusquest_audio') !== 'false';
         this.activeDetailTaskId = null;
         this.pendingDeleteAction = null;
+        this.selectedMultipleDates = [];
+        this.yesterdayCleanupTasks = [];
 
         this.firebaseApp = null;
         this.db = null;
@@ -907,19 +952,31 @@ class FocusQuestApp {
         return d.toISOString().split('T')[0];
     }
 
+    getYesterdayISO() {
+        const d = new Date();
+        d.setDate(d.getDate() - 1);
+        return d.toISOString().split('T')[0];
+    }
+
     getDayOfWeekIndex(dateObj = new Date()) {
         return dateObj.getDay(); // 0 = Sun, 1 = Mon ...
     }
 
-    isTaskScheduledForToday(task) {
-        const todayStr = this.getTodayISO();
-        if (task.isToday) return true;
-        if (task.frequencyType === 'once' && task.dueDate === todayStr) return true;
+    isTaskScheduledForDate(task, dateISO) {
+        if (!dateISO) dateISO = this.getTodayISO();
+        if (task.frequencyType === 'once' && task.dueDate === dateISO) return true;
+        if (task.frequencyType === 'multiple' && Array.isArray(task.multipleDates) && task.multipleDates.includes(dateISO)) return true;
         if (task.frequencyType === 'recurring' && Array.isArray(task.recurringDays)) {
-            const currentDay = this.getDayOfWeekIndex();
-            if (task.recurringDays.includes(currentDay)) return true;
+            const parts = dateISO.split('-');
+            const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            if (task.recurringDays.includes(d.getDay())) return true;
         }
+        if (dateISO === this.getTodayISO() && task.isToday) return true;
         return false;
+    }
+
+    isTaskScheduledForToday(task) {
+        return this.isTaskScheduledForDate(task, this.getTodayISO());
     }
 
     isTaskCompletedOnDate(task, dateISO) {
@@ -933,7 +990,7 @@ class FocusQuestApp {
         return false;
     }
 
-    /* Midnight Auto Settlement Mechanics & Reset Daily Recurring Tasks */
+    /* Midnight Auto Settlement Mechanics & Daily Cleanup Prompt */
     checkMidnightAutoSettlement() {
         const todayStr = this.getTodayISO();
         
@@ -947,26 +1004,39 @@ class FocusQuestApp {
         if (this.user.lastSettlementDate !== todayStr) {
             // Check if there was a previous settlement date recorded
             if (this.user.lastSettlementDate) {
-                this.executeMidnightSettlementLogic();
+                this.executeMidnightSettlementLogic(this.user.lastSettlementDate);
             }
             this.user.lastSettlementDate = todayStr;
             this.saveLocalStorage();
+
+            // Prompt daily cleanup on a new day if yesterday had completed tasks
+            this.checkAndPromptDailyCleanup();
         }
     }
 
-    executeMidnightSettlementLogic() {
+    executeMidnightSettlementLogic(settlementDate) {
+        if (!settlementDate) settlementDate = this.getTodayISO();
         let penalties = 0;
-        const tomorrowISO = new Date(Date.now() + 86400000).toISOString().split('T')[0];
 
         this.tasks.forEach(task => {
-            // Uncompleted tasks assigned for today
-            if (task.isToday && !this.isTaskCompletedOnDate(task, this.getTodayISO())) {
+            const scheduledForSettlementDay = this.isTaskScheduledForDate(task, settlementDate);
+            const completedOnSettlementDay = this.isTaskCompletedOnDate(task, settlementDate);
+
+            // Uncompleted scheduled task on settlement date -> apply penalty
+            if (scheduledForSettlementDay && !completedOnSettlementDay) {
                 penalties += 2;
-                task.isToday = false; // Uncheck Today's Focus
                 
-                // If it's a scheduled date task, bump to tomorrow
+                // Track explicitly in completion history as missed (uncompleted)
+                if (!task.completionHistory) task.completionHistory = {};
+                task.completionHistory[settlementDate] = false;
+
+                // Uncheck today status
+                task.isToday = false;
+
+                // Uncompleted single tasks move to Unrated / All Tasks Pool (undated)
                 if (task.frequencyType === 'once') {
-                    task.dueDate = tomorrowISO;
+                    task.frequencyType = 'undated';
+                    task.dueDate = '';
                 }
             }
         });
@@ -975,6 +1045,67 @@ class FocusQuestApp {
             this.user.points = Math.max(0, this.user.points - penalties);
             this.render();
         }
+    }
+
+    checkAndPromptDailyCleanup() {
+        const yesterdayISO = this.getYesterdayISO();
+        this.yesterdayCleanupTasks = this.tasks.filter(t => this.isTaskCompletedOnDate(t, yesterdayISO));
+
+        if (this.yesterdayCleanupTasks.length > 0) {
+            const questionElem = document.getElementById('dailyCleanupQuestion');
+            if (questionElem) questionElem.textContent = "Delete all completed tasks from yesterday?";
+            
+            document.getElementById('dailyCleanupChecklistWrapper').classList.add('hidden');
+            document.getElementById('dailyCleanupInitialButtons').classList.remove('hidden');
+            document.getElementById('dailyCleanupSelectButtons').classList.add('hidden');
+
+            this.openModal('dailyCleanupModal');
+        }
+    }
+
+    handleDailyCleanupYes() {
+        const yesterdayISO = this.getYesterdayISO();
+        const taskIdsToDelete = this.yesterdayCleanupTasks.map(t => t.id);
+        
+        this.confirmDelete("Are you sure you want to completely delete all completed tasks from yesterday?", () => {
+            this.tasks = this.tasks.filter(t => !taskIdsToDelete.includes(t.id));
+            this.saveLocalStorage();
+            this.closeModal('dailyCleanupModal');
+            this.render();
+        });
+    }
+
+    handleDailyCleanupNo() {
+        document.getElementById('dailyCleanupInitialButtons').classList.add('hidden');
+        document.getElementById('dailyCleanupChecklistWrapper').classList.remove('hidden');
+        document.getElementById('dailyCleanupSelectButtons').classList.remove('hidden');
+
+        const container = document.getElementById('dailyCleanupChecklist');
+        if (container) {
+            container.innerHTML = this.yesterdayCleanupTasks.map(t => `
+                <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
+                    <input type="checkbox" value="${t.id}" class="cleanupTaskCheckbox rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500" checked>
+                    <span class="text-slate-200 truncate font-semibold">${t.title}</span>
+                </label>
+            `).join('');
+        }
+    }
+
+    confirmSelectedDailyCleanup() {
+        const checkedBoxes = document.querySelectorAll('.cleanupTaskCheckbox:checked');
+        const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+        if (selectedIds.length === 0) {
+            this.closeModal('dailyCleanupModal');
+            return;
+        }
+
+        this.confirmDelete("Are you sure you want to completely delete these tasks?", () => {
+            this.tasks = this.tasks.filter(t => !selectedIds.includes(t.id));
+            this.saveLocalStorage();
+            this.closeModal('dailyCleanupModal');
+            this.render();
+        });
     }
 
     /* UI Navigation & Sidebar Controls */
@@ -1145,6 +1276,9 @@ class FocusQuestApp {
         const isTodayInput = document.getElementById('taskIsTodayInput');
         if (isTodayInput) isTodayInput.checked = true;
 
+        this.selectedMultipleDates = [];
+        this.renderSelectedMultipleDates();
+
         // Uncheck all recurring boxes
         document.querySelectorAll('input[name="recurringDay"]').forEach(cb => cb.checked = false);
 
@@ -1160,19 +1294,50 @@ class FocusQuestApp {
 
     handleFrequencyTypeChange(val) {
         const dateSec = document.getElementById('oneTimeDateSection');
+        const multSec = document.getElementById('multipleDaysSection');
         const recurSec = document.getElementById('recurringDaysSection');
+
+        dateSec.classList.add('hidden');
+        multSec.classList.add('hidden');
+        recurSec.classList.add('hidden');
 
         if (val === 'once') {
             dateSec.classList.remove('hidden');
-            recurSec.classList.add('hidden');
+        } else if (val === 'multiple') {
+            multSec.classList.remove('hidden');
         } else if (val === 'recurring') {
-            dateSec.classList.add('hidden');
             recurSec.classList.remove('hidden');
-        } else {
-            // undated
-            dateSec.classList.add('hidden');
-            recurSec.classList.add('hidden');
         }
+    }
+
+    addSelectedMultipleDate() {
+        const picker = document.getElementById('multipleDatePickerInput');
+        if (!picker || !picker.value) return;
+        const val = picker.value;
+        if (!this.selectedMultipleDates.includes(val)) {
+            this.selectedMultipleDates.push(val);
+            this.selectedMultipleDates.sort();
+            this.renderSelectedMultipleDates();
+        }
+        picker.value = '';
+    }
+
+    removeMultipleDate(dateStr) {
+        this.selectedMultipleDates = this.selectedMultipleDates.filter(d => d !== dateStr);
+        this.renderSelectedMultipleDates();
+    }
+
+    renderSelectedMultipleDates() {
+        const container = document.getElementById('selectedDatesChips');
+        if (!container) return;
+        container.innerHTML = this.selectedMultipleDates.map(d => `
+            <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-indigo-950 border border-indigo-500/40 text-xs font-semibold text-indigo-200">
+                <span>${d}</span>
+                <button type="button" onclick="app.removeMultipleDate('${d}')" class="text-indigo-400 hover:text-rose-400 ml-1">
+                    <i class="fa-solid fa-xmark text-[10px]"></i>
+                </button>
+            </span>
+        `).join('');
     }
 
     syncModalDateCheckbox(isTodayChecked) {
@@ -1201,6 +1366,8 @@ class FocusQuestApp {
             });
         }
 
+        const multipleDates = frequencyType === 'multiple' ? [...this.selectedMultipleDates] : [];
+
         if (taskId) {
             // Edit existing
             const task = this.tasks.find(t => t.id === taskId);
@@ -1211,6 +1378,7 @@ class FocusQuestApp {
                 task.categoryId = categoryId;
                 task.frequencyType = frequencyType;
                 task.dueDate = dueDate;
+                task.multipleDates = multipleDates;
                 task.recurringDays = recurringDays;
                 task.isToday = isToday;
             }
@@ -1224,6 +1392,7 @@ class FocusQuestApp {
                 categoryId,
                 frequencyType,
                 dueDate,
+                multipleDates,
                 recurringDays,
                 isToday,
                 completed: false,
@@ -1256,6 +1425,9 @@ class FocusQuestApp {
         document.getElementById('taskFrequencyTypeSelect').value = task.frequencyType || 'once';
         document.getElementById('taskDateInput').value = task.dueDate || this.getTodayISO();
         document.getElementById('taskIsTodayInput').checked = !!task.isToday;
+
+        this.selectedMultipleDates = Array.isArray(task.multipleDates) ? [...task.multipleDates] : [];
+        this.renderSelectedMultipleDates();
 
         this.handleFrequencyTypeChange(task.frequencyType || 'once');
 
@@ -1529,7 +1701,7 @@ class FocusQuestApp {
 
     /* Debug Midnight Settlement Modal */
     renderDebugSummary() {
-        const uncompletedToday = this.tasks.filter(t => t.isToday && !this.isTaskCompletedOnDate(t, this.getTodayISO()));
+        const uncompletedToday = this.tasks.filter(t => this.isTaskScheduledForToday(t) && !this.isTaskCompletedOnDate(t, this.getTodayISO()));
         const container = document.getElementById('debugUncompletedSummary');
         if (container) {
             if (uncompletedToday.length === 0) {
@@ -1542,7 +1714,7 @@ class FocusQuestApp {
     }
 
     triggerMidnightSettlement() {
-        this.executeMidnightSettlementLogic();
+        this.executeMidnightSettlementLogic(this.getTodayISO());
         this.closeModal('debugModal');
     }
 
@@ -1678,13 +1850,11 @@ class FocusQuestApp {
         grid.innerHTML = days.map(dayDate => {
             const isoStr = dayDate.toISOString().split('T')[0];
             const isToday = isoStr === todayStr;
+            const isPastDay = isoStr < todayStr;
             const dayIdx = dayDate.getDay();
 
             const dayTasks = this.tasks.filter(t => {
-                if (t.frequencyType === 'once' && t.dueDate === isoStr) return true;
-                if (t.frequencyType === 'recurring' && Array.isArray(t.recurringDays) && t.recurringDays.includes(dayIdx)) return true;
-                if (isToday && t.isToday) return true;
-                return false;
+                return this.isTaskScheduledForDate(t, isoStr);
             });
 
             return `
@@ -1701,13 +1871,16 @@ class FocusQuestApp {
                         ${dayTasks.map(t => {
                             const cat = this.categories.find(c => c.id === t.categoryId) || { color: '#6366f1' };
                             const isDoneOnDay = this.isTaskCompletedOnDate(t, isoStr);
+                            const isMissedOnPastDay = isPastDay && !isDoneOnDay;
+
                             return `
                                 <div class="p-2 rounded-xl bg-slate-800/80 border-l-4 hover:bg-slate-700/80 transition flex items-center justify-between space-x-2 text-xs" style="border-left-color: ${cat.color}">
-                                    <div onclick="app.openTaskDetail('${t.id}')" class="font-bold text-slate-200 truncate cursor-pointer flex-1 ${isDoneOnDay ? 'line-through text-slate-500' : ''}">
+                                    <div onclick="app.openTaskDetail('${t.id}')" class="font-bold cursor-pointer flex-1 ${isDoneOnDay ? 'line-through text-slate-500' : (isMissedOnPastDay ? 'text-rose-400/90' : 'text-slate-200')}">
                                         ${t.title}
+                                        ${isMissedOnPastDay ? '<span class="text-[9px] font-extrabold ml-1 px-1 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30">MISSED</span>' : ''}
                                     </div>
-                                    <button onclick="app.toggleTaskComplete('${t.id}', '${isoStr}')" class="w-4 h-4 rounded border flex items-center justify-center shrink-0 transition ${isDoneOnDay ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-600 bg-slate-900/60 hover:border-indigo-500'}">
-                                        ${isDoneOnDay ? '<i class="fa-solid fa-check text-[9px]"></i>' : ''}
+                                    <button onclick="app.toggleTaskComplete('${t.id}', '${isoStr}')" class="w-4 h-4 rounded border flex items-center justify-center shrink-0 transition ${isDoneOnDay ? 'bg-indigo-600 border-indigo-600 text-white' : (isMissedOnPastDay ? 'border-rose-500/50 bg-rose-950/40 text-rose-400' : 'border-slate-600 bg-slate-900/60 hover:border-indigo-500')}">
+                                        ${isDoneOnDay ? '<i class="fa-solid fa-check text-[9px]"></i>' : (isMissedOnPastDay ? '<i class="fa-solid fa-xmark text-[9px]"></i>' : '')}
                                     </button>
                                 </div>
                             `;
@@ -1815,6 +1988,7 @@ class FocusQuestApp {
                             
                             <div class="flex items-center space-x-3 text-[11px] text-slate-400 pt-0.5">
                                 ${task.dueDate ? `<span><i class="fa-solid fa-clock mr-1 text-slate-500"></i>${task.dueDate}</span>` : ''}
+                                ${task.frequencyType === 'multiple' && Array.isArray(task.multipleDates) ? `<span><i class="fa-solid fa-calendar-days mr-1 text-slate-500"></i>${task.multipleDates.length} selected date(s)</span>` : ''}
                                 ${task.url ? `<a href="${task.url}" target="_blank" class="text-indigo-400 hover:underline"><i class="fa-solid fa-link mr-1"></i>Link</a>` : ''}
                             </div>
                         </div>
