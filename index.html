@@ -94,6 +94,15 @@
             animation: floatPet 2.5s infinite ease-in-out;
         }
 
+        /* Toast Popup Animations */
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .animate-toast {
+            animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
         /* Rank Badge Gradients */
         .rank-bronze { background: linear-gradient(135deg, #78350f, #b45309); color: #fef3c7; border: 1px solid #d97706; }
         .rank-silver { background: linear-gradient(135deg, #475569, #94a3b8); color: #f8fafc; border: 1px solid #cbd5e1; }
@@ -105,6 +114,9 @@
     </style>
 </head>
 <body class="theme-midnight bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden">
+
+<!-- Toast Notification Container -->
+<div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm pointer-events-none"></div>
 
 <div id="app" class="flex flex-col md:flex-row flex-1 h-screen overflow-hidden relative">
 
@@ -122,7 +134,6 @@
                 </svg>
             </div>
             <span class="font-bold text-base tracking-tight">FocusQuest</span>
-            <!-- Mobile Active Pet -->
             <span id="mobileActivePetIcon" class="text-xl pet-bounce ml-1 cursor-pointer" onclick="app.openModal('shopModal')">🐱</span>
         </div>
         <div class="flex items-center space-x-2">
@@ -153,7 +164,6 @@
                         <circle cx="12" cy="12" r="2" class="fill-indigo-400 stroke-none" />
                     </svg>
                 </div>
-                <!-- Pet Display Companion -->
                 <div class="flex items-center space-x-1.5 min-w-0">
                     <span id="sidebarPetDisplay" class="text-2xl pet-bounce cursor-pointer shrink-0" title="Active Pet Companion" onclick="app.openModal('shopModal')">🐱</span>
                     <div class="min-w-0">
@@ -162,7 +172,6 @@
                     </div>
                 </div>
             </div>
-            <!-- Mobile Close Button -->
             <button onclick="app.toggleSidebar()" class="md:hidden p-2 text-slate-400 hover:text-white rounded-xl bg-slate-800/50">
                 <i class="fa-solid fa-xmark text-lg"></i>
             </button>
@@ -171,7 +180,6 @@
         <!-- Level & Rank UI -->
         <div class="p-4 mx-4 mt-4 rounded-2xl bg-gradient-to-br from-indigo-950/80 via-slate-900/90 to-slate-900 border border-indigo-500/40 shadow-xl shrink-0 space-y-3">
             <div class="flex items-center justify-between">
-                <!-- Rank Badge Emblem -->
                 <div id="userRankBadge" class="rank-bronze px-2.5 py-1 rounded-xl font-black text-xs uppercase tracking-wider flex items-center space-x-1.5 shadow-md">
                     <i class="fa-solid fa-shield-halved text-xs" id="rankBadgeIcon"></i>
                     <span id="userRankTierLabel">Bronze I</span>
@@ -239,6 +247,15 @@
                         </div>
                         <span id="favoritesCountBadge" class="px-2 py-0.5 rounded-full text-xs bg-slate-800 text-slate-300 font-semibold">0</span>
                     </button>
+                    <button onclick="app.openModal('shopModal'); app.switchShopTab('achievements');" id="nav-achievements" class="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-7 h-7 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+                                <i class="fa-solid fa-trophy text-xs"></i>
+                            </div>
+                            <span>Achievements & Quests</span>
+                        </div>
+                        <span id="achievementsCountBadge" class="px-2 py-0.5 rounded-full text-xs bg-purple-950 text-purple-300 font-bold border border-purple-500/30">50+</span>
+                    </button>
                 </nav>
             </div>
 
@@ -250,9 +267,7 @@
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 </div>
-                <nav id="categoryListContainer" class="space-y-1">
-                    <!-- Dynamically populated -->
-                </nav>
+                <nav id="categoryListContainer" class="space-y-1"></nav>
             </div>
         </div>
 
@@ -307,7 +322,7 @@
                     </div>
                     <div>
                         <h3 class="font-extrabold text-sm sm:text-base text-white">Daily Bet Active</h3>
-                        <p class="text-xs text-slate-300 mt-0.5">Tasks scheduled for Today earn <span class="text-amber-400 font-bold">+2 Points</span> (and incur -2 penalty at midnight if uncompleted).</p>
+                        <p class="text-xs text-slate-300 mt-0.5">Tasks completed on time earn <span class="text-amber-400 font-bold" id="todayPointBonusLabel">+3 Points</span> (or -2 penalty at midnight if missed).</p>
                     </div>
                 </div>
                 <div class="flex items-center justify-between sm:justify-start space-x-3 bg-slate-950/70 px-4 py-2.5 rounded-xl border border-slate-800 shrink-0">
@@ -319,12 +334,10 @@
                 </div>
             </div>
 
-            <!-- Weekly Planner Section (With Outlook Day Zoom support) -->
+            <!-- Weekly Planner Section -->
             <div id="weeklyPlannerContainer" class="hidden space-y-6">
-                <!-- Top Toolbar -->
                 <div class="p-4 rounded-2xl bg-cardBg/60 border border-borderCol/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div class="flex items-center space-x-3">
-                        <!-- Return Button for Zoom View -->
                         <button id="exitDayZoomBtn" onclick="app.exitDayZoomView()" class="hidden px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md transition flex items-center space-x-1.5">
                             <i class="fa-solid fa-arrow-left"></i>
                             <span>Back to Weekly Calendar</span>
@@ -344,12 +357,8 @@
                     </div>
                 </div>
                 
-                <!-- Weekly Grid or Zoomed Day Single View Container -->
-                <div id="plannerDaysGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3">
-                    <!-- Dynamically populated -->
-                </div>
+                <div id="plannerDaysGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3"></div>
 
-                <!-- Category Blocks -->
                 <div id="categoryBlocksWrapper" class="p-5 rounded-2xl bg-cardBg/40 border border-borderCol/60 space-y-4">
                     <div class="flex items-center justify-between">
                         <h4 class="font-extrabold text-sm text-white flex items-center space-x-2">
@@ -358,9 +367,7 @@
                         </h4>
                         <span class="text-xs text-slate-400 hidden sm:inline">Active category schedules</span>
                     </div>
-                    <div id="plannerCategoryPoolsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                        <!-- Category blocks injected dynamically -->
-                    </div>
+                    <div id="plannerCategoryPoolsContainer" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4"></div>
                 </div>
             </div>
 
@@ -387,14 +394,28 @@
             </div>
 
             <!-- Task Cards List Container -->
-            <div id="taskContainer" class="space-y-3 pb-20">
-                <!-- Dynamic task cards will be injected here -->
-            </div>
+            <div id="taskContainer" class="space-y-3 pb-20"></div>
         </div>
     </main>
 </div>
 
-<!-- Task Modal (Create & Edit Task with Time Slot) -->
+<!-- Special Celebration Modal (All Daily Tasks Complete) -->
+<div id="celebrationModal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-cardBg border-2 border-emerald-500/60 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-6 text-center space-y-5 my-auto animate-toast">
+        <div class="w-20 h-20 rounded-3xl bg-emerald-500/20 border-2 border-emerald-400/50 flex items-center justify-center mx-auto text-4xl shadow-2xl shadow-emerald-500/30 pet-bounce">
+            🏆
+        </div>
+        <div>
+            <h3 class="font-black text-2xl text-white">Daily Champion!</h3>
+            <p class="text-sm text-emerald-300 font-semibold mt-2 leading-relaxed" id="celebrationMessageText">Incredible work! You crushed every single goal today!</p>
+        </div>
+        <button onclick="app.closeModal('celebrationModal')" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-emerald-500/30 transition transform hover:scale-105 active:scale-95">
+            Continue Crushing It!
+        </button>
+    </div>
+</div>
+
+<!-- Task Modal -->
 <div id="taskModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-md overflow-hidden shadow-2xl my-auto max-h-[90vh] flex flex-col">
         <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50 shrink-0">
@@ -415,7 +436,6 @@
                 <textarea id="taskDescriptionInput" rows="2" placeholder="e.g., Read pages 40-55..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
             </div>
 
-            <!-- Optional Time Slot Selection -->
             <div class="grid grid-cols-2 gap-3 p-3 rounded-xl bg-slate-900/70 border border-slate-800">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Start Time (Optional)</label>
@@ -425,7 +445,7 @@
                     <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">End Time (Optional)</label>
                     <input type="time" id="taskEndTimeInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
                 </div>
-                <p class="text-[10px] text-slate-400 col-span-2">Tasks with time slots are sorted chronologically. Undated/untimed tasks appear below.</p>
+                <p class="text-[10px] text-slate-400 col-span-2">Tasks with time slots are sorted chronologically.</p>
             </div>
 
             <div>
@@ -453,7 +473,6 @@
             <div id="oneTimeDateSection">
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Scheduled Date</label>
                 <input type="date" id="taskDateInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
-                <p class="text-[11px] text-slate-400 mt-1">Scheduled tasks earn +2 points upon completion (or -2 penalty at midnight).</p>
             </div>
 
             <div id="multipleDaysSection" class="hidden space-y-2">
@@ -503,7 +522,7 @@
                 <input type="checkbox" id="taskIsTodayInput" onchange="app.syncModalDateCheckbox(this.checked)" class="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
                 <div>
                     <label for="taskIsTodayInput" class="text-sm font-bold text-slate-200 cursor-pointer">Assign to Today's Focus</label>
-                    <p class="text-[11px] text-slate-400">Shortcut to schedule task for today (+2 Points / -2 Midnight Penalty).</p>
+                    <p class="text-[11px] text-slate-400">Shortcut to schedule task for today.</p>
                 </div>
             </div>
 
@@ -598,7 +617,7 @@
             </div>
 
             <div class="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800 pt-3">
-                <div>Point Value: <strong id="detailTaskPoints" class="text-amber-400 font-extrabold">+2 pts</strong></div>
+                <div>Point Value: <strong id="detailTaskPoints" class="text-amber-400 font-extrabold">+3 pts</strong></div>
                 <div>Type: <span id="detailTaskType" class="text-slate-200 font-semibold">Scheduled</span></div>
             </div>
 
@@ -643,37 +662,38 @@
     </div>
 </div>
 
-<!-- Massive Shop Modal (Pets, Loot Boxes, Themes, Badges, Seasonal) -->
+<!-- Shop & Achievements Modal -->
 <div id="shopModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden shadow-2xl my-auto">
+    <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-3xl max-h-[88vh] flex flex-col overflow-hidden shadow-2xl my-auto">
         <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50 shrink-0">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
                     <i class="fa-solid fa-store text-xl"></i>
                 </div>
                 <div>
-                    <h3 class="font-extrabold text-base text-white">FocusQuest Marketplace</h3>
-                    <p class="text-xs text-slate-400">Unlock pets, mystery loot boxes, gradients, and focus ranks.</p>
+                    <h3 class="font-extrabold text-base text-white">FocusQuest Marketplace & Achievements</h3>
+                    <p class="text-xs text-slate-400">Biological Pets, Quests, Loot Boxes, and Ranks.</p>
                 </div>
             </div>
             <div class="flex items-center space-x-3">
                 <span class="text-xs sm:text-sm font-extrabold text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/30 flex items-center space-x-1.5">
-                    <i class="fa-solid fa-coins text-amber-400"></i> <span id="shopUserPoints">0</span> pts
+                    <i class="fa-solid fa-coins text-amber-400"></i> <span id="shopUserPoints">0</span> coins
                 </span>
                 <button onclick="app.closeModal('shopModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
         </div>
+        
         <!-- Shop Navigation Tabs -->
         <div class="flex border-b border-borderCol px-4 pt-3 bg-slate-900/40 gap-2 shrink-0 overflow-x-auto">
-            <button onclick="app.switchShopTab('pets')" id="shop-tab-pets" class="px-3 pb-2 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 whitespace-nowrap">Pets & Companions</button>
+            <button onclick="app.switchShopTab('pets')" id="shop-tab-pets" class="px-3 pb-2 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 whitespace-nowrap">Pet Companions</button>
+            <button onclick="app.switchShopTab('achievements')" id="shop-tab-achievements" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Achievements & Quests (50+)</button>
             <button onclick="app.switchShopTab('lootboxes')" id="shop-tab-lootboxes" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Mystery Boxes</button>
             <button onclick="app.switchShopTab('themes')" id="shop-tab-themes" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Themes & Gradients</button>
             <button onclick="app.switchShopTab('seasonal')" id="shop-tab-seasonal" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Seasonal Collections</button>
             <button onclick="app.switchShopTab('badges')" id="shop-tab-badges" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Quest Ranks & Titles</button>
         </div>
-        <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4" id="shopItemsContainer">
-            <!-- Dynamically populated -->
-        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4" id="shopItemsContainer"></div>
     </div>
 </div>
 
@@ -705,7 +725,7 @@
         </div>
         <div class="p-6 space-y-4">
             <p class="text-xs text-slate-300 leading-relaxed">
-                Manually trigger midnight check. Uncompleted scheduled tasks for today will deduct <strong class="text-rose-400">-2 points each</strong>, unchecking today status and shifting single tasks to unrated pool.
+                Manually trigger midnight check. Uncompleted scheduled tasks for today deduct <strong class="text-rose-400">-2 points each</strong>. If 7+ tasks were completed today, a **+2 point High-Volume bonus** will be awarded!
             </p>
             <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-400" id="debugUncompletedSummary">
             </div>
@@ -721,11 +741,36 @@
 <div id="settingsModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl max-h-[90vh] flex flex-col my-auto">
         <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50 shrink-0">
-            <h3 class="font-extrabold text-sm sm:text-base text-white">App Settings & Cross-Device Cloud Sync</h3>
+            <h3 class="font-extrabold text-sm sm:text-base text-white">App Settings & Profile</h3>
             <button onclick="app.closeModal('settingsModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="p-6 space-y-6 overflow-y-auto flex-1">
-            <div class="flex items-center justify-between">
+            <!-- Personalized User Name & Timezone Section -->
+            <div class="space-y-4">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">User Profile & Timezone</h4>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Your Name (For Motivational Popups)</label>
+                    <input type="text" id="userNameInput" placeholder="Enter your name..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Timezone / Country Settings</label>
+                    <select id="userTimezoneSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                        <option value="auto">Auto Detect (Local Browser Timezone)</option>
+                        <option value="UTC">UTC / GMT</option>
+                        <option value="America/New_York">USA - Eastern (New York)</option>
+                        <option value="America/Chicago">USA - Central (Chicago)</option>
+                        <option value="America/Denver">USA - Mountain (Denver)</option>
+                        <option value="America/Los_Angeles">USA - Pacific (Los Angeles)</option>
+                        <option value="Europe/London">UK - London (GMT/BST)</option>
+                        <option value="Europe/Berlin">Europe - Berlin / Paris / Rome (CET)</option>
+                        <option value="Asia/Tokyo">Japan - Tokyo (JST)</option>
+                        <option value="Australia/Sydney">Australia - Sydney (AEST)</option>
+                    </select>
+                    <p class="text-[11px] text-amber-400 mt-1 font-semibold">Completing tasks in your configured timezone awards +3 points per task!</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between border-t border-slate-800 pt-4">
                 <div>
                     <h4 class="text-sm font-bold text-slate-200">Sound Effects (Web Audio)</h4>
                     <p class="text-xs text-slate-400">Play chime on task completion.</p>
@@ -764,14 +809,20 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="flex justify-end pt-2">
+                <button onclick="app.saveProfileSettings()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/20">
+                    Save Profile Settings
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
 /**
- * FocusQuest Extended Logic
- * Senior Frontend Architecture with Realtime Firebase Sync & Customizations
+ * FocusQuest Architecture
+ * Categorized Pets System, Timezones, Motivational Messages & 50+ Achievements
  */
 
 const FIREBASE_CONFIG = {
@@ -785,18 +836,41 @@ const FIREBASE_CONFIG = {
     measurementId: "G-HTCYWZKX18"
 };
 
-// Expanded Shop Catalogue
+// Categorized Biological Pet Companion Catalogue
+const PET_CATALOGUE = [
+    // Mammals - Carnivores
+    { id: 'pet-cat', type: 'pet', group: 'Mammals', subGroup: 'Carnivores', name: 'Focus Kitten', cost: 15, icon: '🐱', desc: 'A cozy house cat cheering your study sessions.' },
+    { id: 'pet-dog', type: 'pet', group: 'Mammals', subGroup: 'Carnivores', name: 'Loyal Puppy', cost: 20, icon: '🐶', desc: 'Always stays by your side while studying.' },
+    { id: 'pet-fox', type: 'pet', group: 'Mammals', subGroup: 'Carnivores', name: 'Clever Red Fox', cost: 35, icon: '🦊', desc: 'Sharp wit companion for tough problem-solving.' },
+    { id: 'pet-lion', type: 'pet', group: 'Mammals', subGroup: 'Carnivores', name: 'Royal Lion', cost: 75, icon: '🦁', desc: 'King of productivity and grand goals.' },
+    { id: 'pet-cheetah', type: 'pet', group: 'Mammals', subGroup: 'Carnivores', name: 'Speedy Cheetah', cost: 90, icon: '🐆', desc: 'Sprint through massive daily task lists.' },
+    
+    // Mammals - Herbivores & Omnivores
+    { id: 'pet-rabbit', type: 'pet', group: 'Mammals', subGroup: 'Herbivores', name: 'Fluffy Rabbit', cost: 25, icon: '🐰', desc: 'Energetic helper jumping from task to task.' },
+    { id: 'pet-panda', type: 'pet', group: 'Mammals', subGroup: 'Herbivores', name: 'Zen Panda', cost: 45, icon: '🐼', desc: 'Keeps calm and focused under high stress.' },
+    { id: 'pet-bear', type: 'pet', group: 'Mammals', subGroup: 'Omnivores', name: 'Grizzly Bear', cost: 65, icon: '🐻', desc: 'Power through heavy workloads easily.' },
+
+    // Birds & Raptors
+    { id: 'pet-falcon', type: 'pet', group: 'Birds', subGroup: 'Raptors', name: 'Peregrine Falcon (Wanderfalke)', cost: 65, icon: '🦅', desc: 'The fastest bird of prey. Swoops in on deadlines.' },
+    { id: 'pet-owl', type: 'pet', group: 'Birds', subGroup: 'Raptors', name: 'Wisdom Night Owl', cost: 35, icon: '🦉', desc: 'Boosts late night focus and intellectual aura.' },
+    { id: 'pet-parrot', type: 'pet', group: 'Birds', subGroup: 'Tropical', name: 'Vibrant Parrot', cost: 30, icon: '🦜', desc: 'Repeats encouraging quotes while you work.' },
+
+    // Reptiles & Amphibians
+    { id: 'pet-turtle', type: 'pet', group: 'Reptiles', subGroup: 'Testudines', name: 'Steady Turtle', cost: 25, icon: '🐢', desc: 'Slow and steady wins every productivity race.' },
+    { id: 'pet-snake', type: 'pet', group: 'Reptiles', subGroup: 'Serpents', name: 'Emerald Snake', cost: 40, icon: '🐍', desc: 'Slithers smoothly through study blocks.' },
+
+    // Aquatic & Fish
+    { id: 'pet-fish', type: 'pet', group: 'Aquatic', subGroup: 'Freshwater', name: 'Goldfish', cost: 10, icon: '🐠', desc: 'Calm underwater presence.' },
+    { id: 'pet-shark', type: 'pet', group: 'Aquatic', subGroup: 'Predators', name: 'Apex Shark', cost: 85, icon: '🦈', desc: 'Dominates complex project goals.' },
+    { id: 'pet-whale', type: 'pet', group: 'Aquatic', subGroup: 'Cetaceans', name: 'Cosmic Whale', cost: 120, icon: '🐋', desc: 'Deep focus ocean giant.' },
+
+    // Mythical & Exotic
+    { id: 'pet-dragon', type: 'pet', group: 'Mythical', subGroup: 'Dragons', name: 'Inferno Dragon', cost: 250, icon: '🐉', desc: 'Mythical fire breathing productivity companion.' },
+    { id: 'pet-phoenix', type: 'pet', group: 'Mythical', subGroup: 'Phoenixes', name: 'Solar Phoenix', cost: 300, icon: '🐦‍🔥', desc: 'Rises victorious from procrastination ashes.' }
+];
+
 const SHOP_ITEMS = [
-    // Pets (Standard, Wild, Mythical)
-    { id: 'pet-cat', type: 'pet', name: 'Focus Kitten', cost: 15, icon: '🐱', desc: 'A cozy house cat that cheers your focus.' },
-    { id: 'pet-dog', type: 'pet', name: 'Loyal Puppy', cost: 20, icon: '🐶', desc: 'Always stays by your side while studying.' },
-    { id: 'pet-fish', type: 'pet', name: 'Goldfish', cost: 10, icon: '🐠', desc: 'Calm underwater friend.' },
-    { id: 'pet-owl', type: 'pet', name: 'Wisdom Owl', cost: 35, icon: '🦉', desc: 'Boosts your intellectual aura.' },
-    { id: 'pet-lion', type: 'pet', name: 'Royal Lion', cost: 75, icon: '🦁', desc: 'A fierce wild king of productivity.' },
-    { id: 'pet-cheetah', type: 'pet', name: 'Speedy Cheetah', cost: 90, icon: '🐆', desc: 'Sprint through your task lists.' },
-    { id: 'pet-whale', type: 'pet', name: 'Cosmic Whale', cost: 120, icon: '🐋', desc: 'Deep focus ocean giant.' },
-    { id: 'pet-dragon', type: 'pet', name: 'Inferno Dragon', cost: 250, icon: '🐉', desc: 'Mythical fire breathing companion.' },
-    { id: 'pet-phoenix', type: 'pet', name: 'Solar Phoenix', cost: 300, icon: '🐦‍🔥', desc: 'Rises from procrastination ashes.' },
+    ...PET_CATALOGUE,
 
     // Themes & Gradients
     { id: 'theme-midnight', type: 'theme', name: 'Midnight Navy', cost: 0, themeClass: 'theme-midnight', desc: 'Default slick deep navy background.' },
@@ -805,37 +879,73 @@ const SHOP_ITEMS = [
     { id: 'theme-ocean', type: 'theme', name: 'Deep Ocean Blue', cost: 45, themeClass: 'theme-ocean', desc: 'Deep navy to cyan blue transition.' },
     { id: 'theme-emerald', type: 'theme', name: 'Emerald Forest', cost: 50, themeClass: 'theme-emerald', desc: 'Lush dark green gradient.' },
     { id: 'theme-sunset', type: 'theme', name: 'Amber Sunset', cost: 50, themeClass: 'theme-sunset', desc: 'Warm burnt orange & bronze glow.' },
-    { id: 'theme-rose', type: 'theme', name: 'Rose Quartz', cost: 55, themeClass: 'theme-rose', desc: 'Dark magenta to crimson.' },
-    { id: 'theme-lavender', type: 'theme', name: 'Lavender Mist', cost: 60, themeClass: 'theme-lavender', desc: 'Deep purple velvet glow.' },
-    { id: 'theme-cyber', type: 'theme', name: 'Cyberpunk Neon', cost: 65, themeClass: 'theme-cyber', desc: 'Futuristic glowing slate.' },
 
     // Loot Boxes
     { id: 'box-basic', type: 'box', name: 'Basic Mystery Box', cost: 20, boxTier: 'basic', icon: '📦', desc: 'Contains random common titles or standard pets.' },
     { id: 'box-rare', type: 'box', name: 'Rare Mystery Box', cost: 45, boxTier: 'rare', icon: '🎁', desc: 'Higher chance for unique color themes & wild pets.' },
     { id: 'box-epic', type: 'box', name: 'Epic Mystery Box', cost: 80, boxTier: 'epic', icon: '💎', desc: 'Unlocks rare pets, focus ranks, or premium gradients.' },
-    { id: 'box-legendary', type: 'box', name: 'Legendary Mystery Box', cost: 150, boxTier: 'legendary', icon: '👑', desc: 'Guaranteed mythical companion or top title.' },
-
-    // Seasonal Items
-    { id: 'sea-autumn', type: 'theme', name: 'Autumn Harvest Theme', cost: 40, themeClass: 'theme-sunset', desc: 'Golden leaves atmosphere.' },
-    { id: 'sea-winter', type: 'pet', name: 'Penguin Companion', cost: 50, icon: '🐧', desc: 'Winter Wonderland frozen buddy.' },
-    { id: 'sea-spring', type: 'pet', name: 'Spring Bunny', cost: 40, icon: '🐰', desc: 'Spring Garden playful mascot.' },
-    { id: 'sea-summer', type: 'pet', name: 'Summer Crab', cost: 35, icon: '🦀', desc: 'Summer Paradise beach sidekick.' },
-    { id: 'sea-halloween', type: 'pet', name: 'Spooky Bat', cost: 60, icon: '🦇', desc: 'Halloween Night creature.' },
-    { id: 'sea-christmas', type: 'pet', name: 'Santa Reindeer', cost: 70, icon: '🦌', desc: 'Christmas Festivity helper.' },
 
     // Quest Ranks & Titles
     { id: 'rank-bronze', type: 'rank', name: 'Bronze Rank Emblem', cost: 0, rankTier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved', desc: 'Bronze rank badge emblem.' },
     { id: 'rank-silver', type: 'rank', name: 'Silver Rank Emblem', cost: 30, rankTier: 'Silver I', cssClass: 'rank-silver', icon: 'fa-shield', desc: 'Silver rank badge emblem.' },
     { id: 'rank-gold', type: 'rank', name: 'Gold Rank Emblem', cost: 60, rankTier: 'Gold I', cssClass: 'rank-gold', icon: 'fa-crown', desc: 'Gold rank badge emblem.' },
-    { id: 'rank-diamond', type: 'rank', name: 'Diamond Rank Emblem', cost: 100, rankTier: 'Diamond I', cssClass: 'rank-diamond', icon: 'fa-gem', desc: 'Diamond rank badge emblem.' },
-    { id: 'rank-mythic', type: 'rank', name: 'Mythic Rank Emblem', cost: 175, rankTier: 'Mythic I', cssClass: 'rank-mythic', icon: 'fa-bolt', desc: 'Mythic rank badge emblem.' },
-    { id: 'rank-legendary', type: 'rank', name: 'Legendary Rank Emblem', cost: 250, rankTier: 'Legendary', cssClass: 'rank-legendary', icon: 'fa-fire', desc: 'Legendary rank badge emblem.' },
-    { id: 'rank-masters', type: 'rank', name: 'Masters Rank Emblem', cost: 400, rankTier: 'Masters', cssClass: 'rank-masters', icon: 'fa-trophy', desc: 'Masters rank badge emblem.' },
-
-    { id: 'title-novice', type: 'badge', name: 'Title: Focus Novice', cost: 10, title: 'Focus Novice', desc: 'Initial commitment title.' },
-    { id: 'title-warrior', type: 'badge', name: 'Title: Discipline Warrior', cost: 50, title: 'Discipline Warrior', desc: 'Disciplined task execution title.' },
-    { id: 'title-master', type: 'badge', name: 'Title: Focus Mastermind', cost: 100, title: 'Focus Mastermind', desc: 'Elite status achiever title.' }
+    { id: 'rank-diamond', type: 'rank', name: 'Diamond Rank Emblem', cost: 100, rankTier: 'Diamond I', cssClass: 'rank-diamond', icon: 'fa-gem', desc: 'Diamond rank badge emblem.' }
 ];
+
+// Progressive Achievements System (50+ Quests)
+const GENERATED_ACHIEVEMENTS = [];
+
+// 1. Streak Milestones (1 to 300 days)
+const streakDays = [1, 2, 3, 4, 5, 7, 10, 14, 21, 30, 45, 60, 75, 90, 100, 125, 150, 175, 200, 250, 300];
+streakDays.forEach(days => {
+    GENERATED_ACHIEVEMENTS.push({
+        id: `ach-streak-${days}`,
+        title: `${days}-Day Focus Streak`,
+        desc: `Complete at least 1 task daily for ${days} consecutive day(s).`,
+        rewardCoins: Math.min(500, Math.floor(days * 1.5) + 5),
+        type: 'streak',
+        target: days
+    });
+});
+
+// 2. Volume Milestones Total Tasks Completed (1 to 500 tasks)
+const totalTaskCounts = [1, 5, 10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 750, 1000];
+totalTaskCounts.forEach(count => {
+    GENERATED_ACHIEVEMENTS.push({
+        id: `ach-total-${count}`,
+        title: `Task Conqueror (${count} Tasks)`,
+        desc: `Reach a career milestone of ${count} total completed tasks.`,
+        rewardCoins: Math.min(600, Math.floor(count * 0.8) + 10),
+        type: 'totalTasks',
+        target: count
+    });
+});
+
+// 3. Single Day High-Volume Quests (1 to 20 tasks in 1 day)
+const singleDayCounts = [3, 5, 7, 10, 12, 15, 20];
+singleDayCounts.forEach(count => {
+    GENERATED_ACHIEVEMENTS.push({
+        id: `ach-dayvol-${count}`,
+        title: `Power Hour: ${count} Tasks in 1 Day`,
+        desc: `Finish ${count} tasks in a single calendar day.`,
+        rewardCoins: count * 5,
+        type: 'singleDayVol',
+        target: count
+    });
+});
+
+// 4. Pet & Collection Achievements
+const collectionCounts = [1, 3, 5, 8, 12, 15];
+collectionCounts.forEach(count => {
+    GENERATED_ACHIEVEMENTS.push({
+        id: `ach-pets-${count}`,
+        title: `Zookeeper: ${count} Pet Companions`,
+        desc: `Collect and adopt ${count} different pets in your shop sanctuary.`,
+        rewardCoins: count * 15,
+        type: 'petCount',
+        target: count
+    });
+});
 
 class FocusQuestApp {
     constructor() {
@@ -848,6 +958,8 @@ class FocusQuestApp {
         ];
         
         this.user = {
+            name: 'Warrior',
+            timezone: 'auto',
             points: 0,
             level: 1,
             xp: 0,
@@ -856,6 +968,9 @@ class FocusQuestApp {
             activePet: '🐱',
             activeRank: { tier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved' },
             inventory: ['theme-midnight', 'pet-cat', 'rank-bronze'],
+            unlockedAchievements: [],
+            currentStreak: 0,
+            lastCompletedDate: null,
             lastSettlementDate: null
         };
 
@@ -872,8 +987,6 @@ class FocusQuestApp {
         this.pendingDeleteAction = null;
         this.selectedMultipleDates = [];
         this.yesterdayCleanupTasks = [];
-
-        // Outlook Day Zoom View State
         this.zoomedDayISO = null;
 
         this.firebaseApp = null;
@@ -925,9 +1038,6 @@ class FocusQuestApp {
             osc1.frequency.exponentialRampToValueAtTime(659.25, now + 0.12);
             osc1.frequency.exponentialRampToValueAtTime(783.99, now + 0.24);
 
-            osc2.frequency.setValueAtTime(261.63, now);
-            osc2.frequency.exponentialRampToValueAtTime(329.63, now + 0.12);
-
             gain.gain.setValueAtTime(0.15, now);
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
 
@@ -940,6 +1050,28 @@ class FocusQuestApp {
             osc1.stop(now + 0.5);
             osc2.stop(now + 0.5);
         } catch(e) {}
+    }
+
+    /* English Motivational Toast Notifications */
+    showMotivationalToast(message) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'p-4 rounded-2xl bg-cardBg border border-indigo-500/50 text-white shadow-2xl flex items-center space-x-3 pointer-events-auto animate-toast border-l-4 border-l-indigo-500';
+        toast.innerHTML = `
+            <div class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-sparkles text-sm"></i>
+            </div>
+            <p class="text-xs font-bold text-slate-100 flex-1 leading-snug">${message}</p>
+        `;
+
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
     }
 
     /* Firebase Cloud Realtime Sync */
@@ -1032,16 +1164,46 @@ class FocusQuestApp {
 
         const syncDisplay = document.getElementById('syncCodeDisplay');
         if (syncDisplay) syncDisplay.value = this.syncCode;
+
+        const nameInput = document.getElementById('userNameInput');
+        if (nameInput) nameInput.value = this.user.name || 'Warrior';
+
+        const tzSelect = document.getElementById('userTimezoneSelect');
+        if (tzSelect) tzSelect.value = this.user.timezone || 'auto';
     }
 
-    /* Date Utilities */
+    saveProfileSettings() {
+        const nameVal = document.getElementById('userNameInput').value.trim();
+        const tzVal = document.getElementById('userTimezoneSelect').value;
+
+        if (nameVal) this.user.name = nameVal;
+        this.user.timezone = tzVal;
+
+        this.saveLocalStorage();
+        this.closeModal('settingsModal');
+        this.showMotivationalToast(`Profile updated, ${this.user.name}! Settings saved successfully.`);
+    }
+
+    /* Date & Timezone Utilities */
     getTodayISO() {
-        const d = new Date();
-        return d.toISOString().split('T')[0];
+        let timezone = this.user.timezone;
+        if (!timezone || timezone === 'auto') {
+            const d = new Date();
+            return d.toISOString().split('T')[0];
+        }
+        try {
+            const d = new Date();
+            const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' });
+            return formatter.format(d);
+        } catch(e) {
+            return new Date().toISOString().split('T')[0];
+        }
     }
 
     getYesterdayISO() {
-        const d = new Date();
+        const todayStr = this.getTodayISO();
+        const parts = todayStr.split('-');
+        const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
         d.setDate(d.getDate() - 1);
         return d.toISOString().split('T')[0];
     }
@@ -1074,7 +1236,6 @@ class FocusQuestApp {
         return false;
     }
 
-    /* Time Slot Sorting Utility */
     sortTasksByStartTime(taskList) {
         return taskList.sort((a, b) => {
             if (!a.startTime && !b.startTime) return 0;
@@ -1084,7 +1245,7 @@ class FocusQuestApp {
         });
     }
 
-    /* Midnight Auto Settlement */
+    /* Midnight Auto Settlement & High-Volume Bonus (+2 Points for 7+ Tasks) */
     checkMidnightAutoSettlement() {
         const todayStr = this.getTodayISO();
         this.tasks.forEach(task => {
@@ -1106,10 +1267,15 @@ class FocusQuestApp {
     executeMidnightSettlementLogic(settlementDate) {
         if (!settlementDate) settlementDate = this.getTodayISO();
         let penalties = 0;
+        let tasksCompletedOnSettlementDay = 0;
 
         this.tasks.forEach(task => {
             const scheduledForSettlementDay = this.isTaskScheduledForDate(task, settlementDate);
             const completedOnSettlementDay = this.isTaskCompletedOnDate(task, settlementDate);
+
+            if (completedOnSettlementDay) {
+                tasksCompletedOnSettlementDay++;
+            }
 
             if (scheduledForSettlementDay && !completedOnSettlementDay) {
                 penalties += 2;
@@ -1126,8 +1292,16 @@ class FocusQuestApp {
 
         if (penalties > 0) {
             this.user.points = Math.max(0, this.user.points - penalties);
-            this.render();
         }
+
+        // Feature 3: High Volume Bonus System (+2 Extra Points/Coins for 7+ tasks)
+        if (tasksCompletedOnSettlementDay >= 7) {
+            this.user.points += 2;
+            this.user.xp += 20;
+            this.showMotivationalToast(`Midnight Reward: +2 High-Volume Bonus Coins awarded to ${this.user.name || 'you'} for completing 7+ tasks!`);
+        }
+
+        this.render();
     }
 
     checkAndPromptDailyCleanup() {
@@ -1501,6 +1675,7 @@ class FocusQuestApp {
         this.openModal('taskModal');
     }
 
+    /* Task Completion & Motivational English Popups */
     toggleTaskComplete(taskId, dateISO) {
         const task = this.tasks.find(t => t.id === taskId);
         if (!task) return;
@@ -1517,16 +1692,43 @@ class FocusQuestApp {
             task.completed = nextState;
         }
 
+        const userName = this.user.name || 'Warrior';
+
         if (nextState) {
             task.lastCompletedDate = dateISO;
             const isTodayBet = (dateISO === this.getTodayISO()) && this.isTaskScheduledForToday(task);
-            const pointsEarned = isTodayBet ? 2 : 1;
+            
+            // Timezone bonus (+3 points on time, standard +1 for others)
+            const pointsEarned = isTodayBet ? 3 : 1;
             this.user.points += pointsEarned;
             this.user.xp += pointsEarned * 10;
             this.playChime();
+
+            // English Motivational Toast Popup
+            const phrases = [
+                `Great job, ${userName}! Keep going!`,
+                `Outstanding work, ${userName}! Stay focused!`,
+                `Fantastic effort, ${userName}! You are crushing your goals!`,
+                `Way to go, ${userName}! Momentum is building!`,
+                `Superb progress, ${userName}! Victory awaits!`
+            ];
+            const randomMsg = phrases[Math.floor(Math.random() * phrases.length)];
+            this.showMotivationalToast(randomMsg);
+
+            // Check if ALL tasks scheduled for today are complete
+            const todayTasks = this.tasks.filter(t => this.isTaskScheduledForToday(t));
+            const allTodayCompleted = todayTasks.length > 0 && todayTasks.every(t => this.isTaskCompletedOnDate(t, this.getTodayISO()));
+
+            if (allTodayCompleted) {
+                const celebrationMsg = `Incredible work, ${userName}! You crushed every single goal today!`;
+                document.getElementById('celebrationMessageText').textContent = celebrationMsg;
+                this.openModal('celebrationModal');
+            }
+
+            this.checkAchievements();
         } else {
             const isTodayBet = (dateISO === this.getTodayISO()) && this.isTaskScheduledForToday(task);
-            const pointsDeducted = isTodayBet ? 2 : 1;
+            const pointsDeducted = isTodayBet ? 3 : 1;
             this.user.points = Math.max(0, this.user.points - pointsDeducted);
             this.user.xp = Math.max(0, this.user.xp - pointsDeducted * 10);
         }
@@ -1561,7 +1763,7 @@ class FocusQuestApp {
         const category = this.categories.find(c => c.id === task.categoryId) || { name: 'General', color: '#6366f1' };
 
         document.getElementById('detailTaskTitle').textContent = task.title;
-        document.getElementById('detailTaskDescription').textContent = task.description || 'No additional instructions provided.';
+        document.getElementById('detailTaskDescription').textContent = task.description || 'No additional notes provided.';
         
         const timeSlotElem = document.getElementById('detailTaskTimeSlot');
         if (task.startTime) {
@@ -1584,7 +1786,7 @@ class FocusQuestApp {
         }
 
         const isTodayBet = this.isTaskScheduledForToday(task);
-        document.getElementById('detailTaskPoints').textContent = isTodayBet ? '+2 pts (Today Bet)' : '+1 pt';
+        document.getElementById('detailTaskPoints').textContent = isTodayBet ? '+3 pts (Timezone Bet)' : '+1 pt';
         document.getElementById('detailTaskType').textContent = task.frequencyType.toUpperCase();
 
         this.openModal('taskDetailModal');
@@ -1622,6 +1824,35 @@ class FocusQuestApp {
         this.user.level = level;
     }
 
+    /* Achievements / Quests System */
+    checkAchievements() {
+        if (!this.user.unlockedAchievements) this.user.unlockedAchievements = [];
+
+        // Count total completed tasks across history
+        const totalCompleted = this.tasks.filter(t => Object.values(t.completionHistory || {}).some(v => v === true) || t.completed).length;
+        
+        // Count today's completed tasks
+        const todayCompletedCount = this.tasks.filter(t => this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
+        
+        // Count owned pets
+        const petCount = (this.user.inventory || []).filter(id => id.startsWith('pet-')).length;
+
+        GENERATED_ACHIEVEMENTS.forEach(ach => {
+            if (this.user.unlockedAchievements.includes(ach.id)) return;
+
+            let unlocked = false;
+            if (ach.type === 'totalTasks' && totalCompleted >= ach.target) unlocked = true;
+            else if (ach.type === 'singleDayVol' && todayCompletedCount >= ach.target) unlocked = true;
+            else if (ach.type === 'petCount' && petCount >= ach.target) unlocked = true;
+
+            if (unlocked) {
+                this.user.unlockedAchievements.push(ach.id);
+                this.user.points += ach.rewardCoins;
+                this.showMotivationalToast(`🏆 Achievement Unlocked: ${ach.title}! Reward: +${ach.rewardCoins} coins!`);
+            }
+        });
+    }
+
     /* Category Operations */
     saveCategory(e) {
         e.preventDefault();
@@ -1651,7 +1882,7 @@ class FocusQuestApp {
     /* Shop Tab & Purchase Mechanics */
     switchShopTab(tabName) {
         this.shopTab = tabName;
-        ['pets', 'lootboxes', 'themes', 'seasonal', 'badges'].forEach(t => {
+        ['pets', 'achievements', 'lootboxes', 'themes', 'seasonal', 'badges'].forEach(t => {
             const btn = document.getElementById(`shop-tab-${t}`);
             if (btn) {
                 if (t === tabName) {
@@ -1669,59 +1900,117 @@ class FocusQuestApp {
         document.getElementById('shopUserPoints').textContent = this.user.points;
         if (!container) return;
 
-        let filteredItems = [];
-        if (this.shopTab === 'pets') filteredItems = SHOP_ITEMS.filter(i => i.type === 'pet');
-        else if (this.shopTab === 'lootboxes') filteredItems = SHOP_ITEMS.filter(i => i.type === 'box');
-        else if (this.shopTab === 'themes') filteredItems = SHOP_ITEMS.filter(i => i.type === 'theme' && !i.id.startsWith('sea-'));
-        else if (this.shopTab === 'seasonal') filteredItems = SHOP_ITEMS.filter(i => i.id.startsWith('sea-'));
-        else if (this.shopTab === 'badges') filteredItems = SHOP_ITEMS.filter(i => i.type === 'badge' || i.type === 'rank');
+        // Categorized Pet System View
+        if (this.shopTab === 'pets') {
+            const groups = ['Mammals', 'Birds', 'Reptiles', 'Aquatic', 'Mythical'];
+            container.innerHTML = groups.map(groupName => {
+                const groupPets = PET_CATALOGUE.filter(p => p.group === groupName);
+                if (groupPets.length === 0) return '';
 
-        container.innerHTML = filteredItems.map(item => {
-            const isOwned = (this.user.inventory || []).includes(item.id);
-            const isEquipped = item.type === 'theme' ? this.user.activeTheme === item.themeClass : 
-                               (item.type === 'pet' ? this.user.activePet === item.icon : 
-                               (item.type === 'rank' ? (this.user.activeRank && this.user.activeRank.tier === item.rankTier) : this.user.activeTitle === item.title));
-
-            // Render rank icon HTML correctly using font awesome tag if provided
-            let visualElement = item.icon ? item.icon : '🎨';
-            if (item.type === 'rank' && item.icon) {
-                visualElement = `<i class="fa-solid ${item.icon}"></i>`;
-            }
-
-            return `
-                <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-4">
-                    <div class="flex items-center space-x-3.5 min-w-0">
-                        <div class="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-2xl shrink-0 shadow-inner">
-                            ${visualElement}
+                return `
+                    <div class="space-y-3 pt-2">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                            <h4 class="font-black text-sm text-indigo-400 uppercase tracking-wider flex items-center space-x-2">
+                                <i class="fa-solid fa-paw text-xs"></i>
+                                <span>${groupName}</span>
+                            </h4>
+                            <span class="text-[10px] text-slate-500 font-semibold">${groupPets.length} species</span>
                         </div>
-                        <div class="space-y-1 min-w-0">
-                            <div class="flex items-center space-x-2">
-                                <span class="font-extrabold text-sm text-white">${item.name}</span>
-                                ${isEquipped ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">EQUIPPED</span>' : ''}
-                            </div>
-                            <p class="text-xs text-slate-400 truncate">${item.desc || 'Exclusive Shop Customization'}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${groupPets.map(pet => this.renderShopCardHTML(pet)).join('')}
                         </div>
                     </div>
-                    <div class="shrink-0">
-                        ${item.type === 'box' ? `
-                            <button onclick="app.buyLootBox('${item.id}')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-black text-xs shadow-md flex items-center space-x-1.5 transition">
-                                <i class="fa-solid fa-gift"></i>
-                                <span>Open (${item.cost} pts)</span>
-                            </button>
-                        ` : (isEquipped ? `
-                            <button disabled class="px-4 py-2 rounded-xl bg-slate-800 text-slate-500 text-xs font-bold cursor-not-allowed">Active</button>
-                        ` : (isOwned ? `
-                            <button onclick="app.equipShopItem('${item.id}')" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition">Equip</button>
-                        ` : `
-                            <button onclick="app.buyShopItem('${item.id}')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 text-xs font-black shadow-md flex items-center space-x-1.5 transition">
-                                <i class="fa-solid fa-coins text-xs"></i>
-                                <span>${item.cost} pts</span>
-                            </button>
-                        `))}
+                `;
+            }).join('');
+            return;
+        }
+
+        // Achievements & Quest View
+        if (this.shopTab === 'achievements') {
+            container.innerHTML = `
+                <div class="space-y-3">
+                    <p class="text-xs text-slate-400">Complete quests to claim bonus shop coins! (${(this.user.unlockedAchievements || []).length} / ${GENERATED_ACHIEVEMENTS.length} completed)</p>
+                    <div class="grid grid-cols-1 gap-2.5">
+                        ${GENERATED_ACHIEVEMENTS.map(ach => {
+                            const isUnlocked = (this.user.unlockedAchievements || []).includes(ach.id);
+                            return `
+                                <div class="p-3.5 rounded-xl bg-slate-900/90 border ${isUnlocked ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-slate-800'} flex items-center justify-between gap-3">
+                                    <div class="flex items-center space-x-3 min-w-0">
+                                        <div class="w-10 h-10 rounded-xl ${isUnlocked ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'} flex items-center justify-center text-lg shrink-0">
+                                            <i class="fa-solid ${isUnlocked ? 'fa-circle-check' : 'fa-lock'}"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h5 class="font-extrabold text-xs text-white truncate">${ach.title}</h5>
+                                            <p class="text-[11px] text-slate-400 truncate mt-0.5">${ach.desc}</p>
+                                        </div>
+                                    </div>
+                                    <div class="shrink-0 text-right">
+                                        <span class="text-xs font-black text-amber-400 block">+${ach.rewardCoins} coins</span>
+                                        <span class="text-[10px] font-bold ${isUnlocked ? 'text-emerald-400' : 'text-slate-500'} uppercase">${isUnlocked ? 'UNLOCKED' : 'IN PROGRESS'}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                 </div>
             `;
-        }).join('');
+            return;
+        }
+
+        let filteredItems = [];
+        if (this.shopTab === 'lootboxes') filteredItems = SHOP_ITEMS.filter(i => i.type === 'box');
+        else if (this.shopTab === 'themes') filteredItems = SHOP_ITEMS.filter(i => i.type === 'theme');
+        else if (this.shopTab === 'seasonal') filteredItems = SHOP_ITEMS.filter(i => i.id.startsWith('sea-'));
+        else if (this.shopTab === 'badges') filteredItems = SHOP_ITEMS.filter(i => i.type === 'badge' || i.type === 'rank');
+
+        container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${filteredItems.map(item => this.renderShopCardHTML(item)).join('')}</div>`;
+    }
+
+    renderShopCardHTML(item) {
+        const isOwned = (this.user.inventory || []).includes(item.id);
+        const isEquipped = item.type === 'theme' ? this.user.activeTheme === item.themeClass : 
+                           (item.type === 'pet' ? this.user.activePet === item.icon : 
+                           (item.type === 'rank' ? (this.user.activeRank && this.user.activeRank.tier === item.rankTier) : this.user.activeTitle === item.title));
+
+        let visualElement = item.icon ? item.icon : '🎨';
+        if (item.type === 'rank' && item.icon) {
+            visualElement = `<i class="fa-solid ${item.icon}"></i>`;
+        }
+
+        return `
+            <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-3">
+                <div class="flex items-center space-x-3 min-w-0">
+                    <div class="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xl shrink-0 shadow-inner">
+                        ${visualElement}
+                    </div>
+                    <div class="space-y-0.5 min-w-0">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-extrabold text-xs text-white truncate">${item.name}</span>
+                            ${isEquipped ? '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">EQUIPPED</span>' : ''}
+                        </div>
+                        <p class="text-[11px] text-slate-400 truncate">${item.desc || 'Marketplace Item'}</p>
+                        ${item.subGroup ? `<span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">${item.subGroup}</span>` : ''}
+                    </div>
+                </div>
+                <div class="shrink-0">
+                    ${item.type === 'box' ? `
+                        <button onclick="app.buyLootBox('${item.id}')" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black text-xs shadow-md flex items-center space-x-1 transition">
+                            <i class="fa-solid fa-gift"></i>
+                            <span>${item.cost} pts</span>
+                        </button>
+                    ` : (isEquipped ? `
+                        <button disabled class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-500 text-xs font-bold cursor-not-allowed">Active</button>
+                    ` : (isOwned ? `
+                        <button onclick="app.equipShopItem('${item.id}')" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition">Equip</button>
+                    ` : `
+                        <button onclick="app.buyShopItem('${item.id}')" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 text-xs font-black shadow-md flex items-center space-x-1 transition">
+                            <i class="fa-solid fa-coins text-xs"></i>
+                            <span>${item.cost} pts</span>
+                        </button>
+                    `))}
+                </div>
+            </div>
+        `;
     }
 
     buyShopItem(itemId) {
@@ -1729,7 +2018,7 @@ class FocusQuestApp {
         if (!item) return;
 
         if (this.user.points < item.cost) {
-            this.confirmDelete('You do not have enough points to purchase this item!', null);
+            this.confirmDelete('You do not have enough points/coins to purchase this item!', null);
             return;
         }
 
@@ -1738,6 +2027,7 @@ class FocusQuestApp {
         this.user.inventory.push(item.id);
 
         this.equipShopItem(itemId);
+        this.checkAchievements();
     }
 
     buyLootBox(boxId) {
@@ -1745,18 +2035,17 @@ class FocusQuestApp {
         if (!box) return;
 
         if (this.user.points < box.cost) {
-            this.confirmDelete('You do not have enough points for this Loot Box!', null);
+            this.confirmDelete('You do not have enough coins for this Loot Box!', null);
             return;
         }
 
         this.user.points -= box.cost;
-        
         const availableRewards = SHOP_ITEMS.filter(i => i.type !== 'box' && !(this.user.inventory || []).includes(i.id));
         let reward = availableRewards[Math.floor(Math.random() * availableRewards.length)];
         
         if (!reward) {
             this.user.points += box.cost;
-            reward = { name: `${box.cost} Bonus Points Refund`, icon: '💰' };
+            reward = { name: `${box.cost} Bonus Coins Refund`, icon: '💰' };
         } else {
             if (!this.user.inventory) this.user.inventory = [];
             this.user.inventory.push(reward.id);
@@ -1879,12 +2168,10 @@ class FocusQuestApp {
         document.getElementById('userPointsDisplay').textContent = this.user.points;
         document.getElementById('userRankTitle').textContent = this.user.activeTitle || 'Procrastinator';
 
-        // Active Pet Update
         const activePet = this.user.activePet || '🐱';
         document.getElementById('sidebarPetDisplay').textContent = activePet;
         document.getElementById('mobileActivePetIcon').textContent = activePet;
 
-        // Active Rank Badge Emblem Update
         const rankBadge = document.getElementById('userRankBadge');
         const rankLabel = document.getElementById('userRankTierLabel');
         const rankIcon = document.getElementById('rankBadgeIcon');
@@ -1937,7 +2224,7 @@ class FocusQuestApp {
 
         if (this.currentView === 'today') {
             titleElem.firstElementChild.textContent = "Today's Focus";
-            subElem.textContent = "Complete active daily tasks for double points (+2 pts) and prevent midnight penalties.";
+            subElem.textContent = "Complete active daily tasks for bonus points (+3 pts in your timezone) and avoid midnight penalties.";
         } else if (this.currentView === 'planner') {
             titleElem.firstElementChild.textContent = "Weekly Planner";
             subElem.textContent = "Schedule and organize tasks across calendar days. Double tap a day to zoom into full view.";
@@ -1991,7 +2278,6 @@ class FocusQuestApp {
         const todayStr = this.getTodayISO();
         const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-        // OUTLOOK DAY ZOOM VIEW MODE
         if (this.zoomedDayISO) {
             exitZoomBtn.classList.remove('hidden');
             navControls.classList.add('hidden');
@@ -2049,7 +2335,6 @@ class FocusQuestApp {
             return;
         }
 
-        // FULL WEEKLY CALENDAR GRID VIEW
         exitZoomBtn.classList.add('hidden');
         navControls.classList.remove('hidden');
         if (catBlocks) catBlocks.classList.remove('hidden');
@@ -2220,7 +2505,7 @@ class FocusQuestApp {
 
                                 ${task.startTime ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-500/40 shrink-0"><i class="fa-solid fa-clock mr-1"></i>${task.startTime}${task.endTime ? ' - ' + task.endTime : ''}</span>` : ''}
 
-                                ${isTodayBet ? '<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">+2 PTS BET</span>' : ''}
+                                ${isTodayBet ? '<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">+3 PTS BET</span>' : ''}
                             </div>
 
                             ${task.description ? `<p class="text-xs text-slate-400 line-clamp-1 truncate">${task.description}</p>` : ''}
