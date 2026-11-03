@@ -43,7 +43,7 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
 
-        /* Color Themes & Gradients */
+        /* Color Themes & Gradients (Original + 10 New) */
         body.theme-midnight { background: #090d16; }
         body.theme-obsidian { background: #000000; }
         body.theme-emerald { background: linear-gradient(135deg, #022c22 0%, #064e3b 100%); attachment: fixed; }
@@ -51,10 +51,18 @@
         body.theme-ruby { background: linear-gradient(135deg, #450a0a 0%, #7f1d1d 50%, #180505 100%); }
         body.theme-ocean { background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0284c7 100%); }
         body.theme-sunset { background: linear-gradient(135deg, #451a03 0%, #78350f 50%, #9a3412 100%); }
+        
+        /* 10 NEW THEMES */
         body.theme-cyber { background: linear-gradient(135deg, #070d1a 0%, #1e1b4b 50%, #4c1d95 100%); }
-        body.theme-rose { background: linear-gradient(135deg, #4c0519 0%, #881337 50%, #be123c 100%); }
         body.theme-lavender { background: linear-gradient(135deg, #2e1065 0%, #581c87 50%, #3b0764 100%); }
         body.theme-mint { background: linear-gradient(135deg, #064e3b 0%, #047857 50%, #022c22 100%); }
+        body.theme-solar { background: linear-gradient(135deg, #7c2d12 0%, #b45309 50%, #78350f 100%); }
+        body.theme-rose { background: linear-gradient(135deg, #4c0519 0%, #881337 50%, #be123c 100%); }
+        body.theme-frost { background: linear-gradient(135deg, #0c4a6e 0%, #0369a1 50%, #0284c7 100%); }
+        body.theme-sands { background: linear-gradient(135deg, #451a03 0%, #92400e 50%, #d97706 100%); }
+        body.theme-abyss { background: linear-gradient(135deg, #020617 0%, #0f172a 50%, #1e293b 100%); }
+        body.theme-pastel { background: linear-gradient(135deg, #311042 0%, #701a75 50%, #9d174d 100%); }
+        body.theme-matrix { background: linear-gradient(135deg, #052e16 0%, #14532d 50%, #166534 100%); }
 
         /* Sidebar Collapsible Transitions */
         #sidebar {
@@ -103,14 +111,15 @@
             animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
-        /* Rank Badge Gradients */
+        /* Rank Badge Gradients & Emblems */
         .rank-bronze { background: linear-gradient(135deg, #78350f, #b45309); color: #fef3c7; border: 1px solid #d97706; }
         .rank-silver { background: linear-gradient(135deg, #475569, #94a3b8); color: #f8fafc; border: 1px solid #cbd5e1; }
         .rank-gold { background: linear-gradient(135deg, #b45309, #f59e0b); color: #78350f; border: 1px solid #fde047; }
         .rank-diamond { background: linear-gradient(135deg, #0284c7, #38bdf8); color: #0c4a6e; border: 1px solid #bae6fd; }
-        .rank-mythic { background: linear-gradient(135deg, #7e22ce, #c084fc); color: #3b0764; border: 1px solid #e9d5ff; }
-        .rank-legendary { background: linear-gradient(135deg, #b91c1c, #f87171); color: #450a0a; border: 1px solid #fca5a5; }
-        .rank-masters { background: linear-gradient(135deg, #15803d, #4ade80); color: #052e16; border: 1px solid #86efac; }
+        .rank-pro { background: linear-gradient(135deg, #052e16, #16a34a); color: #dcfce7; border: 1px solid #4ade80; }
+        .rank-masters { background: linear-gradient(135deg, #4c1d95, #9333ea); color: #f3e8ff; border: 1px solid #c084fc; }
+        .rank-mythic { background: linear-gradient(135deg, #831843, #db2777); color: #fce7f3; border: 1px solid #f472b6; }
+        .rank-legendary { background: linear-gradient(135deg, #7f1d1d, #ef4444); color: #fee2e2; border: 1px solid #fca5a5; }
     </style>
 </head>
 <body class="theme-midnight bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden">
@@ -322,7 +331,7 @@
                     </div>
                     <div>
                         <h3 class="font-extrabold text-sm sm:text-base text-white">Daily Bet Active</h3>
-                        <p class="text-xs text-slate-300 mt-0.5">Tasks completed on time earn <span class="text-amber-400 font-bold" id="todayPointBonusLabel">+3 Points</span> (or -2 penalty at midnight if missed).</p>
+                        <p class="text-xs text-slate-300 mt-0.5">Tasks done inside specific time slots earn <span class="text-amber-400 font-bold" id="todayPointBonusLabel">+3 Points</span> (+2 for general/untimed tasks).</p>
                     </div>
                 </div>
                 <div class="flex items-center justify-between sm:justify-start space-x-3 bg-slate-950/70 px-4 py-2.5 rounded-xl border border-slate-800 shrink-0">
@@ -347,7 +356,7 @@
                                 <i class="fa-solid fa-calendar-week text-indigo-400"></i>
                                 <span>Weekly Calendar Planner</span>
                             </h3>
-                            <p id="plannerHeaderSubtitle" class="text-xs text-slate-400 mt-0.5">Double-tap or double-click any day to zoom into full day view. Tasks are strictly sorted by start time.</p>
+                            <p id="plannerHeaderSubtitle" class="text-xs text-slate-400 mt-0.5">Double-tap any day to zoom into day view. Specific time slots give 3 pts; untimed tasks give 2 pts.</p>
                         </div>
                     </div>
                     <div id="weeklyNavControls" class="flex items-center space-x-2">
@@ -445,7 +454,7 @@
                     <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">End Time (Optional)</label>
                     <input type="time" id="taskEndTimeInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
                 </div>
-                <p class="text-[10px] text-slate-400 col-span-2">Tasks with time slots are sorted chronologically.</p>
+                <p class="text-[10px] text-amber-400 col-span-2 font-semibold">Completing during specific start/end time slot awards +3 pts (+2 pts if untimed or outside window).</p>
             </div>
 
             <div>
@@ -617,7 +626,7 @@
             </div>
 
             <div class="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800 pt-3">
-                <div>Point Value: <strong id="detailTaskPoints" class="text-amber-400 font-extrabold">+3 pts</strong></div>
+                <div>Point Value: <strong id="detailTaskPoints" class="text-amber-400 font-extrabold">+3 pts (Time Slot)</strong></div>
                 <div>Type: <span id="detailTaskType" class="text-slate-200 font-semibold">Scheduled</span></div>
             </div>
 
@@ -672,7 +681,7 @@
                 </div>
                 <div>
                     <h3 class="font-extrabold text-base text-white">FocusQuest Marketplace & Achievements</h3>
-                    <p class="text-xs text-slate-400">Biological Pets, Quests, Loot Boxes, and Ranks.</p>
+                    <p class="text-xs text-slate-400">Biological Pets, Quests, Loot Boxes, and Rank Emblems.</p>
                 </div>
             </div>
             <div class="flex items-center space-x-3">
@@ -688,9 +697,9 @@
             <button onclick="app.switchShopTab('pets')" id="shop-tab-pets" class="px-3 pb-2 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 whitespace-nowrap">Pet Companions</button>
             <button onclick="app.switchShopTab('achievements')" id="shop-tab-achievements" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Achievements & Quests (50+)</button>
             <button onclick="app.switchShopTab('lootboxes')" id="shop-tab-lootboxes" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Mystery Boxes</button>
-            <button onclick="app.switchShopTab('themes')" id="shop-tab-themes" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Themes & Gradients</button>
+            <button onclick="app.switchShopTab('themes')" id="shop-tab-themes" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Themes & Gradients (16)</button>
             <button onclick="app.switchShopTab('seasonal')" id="shop-tab-seasonal" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Seasonal Collections</button>
-            <button onclick="app.switchShopTab('badges')" id="shop-tab-badges" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Quest Ranks & Titles</button>
+            <button onclick="app.switchShopTab('badges')" id="shop-tab-badges" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Quest Ranks & Emblems</button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4" id="shopItemsContainer"></div>
@@ -705,7 +714,7 @@
         </div>
         <div>
             <h3 class="font-black text-xl text-white" id="lootBoxTitle">Loot Box Unlocked!</h3>
-            <p class="text-xs text-amber-300 font-semibold mt-1" id="lootBoxItemName">You received a item!</p>
+            <p class="text-xs text-amber-300 font-semibold mt-1" id="lootBoxItemName">You received an item!</p>
         </div>
         <button onclick="app.closeModal('lootBoxModal')" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-amber-500/30 transition transform hover:scale-105 active:scale-95">
             Claim Reward
@@ -766,7 +775,7 @@
                         <option value="Asia/Tokyo">Japan - Tokyo (JST)</option>
                         <option value="Australia/Sydney">Australia - Sydney (AEST)</option>
                     </select>
-                    <p class="text-[11px] text-amber-400 mt-1 font-semibold">Completing tasks in your configured timezone awards +3 points per task!</p>
+                    <p class="text-[11px] text-amber-400 mt-1 font-semibold">Completing timed tasks in your configured timezone awards +3 points per task (+2 for untimed).</p>
                 </div>
             </div>
 
@@ -869,40 +878,91 @@ const PET_CATALOGUE = [
     { id: 'pet-phoenix', type: 'pet', group: 'Mythical', subGroup: 'Phoenixes', name: 'Solar Phoenix', cost: 300, icon: '🐦‍🔥', desc: 'Rises victorious from procrastination ashes.' }
 ];
 
-const SHOP_ITEMS = [
-    ...PET_CATALOGUE,
+// Seasonal Collections Catalogue
+const SEASONAL_CATALOGUE = [
+    // Winter Collection
+    { id: 'sea-winter-polar', type: 'seasonal', season: 'Winter', name: 'Polar Bear Companion', cost: 50, icon: '🐻‍❄️', desc: 'Cozy winter polar bear for snowy focus.' },
+    { id: 'sea-winter-penguin', type: 'seasonal', season: 'Winter', name: 'Chilly Penguin', cost: 40, icon: '🐧', desc: 'Slides through cold study sessions.' },
+    { id: 'sea-winter-frost-theme', type: 'theme', season: 'Winter', name: 'Nordic Frost Theme', cost: 60, themeClass: 'theme-frost', desc: 'Crisp Arctic cyan gradient glow.' },
 
-    // Themes & Gradients
-    { id: 'theme-midnight', type: 'theme', name: 'Midnight Navy', cost: 0, themeClass: 'theme-midnight', desc: 'Default slick deep navy background.' },
-    { id: 'theme-obsidian', type: 'theme', name: 'Pure Obsidian OLED', cost: 25, themeClass: 'theme-obsidian', desc: 'Pitch black screen saver.' },
-    { id: 'theme-ruby', type: 'theme', name: 'Ruby Crimson Gradient', cost: 45, themeClass: 'theme-ruby', desc: 'Deep red to dark scarlet gradient.' },
-    { id: 'theme-ocean', type: 'theme', name: 'Deep Ocean Blue', cost: 45, themeClass: 'theme-ocean', desc: 'Deep navy to cyan blue transition.' },
-    { id: 'theme-emerald', type: 'theme', name: 'Emerald Forest', cost: 50, themeClass: 'theme-emerald', desc: 'Lush dark green gradient.' },
-    { id: 'theme-sunset', type: 'theme', name: 'Amber Sunset', cost: 50, themeClass: 'theme-sunset', desc: 'Warm burnt orange & bronze glow.' },
+    // Spring Collection
+    { id: 'sea-spring-chick', type: 'seasonal', season: 'Spring', name: 'Spring Hatchling', cost: 30, icon: '🐥', desc: 'Fresh new beginnings and vibrant motivation.' },
+    { id: 'sea-spring-bee', type: 'seasonal', season: 'Spring', name: 'Busy Honeybee', cost: 35, icon: '🐝', desc: 'Buzzes around completing daily tasks.' },
+    { id: 'sea-spring-mint-theme', type: 'theme', season: 'Spring', name: 'Mint Fresh Gradient', cost: 55, themeClass: 'theme-mint', desc: 'Vibrant spring green theme.' },
 
-    // Loot Boxes
-    { id: 'box-basic', type: 'box', name: 'Basic Mystery Box', cost: 20, boxTier: 'basic', icon: '📦', desc: 'Contains random common titles or standard pets.' },
-    { id: 'box-rare', type: 'box', name: 'Rare Mystery Box', cost: 45, boxTier: 'rare', icon: '🎁', desc: 'Higher chance for unique color themes & wild pets.' },
-    { id: 'box-epic', type: 'box', name: 'Epic Mystery Box', cost: 80, boxTier: 'epic', icon: '💎', desc: 'Unlocks rare pets, focus ranks, or premium gradients.' },
+    // Summer Collection
+    { id: 'sea-summer-flamingo', type: 'seasonal', season: 'Summer', name: 'Tropical Flamingo', cost: 45, icon: '🦩', desc: 'Brings warm summer vibes to your planner.' },
+    { id: 'sea-summer-crab', type: 'seasonal', season: 'Summer', name: 'Sunny Beach Crab', cost: 35, icon: '🦀', desc: 'Pinches down overdue task lists.' },
+    { id: 'sea-summer-solar-theme', type: 'theme', season: 'Summer', name: 'Solar Flare Gradient', cost: 60, themeClass: 'theme-solar', desc: 'Radiant bronze sunburst gradient.' },
 
-    // Quest Ranks & Titles
-    { id: 'rank-bronze', type: 'rank', name: 'Bronze Rank Emblem', cost: 0, rankTier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved', desc: 'Bronze rank badge emblem.' },
-    { id: 'rank-silver', type: 'rank', name: 'Silver Rank Emblem', cost: 30, rankTier: 'Silver I', cssClass: 'rank-silver', icon: 'fa-shield', desc: 'Silver rank badge emblem.' },
-    { id: 'rank-gold', type: 'rank', name: 'Gold Rank Emblem', cost: 60, rankTier: 'Gold I', cssClass: 'rank-gold', icon: 'fa-crown', desc: 'Gold rank badge emblem.' },
-    { id: 'rank-diamond', type: 'rank', name: 'Diamond Rank Emblem', cost: 100, rankTier: 'Diamond I', cssClass: 'rank-diamond', icon: 'fa-gem', desc: 'Diamond rank badge emblem.' }
+    // Autumn Collection
+    { id: 'sea-autumn-squirrel', type: 'seasonal', season: 'Autumn', name: 'Nutty Squirrel', cost: 35, icon: '🐿️', desc: 'Hoards completed tasks like acorns.' },
+    { id: 'sea-autumn-hedgehog', type: 'seasonal', season: 'Autumn', name: 'Autumn Hedgehog', cost: 40, icon: '🦔', desc: 'Rustles through falling leaf study blocks.' },
+    { id: 'sea-autumn-sands-theme', type: 'theme', season: 'Autumn', name: 'Golden Sands Gradient', cost: 55, themeClass: 'theme-sands', desc: 'Warm amber and golden oak leaves.' },
+
+    // Halloween Collection
+    { id: 'sea-hallow-bat', type: 'seasonal', season: 'Halloween', name: 'Vampire Bat Companion', cost: 50, icon: '🦇', desc: 'Spooky companion for late midnight focus.' },
+    { id: 'sea-hallow-ghost', type: 'seasonal', season: 'Halloween', name: 'Spooky Phantom', cost: 55, icon: '👻', desc: 'Haunts away your procrastination.' },
+    { id: 'sea-hallow-rose-theme', type: 'theme', season: 'Halloween', name: 'Vampire Rose Theme', cost: 70, themeClass: 'theme-rose', desc: 'Deep crimson gothic gradient glow.' },
+
+    // Christmas Collection
+    { id: 'sea-xmas-reindeer', type: 'seasonal', season: 'Christmas', name: 'Rudolph Reindeer', cost: 60, icon: '🦌', desc: 'Guides your sleigh to productivity success.' },
+    { id: 'sea-xmas-santa', type: 'seasonal', season: 'Christmas', name: 'Festive Elf', cost: 50, icon: '🧑‍🎄', desc: 'Delivers bonus coin rewards on time.' },
+    { id: 'sea-xmas-pastel-theme', type: 'theme', season: 'Christmas', name: 'Holiday Sunset Gradient', cost: 65, themeClass: 'theme-pastel', desc: 'Magical magenta & purple celebration glow.' }
 ];
 
-// Progressive Achievements System (50+ Quests)
+const SHOP_ITEMS = [
+    ...PET_CATALOGUE,
+    ...SEASONAL_CATALOGUE,
+
+    // 16 Themes & Gradients
+    { id: 'theme-midnight', type: 'theme', name: 'Midnight Navy', cost: 0, themeClass: 'theme-midnight', desc: 'Default slick deep navy background.' },
+    { id: 'theme-obsidian', type: 'theme', name: 'Pure Obsidian OLED', cost: 20, themeClass: 'theme-obsidian', desc: 'Pitch black screen saver.' },
+    { id: 'theme-ruby', type: 'theme', name: 'Ruby Crimson Gradient', cost: 35, themeClass: 'theme-ruby', desc: 'Deep red to dark scarlet gradient.' },
+    { id: 'theme-ocean', type: 'theme', name: 'Deep Ocean Blue', cost: 35, themeClass: 'theme-ocean', desc: 'Deep navy to cyan blue transition.' },
+    { id: 'theme-emerald', type: 'theme', name: 'Emerald Forest', cost: 40, themeClass: 'theme-emerald', desc: 'Lush dark green gradient.' },
+    { id: 'theme-sunset', type: 'theme', name: 'Amber Sunset', cost: 40, themeClass: 'theme-sunset', desc: 'Warm burnt orange & bronze glow.' },
+    { id: 'theme-cyber', type: 'theme', name: 'Neon Cyberpunk', cost: 45, themeClass: 'theme-cyber', desc: 'Futuristic purple & neon cyan glow.' },
+    { id: 'theme-lavender', type: 'theme', name: 'Lavender Dream', cost: 45, themeClass: 'theme-lavender', desc: 'Soft deep violet to purple ambient.' },
+    { id: 'theme-mint', type: 'theme', name: 'Mint Fresh', cost: 45, themeClass: 'theme-mint', desc: 'Refreshing spring green background.' },
+    { id: 'theme-solar', type: 'theme', name: 'Solar Flare', cost: 50, themeClass: 'theme-solar', desc: 'Intense bronze sunburst gradient.' },
+    { id: 'theme-rose', type: 'theme', name: 'Vampire Rose', cost: 50, themeClass: 'theme-rose', desc: 'Dark burgundy to rose crimson.' },
+    { id: 'theme-frost', type: 'theme', name: 'Nordic Frost', cost: 50, themeClass: 'theme-frost', desc: 'Chilly Arctic ocean cyan.' },
+    { id: 'theme-sands', type: 'theme', name: 'Golden Sands', cost: 50, themeClass: 'theme-sands', desc: 'Warm desert golden oak gradient.' },
+    { id: 'theme-abyss', type: 'theme', name: 'Deep Abyss', cost: 55, themeClass: 'theme-abyss', desc: 'Ultra deep indigo sea trench.' },
+    { id: 'theme-pastel', type: 'theme', name: 'Pastel Sunset', cost: 55, themeClass: 'theme-pastel', desc: 'Dreamy pink to magenta skyline.' },
+    { id: 'theme-matrix', type: 'theme', name: 'Electric Matrix', cost: 60, themeClass: 'theme-matrix', desc: 'Hacker green digital realm.' },
+
+    // Mystery Boxes (Including Legendary Mystery Box)
+    { id: 'box-basic', type: 'box', name: 'Basic Mystery Box', cost: 15, boxTier: 'basic', icon: '📦', desc: 'Contains random common titles or standard pets.' },
+    { id: 'box-rare', type: 'box', name: 'Rare Mystery Box', cost: 35, boxTier: 'rare', icon: '🎁', desc: 'Higher chance for unique color themes & wild pets.' },
+    { id: 'box-epic', type: 'box', name: 'Epic Mystery Box', cost: 70, boxTier: 'epic', icon: '💎', desc: 'Unlocks rare pets, focus ranks, or premium gradients.' },
+    { id: 'box-legendary', type: 'box', name: 'Legendary Mystery Box', cost: 150, boxTier: 'legendary', icon: '👑', desc: 'Unlocks the rarest mythical pets, cosmic themes & legendary rank emblems!' },
+
+    // Competitive-Style Quest Ranks & Emblems
+    { id: 'rank-bronze', type: 'rank', name: 'Bronze Rank Emblem', cost: 0, rankTier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved', desc: 'Bronze rank badge emblem.' },
+    { id: 'rank-silver', type: 'rank', name: 'Silver Rank Emblem', cost: 20, rankTier: 'Silver I', cssClass: 'rank-silver', icon: 'fa-shield', desc: 'Silver rank badge emblem.' },
+    { id: 'rank-gold', type: 'rank', name: 'Gold Rank Emblem', cost: 40, rankTier: 'Gold I', cssClass: 'rank-gold', icon: 'fa-crown', desc: 'Gold rank badge emblem.' },
+    { id: 'rank-diamond', type: 'rank', name: 'Diamond Rank Emblem', cost: 70, rankTier: 'Diamond I', cssClass: 'rank-diamond', icon: 'fa-gem', desc: 'Diamond rank badge emblem.' },
+    { id: 'rank-pro', type: 'rank', name: 'Pro Rank Emblem', cost: 90, rankTier: 'Pro Tier', cssClass: 'rank-pro', icon: 'fa-bolt', desc: 'Pro competitive tier badge emblem.' },
+    { id: 'rank-masters', type: 'rank', name: 'Master Rank Emblem', cost: 120, rankTier: 'Master', cssClass: 'rank-masters', icon: 'fa-medal', desc: 'Master competitive tier emblem.' },
+    { id: 'rank-mythic', type: 'rank', name: 'Mythic Rank Emblem', cost: 160, rankTier: 'Mythic', cssClass: 'rank-mythic', icon: 'fa-khanda', desc: 'Mythic competitive tier emblem.' },
+    { id: 'rank-legendary', type: 'rank', name: 'Legendary Rank Emblem', cost: 220, rankTier: 'Legendary', cssClass: 'rank-legendary', icon: 'fa-trophy', desc: 'Legendary apex focus rank emblem.' }
+];
+
+// Rebalanced Progressive Achievements System (50+ Quests with lowered coin yields)
 const GENERATED_ACHIEVEMENTS = [];
 
-// 1. Streak Milestones (1 to 300 days)
+// 1. Streak Milestones (1 to 300 days) - Rebalanced Economy (e.g., 1 day = 2 coins)
 const streakDays = [1, 2, 3, 4, 5, 7, 10, 14, 21, 30, 45, 60, 75, 90, 100, 125, 150, 175, 200, 250, 300];
 streakDays.forEach(days => {
+    // Rebalanced: 1 day -> 2 coins, scaling gently
+    const reward = Math.min(100, Math.floor(days * 0.4) + 2);
     GENERATED_ACHIEVEMENTS.push({
         id: `ach-streak-${days}`,
         title: `${days}-Day Focus Streak`,
         desc: `Complete at least 1 task daily for ${days} consecutive day(s).`,
-        rewardCoins: Math.min(500, Math.floor(days * 1.5) + 5),
+        rewardCoins: reward,
         type: 'streak',
         target: days
     });
@@ -911,11 +971,12 @@ streakDays.forEach(days => {
 // 2. Volume Milestones Total Tasks Completed (1 to 500 tasks)
 const totalTaskCounts = [1, 5, 10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 750, 1000];
 totalTaskCounts.forEach(count => {
+    const reward = Math.min(150, Math.floor(count * 0.15) + 2);
     GENERATED_ACHIEVEMENTS.push({
         id: `ach-total-${count}`,
         title: `Task Conqueror (${count} Tasks)`,
         desc: `Reach a career milestone of ${count} total completed tasks.`,
-        rewardCoins: Math.min(600, Math.floor(count * 0.8) + 10),
+        rewardCoins: reward,
         type: 'totalTasks',
         target: count
     });
@@ -924,11 +985,12 @@ totalTaskCounts.forEach(count => {
 // 3. Single Day High-Volume Quests (1 to 20 tasks in 1 day)
 const singleDayCounts = [3, 5, 7, 10, 12, 15, 20];
 singleDayCounts.forEach(count => {
+    const reward = Math.floor(count * 1.5);
     GENERATED_ACHIEVEMENTS.push({
         id: `ach-dayvol-${count}`,
         title: `Power Hour: ${count} Tasks in 1 Day`,
         desc: `Finish ${count} tasks in a single calendar day.`,
-        rewardCoins: count * 5,
+        rewardCoins: reward,
         type: 'singleDayVol',
         target: count
     });
@@ -937,11 +999,12 @@ singleDayCounts.forEach(count => {
 // 4. Pet & Collection Achievements
 const collectionCounts = [1, 3, 5, 8, 12, 15];
 collectionCounts.forEach(count => {
+    const reward = count * 3;
     GENERATED_ACHIEVEMENTS.push({
         id: `ach-pets-${count}`,
         title: `Zookeeper: ${count} Pet Companions`,
         desc: `Collect and adopt ${count} different pets in your shop sanctuary.`,
-        rewardCoins: count * 15,
+        rewardCoins: reward,
         type: 'petCount',
         target: count
     });
@@ -1245,6 +1308,32 @@ class FocusQuestApp {
         });
     }
 
+    /* Precision Time-Slot Verification (3 pts ONLY if done inside time slot) */
+    calculateTaskPointValue(task, dateISO) {
+        if (!dateISO) dateISO = this.getTodayISO();
+        
+        // Untimed tasks give 2 points
+        if (!task.startTime) return 2;
+
+        // If completed today, check local time against start and end times
+        if (dateISO === this.getTodayISO()) {
+            const now = new Date();
+            const currentHM = now.toTimeString().substring(0, 5); // "HH:MM"
+
+            const startTime = task.startTime;
+            const endTime = task.endTime || '23:59';
+
+            // Inside time window yields +3 points
+            if (currentHM >= startTime && currentHM <= endTime) {
+                return 3;
+            }
+            // Outside time window yields +2 points
+            return 2;
+        }
+
+        return 2;
+    }
+
     /* Midnight Auto Settlement & High-Volume Bonus (+2 Points for 7+ Tasks) */
     checkMidnightAutoSettlement() {
         const todayStr = this.getTodayISO();
@@ -1294,7 +1383,7 @@ class FocusQuestApp {
             this.user.points = Math.max(0, this.user.points - penalties);
         }
 
-        // Feature 3: High Volume Bonus System (+2 Extra Points/Coins for 7+ tasks)
+        // High Volume Bonus System (+2 Extra Points/Coins for 7+ tasks)
         if (tasksCompletedOnSettlementDay >= 7) {
             this.user.points += 2;
             this.user.xp += 20;
@@ -1675,7 +1764,7 @@ class FocusQuestApp {
         this.openModal('taskModal');
     }
 
-    /* Task Completion & Motivational English Popups */
+    /* Task Completion & Precision Time Slot Point Awarding */
     toggleTaskComplete(taskId, dateISO) {
         const task = this.tasks.find(t => t.id === taskId);
         if (!task) return;
@@ -1696,10 +1785,10 @@ class FocusQuestApp {
 
         if (nextState) {
             task.lastCompletedDate = dateISO;
-            const isTodayBet = (dateISO === this.getTodayISO()) && this.isTaskScheduledForToday(task);
-            
-            // Timezone bonus (+3 points on time, standard +1 for others)
-            const pointsEarned = isTodayBet ? 3 : 1;
+
+            // Precision Time-Slot Rule:
+            // Gives +3 points ONLY if done in specific time slot. Gives +2 points otherwise.
+            const pointsEarned = this.calculateTaskPointValue(task, dateISO);
             this.user.points += pointsEarned;
             this.user.xp += pointsEarned * 10;
             this.playChime();
@@ -1713,7 +1802,7 @@ class FocusQuestApp {
                 `Superb progress, ${userName}! Victory awaits!`
             ];
             const randomMsg = phrases[Math.floor(Math.random() * phrases.length)];
-            this.showMotivationalToast(randomMsg);
+            this.showMotivationalToast(randomMsg + ` (+${pointsEarned} pts)`);
 
             // Check if ALL tasks scheduled for today are complete
             const todayTasks = this.tasks.filter(t => this.isTaskScheduledForToday(t));
@@ -1727,8 +1816,7 @@ class FocusQuestApp {
 
             this.checkAchievements();
         } else {
-            const isTodayBet = (dateISO === this.getTodayISO()) && this.isTaskScheduledForToday(task);
-            const pointsDeducted = isTodayBet ? 3 : 1;
+            const pointsDeducted = this.calculateTaskPointValue(task, dateISO);
             this.user.points = Math.max(0, this.user.points - pointsDeducted);
             this.user.xp = Math.max(0, this.user.xp - pointsDeducted * 10);
         }
@@ -1767,9 +1855,9 @@ class FocusQuestApp {
         
         const timeSlotElem = document.getElementById('detailTaskTimeSlot');
         if (task.startTime) {
-            timeSlotElem.textContent = `⏰ Scheduled Time: ${task.startTime}${task.endTime ? ' - ' + task.endTime : ''}`;
+            timeSlotElem.textContent = `⏰ Scheduled Time Slot: ${task.startTime}${task.endTime ? ' - ' + task.endTime : ''}`;
         } else {
-            timeSlotElem.textContent = '';
+            timeSlotElem.textContent = '⏰ No specific time slot (+2 pts)';
         }
 
         const catBadge = document.getElementById('detailTaskCategoryBadge');
@@ -1785,8 +1873,8 @@ class FocusQuestApp {
             urlContainer.classList.add('hidden');
         }
 
-        const isTodayBet = this.isTaskScheduledForToday(task);
-        document.getElementById('detailTaskPoints').textContent = isTodayBet ? '+3 pts (Timezone Bet)' : '+1 pt';
+        const ptsValue = this.calculateTaskPointValue(task, this.getTodayISO());
+        document.getElementById('detailTaskPoints').textContent = `+${ptsValue} pts ${task.startTime ? '(Timed Slot Window)' : '(Standard Untimed)'}`;
         document.getElementById('detailTaskType').textContent = task.frequencyType.toUpperCase();
 
         this.openModal('taskDetailModal');
@@ -1835,7 +1923,7 @@ class FocusQuestApp {
         const todayCompletedCount = this.tasks.filter(t => this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
         
         // Count owned pets
-        const petCount = (this.user.inventory || []).filter(id => id.startsWith('pet-')).length;
+        const petCount = (this.user.inventory || []).filter(id => id.startsWith('pet-') || id.startsWith('sea-')).length;
 
         GENERATED_ACHIEVEMENTS.forEach(ach => {
             if (this.user.unlockedAchievements.includes(ach.id)) return;
@@ -1848,7 +1936,7 @@ class FocusQuestApp {
             if (unlocked) {
                 this.user.unlockedAchievements.push(ach.id);
                 this.user.points += ach.rewardCoins;
-                this.showMotivationalToast(`🏆 Achievement Unlocked: ${ach.title}! Reward: +${ach.rewardCoins} coins!`);
+                this.showMotivationalToast(`🏆 Quest Unlocked: ${ach.title}! Reward: +${ach.rewardCoins} coins!`);
             }
         });
     }
@@ -1925,6 +2013,31 @@ class FocusQuestApp {
             return;
         }
 
+        // Functional Seasonal Collections View (Winter, Spring, Summer, Autumn, Halloween, Christmas)
+        if (this.shopTab === 'seasonal') {
+            const seasons = ['Winter', 'Spring', 'Summer', 'Autumn', 'Halloween', 'Christmas'];
+            container.innerHTML = seasons.map(seasonName => {
+                const seasonItems = SEASONAL_CATALOGUE.filter(s => s.season === seasonName);
+                if (seasonItems.length === 0) return '';
+
+                return `
+                    <div class="space-y-3 pt-2">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                            <h4 class="font-black text-sm text-amber-400 uppercase tracking-wider flex items-center space-x-2">
+                                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                                <span>${seasonName} Collection</span>
+                            </h4>
+                            <span class="text-[10px] text-slate-500 font-semibold">${seasonItems.length} seasonal items</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${seasonItems.map(item => this.renderShopCardHTML(item)).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            return;
+        }
+
         // Achievements & Quest View
         if (this.shopTab === 'achievements') {
             container.innerHTML = `
@@ -1959,8 +2072,7 @@ class FocusQuestApp {
 
         let filteredItems = [];
         if (this.shopTab === 'lootboxes') filteredItems = SHOP_ITEMS.filter(i => i.type === 'box');
-        else if (this.shopTab === 'themes') filteredItems = SHOP_ITEMS.filter(i => i.type === 'theme');
-        else if (this.shopTab === 'seasonal') filteredItems = SHOP_ITEMS.filter(i => i.id.startsWith('sea-'));
+        else if (this.shopTab === 'themes') filteredItems = SHOP_ITEMS.filter(i => i.type === 'theme' && !i.season);
         else if (this.shopTab === 'badges') filteredItems = SHOP_ITEMS.filter(i => i.type === 'badge' || i.type === 'rank');
 
         container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${filteredItems.map(item => this.renderShopCardHTML(item)).join('')}</div>`;
@@ -1969,7 +2081,7 @@ class FocusQuestApp {
     renderShopCardHTML(item) {
         const isOwned = (this.user.inventory || []).includes(item.id);
         const isEquipped = item.type === 'theme' ? this.user.activeTheme === item.themeClass : 
-                           (item.type === 'pet' ? this.user.activePet === item.icon : 
+                           ((item.type === 'pet' || item.type === 'seasonal') ? this.user.activePet === item.icon : 
                            (item.type === 'rank' ? (this.user.activeRank && this.user.activeRank.tier === item.rankTier) : this.user.activeTitle === item.title));
 
         let visualElement = item.icon ? item.icon : '🎨';
@@ -2055,7 +2167,7 @@ class FocusQuestApp {
         this.render();
 
         document.getElementById('lootBoxDisplayIcon').textContent = reward.icon || '🎁';
-        document.getElementById('lootBoxTitle').textContent = 'Mystery Box Opened!';
+        document.getElementById('lootBoxTitle').textContent = `${box.name} Opened!`;
         document.getElementById('lootBoxItemName').textContent = `Unlocked: ${reward.name}`;
         this.openModal('lootBoxModal');
     }
@@ -2069,8 +2181,12 @@ class FocusQuestApp {
             document.body.className = `${item.themeClass} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
         } else if (item.type === 'badge') {
             this.user.activeTitle = item.title;
-        } else if (item.type === 'pet') {
-            this.user.activePet = item.icon;
+        } else if (item.type === 'pet' || item.type === 'seasonal') {
+            if (item.icon) this.user.activePet = item.icon;
+            if (item.themeClass) {
+                this.user.activeTheme = item.themeClass;
+                document.body.className = `${item.themeClass} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
+            }
         } else if (item.type === 'rank') {
             this.user.activeRank = { tier: item.rankTier, cssClass: item.cssClass, icon: item.icon };
         }
@@ -2224,7 +2340,7 @@ class FocusQuestApp {
 
         if (this.currentView === 'today') {
             titleElem.firstElementChild.textContent = "Today's Focus";
-            subElem.textContent = "Complete active daily tasks for bonus points (+3 pts in your timezone) and avoid midnight penalties.";
+            subElem.textContent = "Complete active daily tasks for bonus points (+3 pts in specific time slot, +2 pts untimed).";
         } else if (this.currentView === 'planner') {
             titleElem.firstElementChild.textContent = "Weekly Planner";
             subElem.textContent = "Schedule and organize tasks across calendar days. Double tap a day to zoom into full view.";
@@ -2319,7 +2435,7 @@ class FocusQuestApp {
                                             ${t.title}
                                         </div>
                                         <div class="flex items-center space-x-3 text-xs text-slate-400">
-                                            ${t.startTime ? `<span class="font-bold text-indigo-400"><i class="fa-solid fa-clock mr-1"></i>${t.startTime}${t.endTime ? ' - ' + t.endTime : ''}</span>` : '<span class="text-slate-500">No specific time slot</span>'}
+                                            ${t.startTime ? `<span class="font-bold text-indigo-400"><i class="fa-solid fa-clock mr-1"></i>${t.startTime}${t.endTime ? ' - ' + t.endTime : ''} (+3 pts inside window)</span>` : '<span class="text-slate-500">No specific time slot (+2 pts)</span>'}
                                             ${t.description ? `<span class="truncate">${t.description}</span>` : ''}
                                         </div>
                                     </div>
@@ -2487,6 +2603,7 @@ class FocusQuestApp {
             const category = this.categories.find(c => c.id === task.categoryId) || { name: 'General', color: '#6366f1', icon: 'fa-folder' };
             const isTodayBet = this.isTaskScheduledForToday(task);
             const isCompletedToday = this.isTaskCompletedOnDate(task, this.getTodayISO());
+            const ptsVal = this.calculateTaskPointValue(task, this.getTodayISO());
 
             return `
                 <div class="p-4 rounded-2xl bg-cardBg/80 border transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isCompletedToday ? 'opacity-60 border-slate-800' : (isTodayBet ? 'border-indigo-500/50 hover:border-indigo-500 penalty-pulse' : 'border-borderCol/60 hover:border-slate-600')}">
@@ -2505,7 +2622,7 @@ class FocusQuestApp {
 
                                 ${task.startTime ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-500/40 shrink-0"><i class="fa-solid fa-clock mr-1"></i>${task.startTime}${task.endTime ? ' - ' + task.endTime : ''}</span>` : ''}
 
-                                ${isTodayBet ? '<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">+3 PTS BET</span>' : ''}
+                                ${isTodayBet ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">+${ptsVal} PTS BET</span>` : ''}
                             </div>
 
                             ${task.description ? `<p class="text-xs text-slate-400 line-clamp-1 truncate">${task.description}</p>` : ''}
