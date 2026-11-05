@@ -1236,14 +1236,12 @@ class FocusQuestApp {
         const sanitizedCode = this.syncCode.replace(/[.#$/[\]]/g, "_");
         this.dbRef = this.db.ref('users/' + sanitizedCode);
 
-        // Intelligenter Live-Listener mit Konfliktlösung (verhindert Überschreiben)
         this.dbRef.on('value', (snapshot) => {
             const cloudData = snapshot.val();
             if (cloudData) {
                 const localUpdatedAt = parseInt(localStorage.getItem('focusquest_updated_at') || '0');
                 const cloudUpdatedAt = parseInt(cloudData.updatedAt || '0');
 
-                // Wenn Cloud neuer ist als Lokal ODER Lokal noch gar keine Cloud-Daten hatte:
                 if (cloudUpdatedAt >= localUpdatedAt || !localUpdatedAt) {
                     this.isSyncingFromCloud = true;
                     if (cloudData.tasks) this.tasks = cloudData.tasks;
@@ -1251,15 +1249,13 @@ class FocusQuestApp {
                     if (cloudData.user) this.user = { ...this.user, ...cloudData.user };
                     
                     localStorage.setItem('focusquest_updated_at', cloudUpdatedAt);
-                    this.saveLocalStorage(false); // Lokal sichern ohne Loop
+                    this.saveLocalStorage(false);
                     this.isSyncingFromCloud = false;
                     this.render();
                 } else if (localUpdatedAt > cloudUpdatedAt) {
-                    // Lokaler Stand ist neuer -> In Cloud hochladen
                     this.syncToCloud();
                 }
             } else {
-                // Keine Daten in Cloud vorhanden -> Initial hochladen
                 this.syncToCloud();
             }
             this.updateSyncBadge(true, 'Synced');
@@ -2455,11 +2451,18 @@ class FocusQuestApp {
         const catBlocks = document.getElementById('categoryBlocksWrapper');
         if (!grid) return;
 
+        // KORRIGIERTE DATUMS- UND WOCHENBERECHNUNG (Verhindert Monats- und Reihenfolgefehler)
         const curr = new Date();
-        const firstDayOfWeek = curr.getDate() - curr.getDay() + (this.plannerWeekOffset * 7);
+        curr.setDate(curr.getDate() + (this.plannerWeekOffset * 7));
+        const currentDayOfWeek = curr.getDay();
+        const sunday = new Date(curr);
+        sunday.setDate(curr.getDate() - currentDayOfWeek);
+
         const days = [];
         for (let i = 0; i < 7; i++) {
-            days.push(new Date(curr.setDate(firstDayOfWeek + i)));
+            const nextDay = new Date(sunday);
+            nextDay.setDate(sunday.getDate() + i);
+            days.push(nextDay);
         }
 
         const todayStr = this.getTodayISO();
