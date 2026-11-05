@@ -629,4 +629,2115 @@
             </div>
 
             <div class="flex justify-end space-x-3 pt-2">
-                <button onclick="app.editTaskFromDetail()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center space-x-1.5
+                <button onclick="app.editTaskFromDetail()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center space-x-1.5 transition">
+                    <i class="fa-solid fa-pen"></i>
+                    <span>Edit Task</span>
+                </button>
+                <button onclick="app.closeModal('taskDetailModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Category Modal -->
+<div id="categoryModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl my-auto">
+        <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
+            <h3 class="font-extrabold text-base text-white">Create / Customize Category</h3>
+            <button onclick="app.closeModal('categoryModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form onsubmit="app.saveCategory(event)" class="p-6 space-y-4">
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Category Name</label>
+                <input type="text" id="categoryNameInput" required placeholder="e.g., Coding, Fitness" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Icon (FontAwesome)</label>
+                    <input type="text" id="categoryIconInput" value="fa-folder" placeholder="e.g., fa-book, fa-dumbbell" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Accent Color</label>
+                    <input type="color" id="categoryColorInput" value="#6366f1" class="w-full h-10 bg-slate-900 border border-slate-700 rounded-xl px-2 py-1 cursor-pointer">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-2">
+                <button type="button" onclick="app.closeModal('categoryModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-sm font-semibold">Cancel</button>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold shadow-lg shadow-indigo-600/20">Save Category</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Shop & Achievements Modal -->
+<div id="shopModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-3xl max-h-[88vh] flex flex-col overflow-hidden shadow-2xl my-auto">
+        <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50 shrink-0">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                    <i class="fa-solid fa-store text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="font-extrabold text-base text-white">FocusQuest Marketplace & Achievements</h3>
+                    <p class="text-xs text-slate-400">Biological Pets, Quests, Loot Boxes, and Rank Emblems.</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                <span class="text-xs sm:text-sm font-extrabold text-amber-400 bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/30 flex items-center space-x-1.5">
+                    <i class="fa-solid fa-coins text-amber-400"></i> <span id="shopUserPoints">0</span> coins
+                </span>
+                <button onclick="app.closeModal('shopModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+        </div>
+        
+        <!-- Shop Navigation Tabs -->
+        <div class="flex border-b border-borderCol px-4 pt-3 bg-slate-900/40 gap-2 shrink-0 overflow-x-auto">
+            <button onclick="app.switchShopTab('pets')" id="shop-tab-pets" class="px-3 pb-2 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 whitespace-nowrap">Pet Companions</button>
+            <button onclick="app.switchShopTab('achievements')" id="shop-tab-achievements" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Achievements & Quests (50+)</button>
+            <button onclick="app.switchShopTab('lootboxes')" id="shop-tab-lootboxes" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Mystery Boxes</button>
+            <button onclick="app.switchShopTab('themes')" id="shop-tab-themes" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Themes & Gradients (16)</button>
+            <button onclick="app.switchShopTab('seasonal')" id="shop-tab-seasonal" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Seasonal Collections</button>
+            <button onclick="app.switchShopTab('badges')" id="shop-tab-badges" class="px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap">Quest Ranks & Emblems</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4" id="shopItemsContainer"></div>
+    </div>
+</div>
+
+<!-- Loot Box Reveal Overlay Modal -->
+<div id="lootBoxModal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-cardBg border border-amber-500/40 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-6 text-center space-y-5 my-auto">
+        <div class="w-20 h-20 rounded-3xl bg-amber-500/20 border-2 border-amber-400/50 flex items-center justify-center mx-auto text-4xl shadow-2xl shadow-amber-500/30 pet-bounce" id="lootBoxDisplayIcon">
+            🎁
+        </div>
+        <div>
+            <h3 class="font-black text-xl text-white" id="lootBoxTitle">Loot Box Unlocked!</h3>
+            <p class="text-xs text-amber-300 font-semibold mt-1" id="lootBoxItemName">You received an item!</p>
+        </div>
+        <button onclick="app.closeModal('lootBoxModal')" class="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-amber-500/30 transition transform hover:scale-105 active:scale-95">
+            Claim Reward
+        </button>
+    </div>
+</div>
+
+<!-- Debug / Simulation Modal -->
+<div id="debugModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-md overflow-hidden shadow-2xl my-auto">
+        <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
+            <h3 class="font-extrabold text-base text-rose-400 flex items-center space-x-2">
+                <i class="fa-solid fa-bug"></i>
+                <span>Simulate Midnight Settlement</span>
+            </h3>
+            <button onclick="app.closeModal('debugModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-6 space-y-4">
+            <p class="text-xs text-slate-300 leading-relaxed">
+                Manually trigger midnight check. Uncompleted scheduled tasks for today deduct <strong class="text-rose-400">-2 points each</strong>. If 7+ tasks were completed today, a **+2 point High-Volume bonus** will be awarded!
+            </p>
+            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-400" id="debugUncompletedSummary">
+            </div>
+            <div class="flex justify-end space-x-3 pt-2">
+                <button onclick="app.closeModal('debugModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cancel</button>
+                <button onclick="app.triggerMidnightSettlement()" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg shadow-rose-600/20">Execute Settlement</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings & Cloud Sync Modal -->
+<div id="settingsModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl max-h-[90vh] flex flex-col my-auto">
+        <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50 shrink-0">
+            <h3 class="font-extrabold text-sm sm:text-base text-white">App Settings & Profile</h3>
+            <button onclick="app.closeModal('settingsModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-6 space-y-6 overflow-y-auto flex-1">
+            <!-- User Profile & Timezone Section -->
+            <div class="space-y-4">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">User Profile & Timezone</h4>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Your Name (For Motivational Popups)</label>
+                    <input type="text" id="userNameInput" placeholder="Enter your name..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Timezone / Country Settings</label>
+                    <select id="userTimezoneSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                        <option value="auto">Auto Detect (Local Browser Timezone)</option>
+                        <option value="UTC">UTC / GMT</option>
+                        <option value="America/New_York">USA - Eastern (New York)</option>
+                        <option value="America/Chicago">USA - Central (Chicago)</option>
+                        <option value="America/Denver">USA - Mountain (Denver)</option>
+                        <option value="America/Los_Angeles">USA - Pacific (Los Angeles)</option>
+                        <option value="Europe/London">UK - London (GMT/BST)</option>
+                        <option value="Europe/Berlin">Europe - Berlin / Paris / Rome (CET)</option>
+                        <option value="Asia/Tokyo">Japan - Tokyo (JST)</option>
+                        <option value="Australia/Sydney">Australia - Sydney (AEST)</option>
+                    </select>
+                    <p class="text-[11px] text-amber-400 mt-1 font-semibold">Completing timed tasks in your configured timezone awards +3 points per task (+2 for untimed).</p>
+                </div>
+            </div>
+
+            <!-- Browser Push Notifications Settings Section -->
+            <div class="pt-4 border-t border-slate-800 space-y-4">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-2">
+                    <i class="fa-solid fa-bell text-indigo-400"></i>
+                    <span>Browser Task Notifications</span>
+                </h4>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h5 class="text-sm font-bold text-slate-200">Enable Push Notifications</h5>
+                        <p class="text-xs text-slate-400">Get native browser reminders before scheduled tasks start.</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="notificationsToggle" onchange="app.toggleNotifications(this.checked)" class="sr-only peer">
+                        <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                    </label>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Reminder Offset Time</label>
+                    <select id="notificationOffsetSelect" onchange="app.setNotificationOffset(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                        <option value="0">At exact start time (0 minutes)</option>
+                        <option value="5">5 minutes before start</option>
+                        <option value="15">15 minutes before start</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between border-t border-slate-800 pt-4">
+                <div>
+                    <h4 class="text-sm font-bold text-slate-200">Sound Effects (Web Audio)</h4>
+                    <p class="text-xs text-slate-400">Play chime on task completion.</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="audioToggle" onchange="app.toggleAudio(this.checked)" class="sr-only peer" checked>
+                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+            </div>
+
+            <!-- Firebase Cloud Sync Section -->
+            <div class="pt-4 border-t border-slate-800 space-y-4">
+                <div>
+                    <h4 class="text-sm font-bold text-indigo-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>Firebase Realtime Cloud Sync</span>
+                    </h4>
+                    <p class="text-xs text-slate-300 mt-1">Sync tasks, points, levels, pets, and unlocks instantly between devices using a shared Account Key / Sync Code.</p>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Your Active Sync Code / Account Key</label>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                            <input type="text" id="syncCodeDisplay" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs font-mono text-indigo-300 focus:outline-none focus:border-indigo-500" placeholder="e.g., FQ-XYZ">
+                            <div class="flex space-x-2">
+                                <button onclick="app.copySyncCode()" class="flex-1 sm:flex-initial px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold whitespace-nowrap transition flex items-center justify-center space-x-1.5">
+                                    <i class="fa-solid fa-copy"></i>
+                                    <span>Copy</span>
+                                </button>
+                                <button onclick="app.applySyncCodeInput()" class="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold whitespace-nowrap transition shadow-md shadow-indigo-600/20">
+                                    Connect Code
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end pt-2">
+                <button onclick="app.saveProfileSettings()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/20">
+                    Save Profile Settings
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * FocusQuest Architecture
+ */
+
+const FIREBASE_CONFIG = {
+    apiKey: "AIzaSyASYDatCJ8AR7fM8RflAoEGM2mGGL-CYIk",
+    authDomain: "focusquest-65deb.firebaseapp.com",
+    databaseURL: "https://focusquest-65deb-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "focusquest-65deb",
+    storageBucket: "focusquest-65deb.firebasestorage.app",
+    messagingSenderId: "60226155971",
+    appId: "1:60226155971:web:b03b6a1a61549340c53976",
+    measurementId: "G-HTCYWZKX18"
+};
+
+const PET_CATALOGUE = [
+    { id: 'pet-cat', type: 'pet', group: 'Mammals', subGroup: 'Carnivores', name: 'Focus Kitten', cost: 15, icon: '🐱', desc: 'A cozy house cat cheering your study sessions.' },
+    { id: 'pet-dog', type: 'pet', group: 'Mammals', subGroup: 'Carnivores', name: 'Loyal Puppy', cost: 20, icon: '🐶', desc: 'Always stays by your side while studying.' },
+    { id: 'pet-fox', type: 'pet', group: 'Mammals', subGroup: 'Carnivores', name: 'Clever Red Fox', cost: 35, icon: '🦊', desc: 'Sharp wit companion for tough problem-solving.' },
+    { id: 'pet-lion', type: 'pet', group: 'Mammals', subGroup: 'Carnivores', name: 'Royal Lion', cost: 75, icon: '🦁', desc: 'King of productivity and grand goals.' },
+    { id: 'pet-cheetah', type: 'pet', group: 'Mammals', subGroup: 'Carnivores', name: 'Speedy Cheetah', cost: 90, icon: '🐆', desc: 'Sprint through massive daily task lists.' },
+    
+    { id: 'pet-rabbit', type: 'pet', group: 'Mammals', subGroup: 'Herbivores', name: 'Fluffy Rabbit', cost: 25, icon: '🐰', desc: 'Energetic helper jumping from task to task.' },
+    { id: 'pet-panda', type: 'pet', group: 'Mammals', subGroup: 'Herbivores', name: 'Zen Panda', cost: 45, icon: '🐼', desc: 'Keeps calm and focused under high stress.' },
+    { id: 'pet-bear', type: 'pet', group: 'Mammals', subGroup: 'Omnivores', name: 'Grizzly Bear', cost: 65, icon: '🐻', desc: 'Power through heavy workloads easily.' },
+
+    { id: 'pet-falcon', type: 'pet', group: 'Birds', subGroup: 'Raptors', name: 'Peregrine Falcon (Wanderfalke)', cost: 65, icon: '🦅', desc: 'The fastest bird of prey. Swoops in on deadlines.' },
+    { id: 'pet-owl', type: 'pet', group: 'Birds', subGroup: 'Raptors', name: 'Wisdom Night Owl', cost: 35, icon: '🦉', desc: 'Boosts late night focus and intellectual aura.' },
+    { id: 'pet-parrot', type: 'pet', group: 'Birds', subGroup: 'Tropical', name: 'Vibrant Parrot', cost: 30, icon: '🦜', desc: 'Repeats encouraging quotes while you work.' },
+
+    { id: 'pet-turtle', type: 'pet', group: 'Reptiles', subGroup: 'Testudines', name: 'Steady Turtle', cost: 25, icon: '🐢', desc: 'Slow and steady wins every productivity race.' },
+    { id: 'pet-snake', type: 'pet', group: 'Reptiles', subGroup: 'Serpents', name: 'Emerald Snake', cost: 40, icon: '🐍', desc: 'Slithers smoothly through study blocks.' },
+
+    { id: 'pet-fish', type: 'pet', group: 'Aquatic', subGroup: 'Freshwater', name: 'Goldfish', cost: 10, icon: '🐠', desc: 'Calm underwater presence.' },
+    { id: 'pet-shark', type: 'pet', group: 'Aquatic', subGroup: 'Predators', name: 'Apex Shark', cost: 85, icon: '🦈', desc: 'Dominates complex project goals.' },
+    { id: 'pet-whale', type: 'pet', group: 'Aquatic', subGroup: 'Cetaceans', name: 'Cosmic Whale', cost: 120, icon: '🐋', desc: 'Deep focus ocean giant.' },
+
+    { id: 'pet-dragon', type: 'pet', group: 'Mythical', subGroup: 'Dragons', name: 'Inferno Dragon', cost: 250, icon: '🐉', desc: 'Mythical fire breathing productivity companion.' },
+    { id: 'pet-phoenix', type: 'pet', group: 'Mythical', subGroup: 'Phoenixes', name: 'Solar Phoenix', cost: 300, icon: '🐦‍🔥', desc: 'Rises victorious from procrastination ashes.' }
+];
+
+const SEASONAL_CATALOGUE = [
+    { id: 'sea-winter-polar', type: 'seasonal', season: 'Winter', name: 'Polar Bear Companion', cost: 50, icon: '🐻‍❄️', desc: 'Cozy winter polar bear for snowy focus.' },
+    { id: 'sea-winter-penguin', type: 'seasonal', season: 'Winter', name: 'Chilly Penguin', cost: 40, icon: '🐧', desc: 'Slides through cold study sessions.' },
+    { id: 'sea-winter-frost-theme', type: 'theme', season: 'Winter', name: 'Nordic Frost Theme', cost: 60, themeClass: 'theme-frost', desc: 'Crisp Arctic cyan gradient glow.' },
+
+    { id: 'sea-spring-chick', type: 'seasonal', season: 'Spring', name: 'Spring Hatchling', cost: 30, icon: '🐥', desc: 'Fresh new beginnings and vibrant motivation.' },
+    { id: 'sea-spring-bee', type: 'seasonal', season: 'Spring', name: 'Busy Honeybee', cost: 35, icon: '🐝', desc: 'Buzzes around completing daily tasks.' },
+    { id: 'sea-spring-mint-theme', type: 'theme', season: 'Spring', name: 'Mint Fresh Gradient', cost: 55, themeClass: 'theme-mint', desc: 'Vibrant spring green theme.' },
+
+    { id: 'sea-summer-flamingo', type: 'seasonal', season: 'Summer', name: 'Tropical Flamingo', cost: 45, icon: '🦩', desc: 'Brings warm summer vibes to your planner.' },
+    { id: 'sea-summer-crab', type: 'seasonal', season: 'Summer', name: 'Sunny Beach Crab', cost: 35, icon: '🦀', desc: 'Pinches down overdue task lists.' },
+    { id: 'sea-summer-solar-theme', type: 'theme', season: 'Summer', name: 'Solar Flare Gradient', cost: 60, themeClass: 'theme-solar', desc: 'Radiant bronze sunburst gradient.' },
+
+    { id: 'sea-autumn-squirrel', type: 'seasonal', season: 'Autumn', name: 'Nutty Squirrel', cost: 35, icon: '🐿️', desc: 'Hoards completed tasks like acorns.' },
+    { id: 'sea-autumn-hedgehog', type: 'seasonal', season: 'Autumn', name: 'Autumn Hedgehog', cost: 40, icon: '🦔', desc: 'Rustles through falling leaf study blocks.' },
+    { id: 'sea-autumn-sands-theme', type: 'theme', season: 'Autumn', name: 'Golden Sands Gradient', cost: 55, themeClass: 'theme-sands', desc: 'Warm amber and golden oak leaves.' },
+
+    { id: 'sea-hallow-bat', type: 'seasonal', season: 'Halloween', name: 'Vampire Bat Companion', cost: 50, icon: '🦇', desc: 'Spooky companion for late midnight focus.' },
+    { id: 'sea-hallow-ghost', type: 'seasonal', season: 'Halloween', name: 'Spooky Phantom', cost: 55, icon: '👻', desc: 'Haunts away your procrastination.' },
+    { id: 'sea-hallow-rose-theme', type: 'theme', season: 'Halloween', name: 'Vampire Rose Theme', cost: 70, themeClass: 'theme-rose', desc: 'Deep crimson gothic gradient glow.' },
+
+    { id: 'sea-xmas-reindeer', type: 'seasonal', season: 'Christmas', name: 'Rudolph Reindeer', cost: 60, icon: '🦌', desc: 'Guides your sleigh to productivity success.' },
+    { id: 'sea-xmas-santa', type: 'seasonal', season: 'Christmas', name: 'Festive Elf', cost: 50, icon: '🧑‍🎄', desc: 'Delivers bonus coin rewards on time.' },
+    { id: 'sea-xmas-pastel-theme', type: 'theme', season: 'Christmas', name: 'Holiday Sunset Gradient', cost: 65, themeClass: 'theme-pastel', desc: 'Magical magenta & purple celebration glow.' }
+];
+
+const SHOP_ITEMS = [
+    ...PET_CATALOGUE,
+    ...SEASONAL_CATALOGUE,
+
+    { id: 'theme-midnight', type: 'theme', name: 'Midnight Navy', cost: 0, themeClass: 'theme-midnight', desc: 'Default slick deep navy background.' },
+    { id: 'theme-obsidian', type: 'theme', name: 'Pure Obsidian OLED', cost: 20, themeClass: 'theme-obsidian', desc: 'Pitch black screen saver.' },
+    { id: 'theme-ruby', type: 'theme', name: 'Ruby Crimson Gradient', cost: 35, themeClass: 'theme-ruby', desc: 'Deep red to dark scarlet gradient.' },
+    { id: 'theme-ocean', type: 'theme', name: 'Deep Ocean Blue', cost: 35, themeClass: 'theme-ocean', desc: 'Deep navy to cyan blue transition.' },
+    { id: 'theme-emerald', type: 'theme', name: 'Emerald Forest', cost: 40, themeClass: 'theme-emerald', desc: 'Lush dark green gradient.' },
+    { id: 'theme-sunset', type: 'theme', name: 'Amber Sunset', cost: 40, themeClass: 'theme-sunset', desc: 'Warm burnt orange & bronze glow.' },
+    { id: 'theme-cyber', type: 'theme', name: 'Neon Cyberpunk', cost: 45, themeClass: 'theme-cyber', desc: 'Futuristic purple & neon cyan glow.' },
+    { id: 'theme-lavender', type: 'theme', name: 'Lavender Dream', cost: 45, themeClass: 'theme-lavender', desc: 'Soft deep violet to purple ambient.' },
+    { id: 'theme-mint', type: 'theme', name: 'Mint Fresh', cost: 45, themeClass: 'theme-mint', desc: 'Refreshing spring green background.' },
+    { id: 'theme-solar', type: 'theme', name: 'Solar Flare', cost: 50, themeClass: 'theme-solar', desc: 'Intense bronze sunburst gradient.' },
+    { id: 'theme-rose', type: 'theme', name: 'Vampire Rose', cost: 50, themeClass: 'theme-rose', desc: 'Dark burgundy to rose crimson.' },
+    { id: 'theme-frost', type: 'theme', name: 'Nordic Frost', cost: 50, themeClass: 'theme-frost', desc: 'Chilly Arctic ocean cyan.' },
+    { id: 'theme-sands', type: 'theme', name: 'Golden Sands', cost: 50, themeClass: 'theme-sands', desc: 'Warm desert golden oak gradient.' },
+    { id: 'theme-abyss', type: 'theme', name: 'Deep Abyss', cost: 55, themeClass: 'theme-abyss', desc: 'Ultra deep indigo sea trench.' },
+    { id: 'theme-pastel', type: 'theme', name: 'Pastel Sunset', cost: 55, themeClass: 'theme-pastel', desc: 'Dreamy pink to magenta skyline.' },
+    { id: 'theme-matrix', type: 'theme', name: 'Electric Matrix', cost: 60, themeClass: 'theme-matrix', desc: 'Hacker green digital realm.' },
+
+    { id: 'box-basic', type: 'box', name: 'Basic Mystery Box', cost: 15, boxTier: 'basic', icon: '📦', desc: 'Contains random common titles or standard pets.' },
+    { id: 'box-rare', type: 'box', name: 'Rare Mystery Box', cost: 35, boxTier: 'rare', icon: '🎁', desc: 'Higher chance for unique color themes & wild pets.' },
+    { id: 'box-epic', type: 'box', name: 'Epic Mystery Box', cost: 70, boxTier: 'epic', icon: '💎', desc: 'Unlocks rare pets, focus ranks, or premium gradients.' },
+    { id: 'box-legendary', type: 'box', name: 'Legendary Mystery Box', cost: 150, boxTier: 'legendary', icon: '👑', desc: 'Unlocks the rarest mythical pets, cosmic themes & legendary rank emblems!' },
+
+    { id: 'rank-bronze', type: 'rank', name: 'Bronze Rank Emblem', cost: 0, rankTier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved', desc: 'Bronze rank badge emblem.' },
+    { id: 'rank-silver', type: 'rank', name: 'Silver Rank Emblem', cost: 20, rankTier: 'Silver I', cssClass: 'rank-silver', icon: 'fa-shield', desc: 'Silver rank badge emblem.' },
+    { id: 'rank-gold', type: 'rank', name: 'Gold Rank Emblem', cost: 40, rankTier: 'Gold I', cssClass: 'rank-gold', icon: 'fa-crown', desc: 'Gold rank badge emblem.' },
+    { id: 'rank-diamond', type: 'rank', name: 'Diamond Rank Emblem', cost: 70, rankTier: 'Diamond I', cssClass: 'rank-diamond', icon: 'fa-gem', desc: 'Diamond rank badge emblem.' },
+    { id: 'rank-pro', type: 'rank', name: 'Pro Rank Emblem', cost: 90, rankTier: 'Pro Tier', cssClass: 'rank-pro', icon: 'fa-bolt', desc: 'Pro competitive tier badge emblem.' },
+    { id: 'rank-masters', type: 'rank', name: 'Master Rank Emblem', cost: 120, rankTier: 'Master', cssClass: 'rank-masters', icon: 'fa-medal', desc: 'Master competitive tier emblem.' },
+    { id: 'rank-mythic', type: 'rank', name: 'Mythic Rank Emblem', cost: 160, rankTier: 'Mythic', cssClass: 'rank-mythic', icon: 'fa-khanda', desc: 'Mythic competitive tier emblem.' },
+    { id: 'rank-legendary', type: 'rank', name: 'Legendary Rank Emblem', cost: 220, rankTier: 'Legendary', cssClass: 'rank-legendary', icon: 'fa-trophy', desc: 'Legendary apex focus rank emblem.' }
+];
+
+const GENERATED_ACHIEVEMENTS = [];
+
+const streakDays = [1, 2, 3, 4, 5, 7, 10, 14, 21, 30, 45, 60, 75, 90, 100, 125, 150, 175, 200, 250, 300];
+streakDays.forEach(days => {
+    const reward = Math.min(100, Math.floor(days * 0.4) + 2);
+    GENERATED_ACHIEVEMENTS.push({
+        id: `ach-streak-${days}`,
+        title: `${days}-Day Focus Streak`,
+        desc: `Complete at least 1 task daily for ${days} consecutive day(s).`,
+        rewardCoins: reward,
+        type: 'streak',
+        target: days
+    });
+});
+
+const totalTaskCounts = [1, 5, 10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 750, 1000];
+totalTaskCounts.forEach(count => {
+    const reward = Math.min(150, Math.floor(count * 0.15) + 2);
+    GENERATED_ACHIEVEMENTS.push({
+        id: `ach-total-${count}`,
+        title: `Task Conqueror (${count} Tasks)`,
+        desc: `Reach a career milestone of ${count} total completed tasks.`,
+        rewardCoins: reward,
+        type: 'totalTasks',
+        target: count
+    });
+});
+
+const singleDayCounts = [3, 5, 7, 10, 12, 15, 20];
+singleDayCounts.forEach(count => {
+    const reward = Math.floor(count * 1.5);
+    GENERATED_ACHIEVEMENTS.push({
+        id: `ach-dayvol-${count}`,
+        title: `Power Hour: ${count} Tasks in 1 Day`,
+        desc: `Finish ${count} tasks in a single calendar day.`,
+        rewardCoins: reward,
+        type: 'singleDayVol',
+        target: count
+    });
+});
+
+const collectionCounts = [1, 3, 5, 8, 12, 15];
+collectionCounts.forEach(count => {
+    const reward = count * 3;
+    GENERATED_ACHIEVEMENTS.push({
+        id: `ach-pets-${count}`,
+        title: `Zookeeper: ${count} Pet Companions`,
+        desc: `Collect and adopt ${count} different pets in your shop sanctuary.`,
+        rewardCoins: reward,
+        type: 'petCount',
+        target: count
+    });
+});
+
+class FocusQuestApp {
+    constructor() {
+        this.tasks = [];
+        this.categories = [
+            { id: 'cat-general', name: 'General', icon: 'fa-folder', color: '#6366f1' },
+            { id: 'cat-work', name: 'Work / Study', icon: 'fa-briefcase', color: '#3b82f6' },
+            { id: 'cat-health', name: 'Health & Fitness', icon: 'fa-heart-pulse', color: '#10b981' },
+            { id: 'cat-personal', name: 'Personal', icon: 'fa-user', color: '#f59e0b' }
+        ];
+        
+        this.user = {
+            name: 'Warrior',
+            timezone: 'auto',
+            points: 0,
+            level: 1,
+            xp: 0,
+            activeTitle: 'Procrastinator',
+            activeTheme: 'theme-midnight',
+            activePet: '🐱',
+            activeRank: { tier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved' },
+            inventory: ['theme-midnight', 'pet-cat', 'rank-bronze'],
+            unlockedAchievements: [],
+            currentStreak: 0,
+            lastCompletedDate: null,
+            lastSettlementDate: null,
+            notificationsEnabled: false,
+            notificationOffset: 0
+        };
+
+        this.syncCode = localStorage.getItem('focusquest_sync_code') || this.generateSyncCode();
+        this.sidebarCollapsed = false;
+        this.currentView = 'today';
+        this.filterState = 'all';
+        this.searchQuery = '';
+        this.activeCategoryFilter = null;
+        this.plannerWeekOffset = 0;
+        this.shopTab = 'pets';
+        this.audioEnabled = localStorage.getItem('focusquest_audio') !== 'false';
+        this.activeDetailTaskId = null;
+        this.pendingDeleteAction = null;
+        this.selectedMultipleDates = [];
+        this.yesterdayCleanupTasks = [];
+        this.zoomedDayISO = null;
+
+        this.notifiedTaskMap = {};
+
+        this.firebaseApp = null;
+        this.db = null;
+        this.dbRef = null;
+        this.isSyncingFromCloud = false;
+
+        this.init();
+    }
+
+    init() {
+        this.setupDateHeader();
+        this.loadLocalStorage();
+        this.initFirebase();
+        this.checkMidnightAutoSettlement();
+        this.render();
+        
+        setInterval(() => {
+            this.checkMidnightAutoSettlement();
+            this.checkScheduledNotifications();
+        }, 30000);
+    }
+
+    generateSyncCode() {
+        const code = 'FQ-' + Math.random().toString(36).substring(2, 7).toUpperCase();
+        localStorage.setItem('focusquest_sync_code', code);
+        return code;
+    }
+
+    setupDateHeader() {
+        const dateElem = document.getElementById('headerDateBadge');
+        if (dateElem) {
+            const today = new Date();
+            dateElem.textContent = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        }
+    }
+
+    playChime() {
+        if (!this.audioEnabled) return;
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const now = ctx.currentTime;
+            const osc1 = ctx.createOscillator();
+            const osc2 = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc1.type = 'sine';
+            osc2.type = 'triangle';
+            osc1.frequency.setValueAtTime(523.25, now);
+            osc1.frequency.exponentialRampToValueAtTime(659.25, now + 0.12);
+            osc1.frequency.exponentialRampToValueAtTime(783.99, now + 0.24);
+
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+            osc1.connect(gain);
+            osc2.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc1.start(now);
+            osc2.start(now);
+            osc1.stop(now + 0.5);
+            osc2.stop(now + 0.5);
+        } catch(e) {}
+    }
+
+    showMotivationalToast(message) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+
+        const toast = document.createElement('div');
+        toast.className = 'p-4 rounded-2xl bg-cardBg border border-indigo-500/50 text-white shadow-2xl flex items-center space-x-3 pointer-events-auto animate-toast border-l-4 border-l-indigo-500';
+        toast.innerHTML = `
+            <div class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+                <i class="fa-solid fa-sparkles text-sm"></i>
+            </div>
+            <p class="text-xs font-bold text-slate-100 flex-1 leading-snug">${message}</p>
+        `;
+
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+
+    toggleNotifications(enabled) {
+        if (enabled) {
+            if (!("Notification" in window)) {
+                this.showMotivationalToast("Push Notifications are not supported by your browser.");
+                document.getElementById('notificationsToggle').checked = false;
+                this.user.notificationsEnabled = false;
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    this.user.notificationsEnabled = true;
+                    this.saveLocalStorage();
+                    this.showMotivationalToast(`Notifications enabled! Reminders set for ${this.user.name}.`);
+                } else {
+                    this.user.notificationsEnabled = false;
+                    document.getElementById('notificationsToggle').checked = false;
+                    this.saveLocalStorage();
+                    this.showMotivationalToast("Notification permission was denied.");
+                }
+            });
+        } else {
+            this.user.notificationsEnabled = false;
+            this.saveLocalStorage();
+            this.showMotivationalToast("Push notifications disabled.");
+        }
+    }
+
+    setNotificationOffset(offsetMinutes) {
+        this.user.notificationOffset = parseInt(offsetMinutes) || 0;
+        this.saveLocalStorage();
+    }
+
+    checkScheduledNotifications() {
+        if (!this.user.notificationsEnabled || !("Notification" in window) || Notification.permission !== "granted") {
+            return;
+        }
+
+        const todayISO = this.getTodayISO();
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        const todayTasks = this.tasks.filter(t => this.isTaskScheduledForToday(t) && !this.isTaskCompletedOnDate(t, todayISO) && t.startTime);
+
+        todayTasks.forEach(task => {
+            const timeParts = task.startTime.split(':');
+            if (timeParts.length !== 2) return;
+            const taskStartMinutes = parseInt(timeParts[0]) * 60 + parseInt(timeParts[1]);
+
+            const targetMinutes = taskStartMinutes - (this.user.notificationOffset || 0);
+            const notificationKey = `${task.id}_${todayISO}_${this.user.notificationOffset}`;
+
+            if (currentMinutes >= targetMinutes && currentMinutes < targetMinutes + 2 && !this.notifiedTaskMap[notificationKey]) {
+                this.notifiedTaskMap[notificationKey] = true;
+                
+                const userName = this.user.name || "Warrior";
+                let offsetText = "starts right now!";
+                if (this.user.notificationOffset > 0) {
+                    offsetText = `starts in ${this.user.notificationOffset} minutes!`;
+                }
+
+                const title = `FocusQuest Reminder`;
+                const body = `Hey ${userName}, your task "${task.title}" ${offsetText}`;
+
+                try {
+                    new Notification(title, {
+                        body: body,
+                        icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%236366f1"><circle cx="12" cy="12" r="10"/></svg>'
+                    });
+                } catch(e) {}
+            }
+        });
+    }
+
+    initFirebase() {
+        try {
+            if (!firebase.apps.length) {
+                this.firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+            } else {
+                this.firebaseApp = firebase.app();
+            }
+            this.db = firebase.database();
+            this.connectFirebaseSync();
+        } catch (e) {
+            this.updateSyncBadge(false, 'Local Mode');
+        }
+    }
+
+    connectFirebaseSync() {
+        if (!this.db || !this.syncCode) return;
+        this.updateSyncBadge(true, 'Syncing...');
+        const sanitizedCode = this.syncCode.replace(/[.#$/[\]]/g, "_");
+        this.dbRef = this.db.ref('users/' + sanitizedCode);
+
+        // Intelligenter Live-Listener mit Konfliktlösung (verhindert Überschreiben)
+        this.dbRef.on('value', (snapshot) => {
+            const cloudData = snapshot.val();
+            if (cloudData) {
+                const localUpdatedAt = parseInt(localStorage.getItem('focusquest_updated_at') || '0');
+                const cloudUpdatedAt = parseInt(cloudData.updatedAt || '0');
+
+                // Wenn Cloud neuer ist als Lokal ODER Lokal noch gar keine Cloud-Daten hatte:
+                if (cloudUpdatedAt >= localUpdatedAt || !localUpdatedAt) {
+                    this.isSyncingFromCloud = true;
+                    if (cloudData.tasks) this.tasks = cloudData.tasks;
+                    if (cloudData.categories) this.categories = cloudData.categories;
+                    if (cloudData.user) this.user = { ...this.user, ...cloudData.user };
+                    
+                    localStorage.setItem('focusquest_updated_at', cloudUpdatedAt);
+                    this.saveLocalStorage(false); // Lokal sichern ohne Loop
+                    this.isSyncingFromCloud = false;
+                    this.render();
+                } else if (localUpdatedAt > cloudUpdatedAt) {
+                    // Lokaler Stand ist neuer -> In Cloud hochladen
+                    this.syncToCloud();
+                }
+            } else {
+                // Keine Daten in Cloud vorhanden -> Initial hochladen
+                this.syncToCloud();
+            }
+            this.updateSyncBadge(true, 'Synced');
+        }, () => {
+            this.updateSyncBadge(false, 'Offline');
+        });
+    }
+
+    syncToCloud() {
+        if (!this.dbRef || this.isSyncingFromCloud) return;
+        const nowTimestamp = Date.now();
+        localStorage.setItem('focusquest_updated_at', nowTimestamp);
+
+        const payload = {
+            tasks: this.tasks,
+            categories: this.categories,
+            user: this.user,
+            updatedAt: nowTimestamp
+        };
+        this.dbRef.set(payload).catch(() => {});
+    }
+
+    updateSyncBadge(active, text) {
+        const textElem = document.getElementById('cloudStatusText');
+        const pingElem = document.getElementById('syncDotPing');
+        const staticElem = document.getElementById('syncDotStatic');
+        if (textElem) textElem.textContent = text;
+        if (pingElem && staticElem) {
+            if (active) {
+                pingElem.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75';
+                staticElem.className = 'relative inline-flex rounded-full h-2 w-2 bg-emerald-500';
+            } else {
+                pingElem.className = 'hidden';
+                staticElem.className = 'relative inline-flex rounded-full h-2 w-2 bg-rose-500';
+            }
+        }
+    }
+
+    saveLocalStorage(pushToCloud = true) {
+        localStorage.setItem('focusquest_tasks', JSON.stringify(this.tasks));
+        localStorage.setItem('focusquest_categories', JSON.stringify(this.categories));
+        localStorage.setItem('focusquest_user', JSON.stringify(this.user));
+        localStorage.setItem('focusquest_sync_code', this.syncCode);
+        if (pushToCloud) this.syncToCloud();
+    }
+
+    loadLocalStorage() {
+        const storedTasks = localStorage.getItem('focusquest_tasks');
+        const storedCats = localStorage.getItem('focusquest_categories');
+        const storedUser = localStorage.getItem('focusquest_user');
+
+        if (storedTasks) this.tasks = JSON.parse(storedTasks);
+        if (storedCats) this.categories = JSON.parse(storedCats);
+        if (storedUser) this.user = { ...this.user, ...JSON.parse(storedUser) };
+
+        this.tasks.forEach(t => {
+            if (!t.completionHistory) t.completionHistory = {};
+        });
+
+        if (this.user.activeTheme) {
+            document.body.className = `${this.user.activeTheme} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
+        }
+
+        const syncDisplay = document.getElementById('syncCodeDisplay');
+        if (syncDisplay) syncDisplay.value = this.syncCode;
+
+        const nameInput = document.getElementById('userNameInput');
+        if (nameInput) nameInput.value = this.user.name || 'Warrior';
+
+        const tzSelect = document.getElementById('userTimezoneSelect');
+        if (tzSelect) tzSelect.value = this.user.timezone || 'auto';
+
+        const notifToggle = document.getElementById('notificationsToggle');
+        if (notifToggle) notifToggle.checked = !!this.user.notificationsEnabled;
+
+        const notifOffsetSelect = document.getElementById('notificationOffsetSelect');
+        if (notifOffsetSelect) notifOffsetSelect.value = this.user.notificationOffset || 0;
+    }
+
+    saveProfileSettings() {
+        const nameVal = document.getElementById('userNameInput').value.trim();
+        const tzVal = document.getElementById('userTimezoneSelect').value;
+
+        if (nameVal) this.user.name = nameVal;
+        this.user.timezone = tzVal;
+
+        this.saveLocalStorage();
+        this.closeModal('settingsModal');
+        this.showMotivationalToast(`Profile updated, ${this.user.name}! Settings saved successfully.`);
+    }
+
+    getTodayISO() {
+        let timezone = this.user.timezone;
+        if (!timezone || timezone === 'auto') {
+            const d = new Date();
+            return d.toISOString().split('T')[0];
+        }
+        try {
+            const d = new Date();
+            const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: timezone, year: 'numeric', month: '2-digit', day: '2-digit' });
+            return formatter.format(d);
+        } catch(e) {
+            return new Date().toISOString().split('T')[0];
+        }
+    }
+
+    getYesterdayISO() {
+        const todayStr = this.getTodayISO();
+        const parts = todayStr.split('-');
+        const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        d.setDate(d.getDate() - 1);
+        return d.toISOString().split('T')[0];
+    }
+
+    isTaskScheduledForDate(task, dateISO) {
+        if (!dateISO) dateISO = this.getTodayISO();
+        if (task.frequencyType === 'once' && task.dueDate === dateISO) return true;
+        if (task.frequencyType === 'multiple' && Array.isArray(task.multipleDates) && task.multipleDates.includes(dateISO)) return true;
+        if (task.frequencyType === 'recurring' && Array.isArray(task.recurringDays)) {
+            const parts = dateISO.split('-');
+            const d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+            if (task.recurringDays.includes(d.getDay())) return true;
+        }
+        if (dateISO === this.getTodayISO() && task.isToday) return true;
+        return false;
+    }
+
+    isTaskScheduledForToday(task) {
+        return this.isTaskScheduledForDate(task, this.getTodayISO());
+    }
+
+    isTaskCompletedOnDate(task, dateISO) {
+        if (!dateISO) dateISO = this.getTodayISO();
+        if (task.completionHistory && task.completionHistory[dateISO] !== undefined) {
+            return task.completionHistory[dateISO];
+        }
+        if (dateISO === this.getTodayISO()) {
+            return !!task.completed;
+        }
+        return false;
+    }
+
+    sortTasksByStartTime(taskList) {
+        return taskList.sort((a, b) => {
+            if (!a.startTime && !b.startTime) return 0;
+            if (!a.startTime) return 1;
+            if (!b.startTime) return -1;
+            return a.startTime.localeCompare(b.startTime);
+        });
+    }
+
+    calculateTaskPointValue(task, dateISO) {
+        if (!dateISO) dateISO = this.getTodayISO();
+        if (!task.startTime) return 2;
+
+        if (dateISO === this.getTodayISO()) {
+            const now = new Date();
+            const currentHM = now.toTimeString().substring(0, 5);
+            const startTime = task.startTime;
+            const endTime = task.endTime || '23:59';
+
+            if (currentHM >= startTime && currentHM <= endTime) {
+                return 3;
+            }
+            return 2;
+        }
+        return 2;
+    }
+
+    checkMidnightAutoSettlement() {
+        const todayStr = this.getTodayISO();
+        this.tasks.forEach(task => {
+            if (task.frequencyType === 'recurring' && task.completed && task.lastCompletedDate !== todayStr) {
+                task.completed = false;
+            }
+        });
+
+        if (this.user.lastSettlementDate !== todayStr) {
+            if (this.user.lastSettlementDate) {
+                this.executeMidnightSettlementLogic(this.user.lastSettlementDate);
+            }
+            this.user.lastSettlementDate = todayStr;
+            this.saveLocalStorage();
+            this.checkAndPromptDailyCleanup();
+        }
+    }
+
+    executeMidnightSettlementLogic(settlementDate) {
+        if (!settlementDate) settlementDate = this.getTodayISO();
+        let penalties = 0;
+        let tasksCompletedOnSettlementDay = 0;
+
+        this.tasks.forEach(task => {
+            const scheduledForSettlementDay = this.isTaskScheduledForDate(task, settlementDate);
+            const completedOnSettlementDay = this.isTaskCompletedOnDate(task, settlementDate);
+
+            if (completedOnSettlementDay) {
+                tasksCompletedOnSettlementDay++;
+            }
+
+            if (scheduledForSettlementDay && !completedOnSettlementDay) {
+                penalties += 2;
+                if (!task.completionHistory) task.completionHistory = {};
+                task.completionHistory[settlementDate] = false;
+                task.isToday = false;
+
+                if (task.frequencyType === 'once') {
+                    task.frequencyType = 'undated';
+                    task.dueDate = '';
+                }
+            }
+        });
+
+        if (penalties > 0) {
+            this.user.points = Math.max(0, this.user.points - penalties);
+        }
+
+        if (tasksCompletedOnSettlementDay >= 7) {
+            this.user.points += 2;
+            this.user.xp += 20;
+            this.showMotivationalToast(`Midnight Reward: +2 High-Volume Bonus Coins awarded to ${this.user.name || 'you'} for completing 7+ tasks!`);
+        }
+
+        this.render();
+    }
+
+    checkAndPromptDailyCleanup() {
+        const yesterdayISO = this.getYesterdayISO();
+        this.yesterdayCleanupTasks = this.tasks.filter(t => this.isTaskCompletedOnDate(t, yesterdayISO));
+
+        if (this.yesterdayCleanupTasks.length > 0) {
+            const questionElem = document.getElementById('dailyCleanupQuestion');
+            if (questionElem) questionElem.textContent = "Delete all completed tasks from yesterday?";
+            
+            document.getElementById('dailyCleanupChecklistWrapper').classList.add('hidden');
+            document.getElementById('dailyCleanupInitialButtons').classList.remove('hidden');
+            document.getElementById('dailyCleanupSelectButtons').classList.add('hidden');
+
+            this.openModal('dailyCleanupModal');
+        }
+    }
+
+    handleDailyCleanupYes() {
+        const taskIdsToDelete = this.yesterdayCleanupTasks.map(t => t.id);
+        this.confirmDelete("Are you sure you want to completely delete all completed tasks from yesterday?", () => {
+            this.tasks = this.tasks.filter(t => !taskIdsToDelete.includes(t.id));
+            this.saveLocalStorage();
+            this.closeModal('dailyCleanupModal');
+            this.render();
+        });
+    }
+
+    handleDailyCleanupNo() {
+        document.getElementById('dailyCleanupInitialButtons').classList.add('hidden');
+        document.getElementById('dailyCleanupChecklistWrapper').classList.remove('hidden');
+        document.getElementById('dailyCleanupSelectButtons').classList.remove('hidden');
+
+        const container = document.getElementById('dailyCleanupChecklist');
+        if (container) {
+            container.innerHTML = this.yesterdayCleanupTasks.map(t => `
+                <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
+                    <input type="checkbox" value="${t.id}" class="cleanupTaskCheckbox rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500" checked>
+                    <span class="text-slate-200 truncate font-semibold">${t.title}</span>
+                </label>
+            `).join('');
+        }
+    }
+
+    confirmSelectedDailyCleanup() {
+        const checkedBoxes = document.querySelectorAll('.cleanupTaskCheckbox:checked');
+        const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+        if (selectedIds.length === 0) {
+            this.closeModal('dailyCleanupModal');
+            return;
+        }
+
+        this.confirmDelete("Are you sure you want to completely delete these tasks?", () => {
+            this.tasks = this.tasks.filter(t => !selectedIds.includes(t.id));
+            this.saveLocalStorage();
+            this.closeModal('dailyCleanupModal');
+            this.render();
+        });
+    }
+
+    toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const icon = document.getElementById('sidebarCollapseIcon');
+        const floatBtn = document.getElementById('floatingSidebarOpenBtn');
+
+        if (window.innerWidth < 768) {
+            const isHidden = sidebar.classList.contains('-translate-x-full');
+            if (isHidden) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        } else {
+            this.sidebarCollapsed = !this.sidebarCollapsed;
+            if (this.sidebarCollapsed) {
+                sidebar.classList.add('desktop-collapsed');
+                if (icon) icon.className = 'fa-solid fa-angles-right text-sm';
+                if (floatBtn) {
+                    floatBtn.classList.remove('hidden');
+                    floatBtn.classList.add('flex');
+                }
+            } else {
+                sidebar.classList.remove('desktop-collapsed');
+                if (icon) icon.className = 'fa-solid fa-angles-left text-sm';
+                if (floatBtn) {
+                    floatBtn.classList.add('hidden');
+                    floatBtn.classList.remove('flex');
+                }
+            }
+        }
+    }
+
+    switchView(viewName) {
+        this.currentView = viewName;
+        this.activeCategoryFilter = null;
+        this.zoomedDayISO = null;
+
+        if (window.innerWidth < 768) {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.add('hidden');
+        }
+
+        ['today', 'planner', 'all', 'favorites'].forEach(item => {
+            const btn = document.getElementById(`nav-${item}`);
+            if (btn) {
+                if (item === viewName) {
+                    btn.className = 'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/20 text-indigo-400 border border-indigo-500/30';
+                } else {
+                    btn.className = 'w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-medium text-sm transition text-slate-300 hover:bg-slate-800/80 hover:text-white';
+                }
+            }
+        });
+
+        this.render();
+    }
+
+    filterByCategory(catId) {
+        this.activeCategoryFilter = catId;
+        this.render();
+    }
+
+    clearCategoryFilter() {
+        this.activeCategoryFilter = null;
+        this.render();
+    }
+
+    setFilter(filterName) {
+        this.filterState = filterName;
+        ['all', 'active', 'completed'].forEach(f => {
+            const btn = document.getElementById(`filter-btn-${f}`);
+            if (btn) {
+                if (f === filterName) {
+                    btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition whitespace-nowrap shadow-md shadow-indigo-600/20';
+                } else {
+                    btn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition whitespace-nowrap';
+                }
+            }
+        });
+        this.renderTaskList();
+    }
+
+    handleSearch(query) {
+        this.searchQuery = query.toLowerCase().trim();
+        this.renderTaskList();
+    }
+
+    openCreateTaskModal() {
+        this.resetTaskForm();
+        this.openModal('taskModal');
+    }
+
+    openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('hidden');
+            if (modalId === 'shopModal') {
+                this.renderShop();
+            } else if (modalId === 'debugModal') {
+                this.renderDebugSummary();
+            }
+        }
+    }
+
+    closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.add('hidden');
+            if (modalId === 'taskModal') {
+                this.resetTaskForm();
+            }
+        }
+    }
+
+    confirmDelete(message, onConfirm) {
+        this.pendingDeleteAction = onConfirm;
+        const msgElem = document.getElementById('deleteConfirmMessage');
+        if (msgElem) msgElem.textContent = message || 'This action cannot be undone.';
+        this.openModal('deleteConfirmModal');
+    }
+
+    executePendingDelete() {
+        if (typeof this.pendingDeleteAction === 'function') {
+            this.pendingDeleteAction();
+            this.pendingDeleteAction = null;
+        }
+        this.closeModal('deleteConfirmModal');
+    }
+
+    resetTaskForm() {
+        document.getElementById('editTaskId').value = '';
+        document.getElementById('taskTitleInput').value = '';
+        document.getElementById('taskDescriptionInput').value = '';
+        document.getElementById('taskStartTimeInput').value = '';
+        document.getElementById('taskEndTimeInput').value = '';
+        document.getElementById('taskUrlInput').value = '';
+        document.getElementById('taskModalTitle').textContent = 'Create New Task';
+
+        const catSelect = document.getElementById('taskCategorySelect');
+        this.populateCategoryDropdown(catSelect);
+
+        document.getElementById('taskFrequencyTypeSelect').value = 'once';
+        document.getElementById('taskDateInput').value = this.getTodayISO();
+        document.getElementById('taskIsTodayInput').checked = true;
+
+        this.selectedMultipleDates = [];
+        this.renderSelectedMultipleDates();
+        document.querySelectorAll('input[name="recurringDay"]').forEach(cb => cb.checked = false);
+
+        this.handleFrequencyTypeChange('once');
+    }
+
+    populateCategoryDropdown(selectElem, selectedId = null) {
+        if (!selectElem) return;
+        selectElem.innerHTML = this.categories.map(c => 
+            `<option value="${c.id}" ${selectedId === c.id ? 'selected' : ''}>${c.name}</option>`
+        ).join('');
+    }
+
+    handleFrequencyTypeChange(val) {
+        const dateSec = document.getElementById('oneTimeDateSection');
+        const multSec = document.getElementById('multipleDaysSection');
+        const recurSec = document.getElementById('recurringDaysSection');
+
+        dateSec.classList.add('hidden');
+        multSec.classList.add('hidden');
+        recurSec.classList.add('hidden');
+
+        if (val === 'once') dateSec.classList.remove('hidden');
+        else if (val === 'multiple') multSec.classList.remove('hidden');
+        else if (val === 'recurring') recurSec.classList.remove('hidden');
+    }
+
+    addSelectedMultipleDate() {
+        const picker = document.getElementById('multipleDatePickerInput');
+        if (!picker || !picker.value) return;
+        const val = picker.value;
+        if (!this.selectedMultipleDates.includes(val)) {
+            this.selectedMultipleDates.push(val);
+            this.selectedMultipleDates.sort();
+            this.renderSelectedMultipleDates();
+        }
+        picker.value = '';
+    }
+
+    removeMultipleDate(dateStr) {
+        this.selectedMultipleDates = this.selectedMultipleDates.filter(d => d !== dateStr);
+        this.renderSelectedMultipleDates();
+    }
+
+    renderSelectedMultipleDates() {
+        const container = document.getElementById('selectedDatesChips');
+        if (!container) return;
+        container.innerHTML = this.selectedMultipleDates.map(d => `
+            <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-indigo-950 border border-indigo-500/40 text-xs font-semibold text-indigo-200">
+                <span>${d}</span>
+                <button type="button" onclick="app.removeMultipleDate('${d}')" class="text-indigo-400 hover:text-rose-400 ml-1">
+                    <i class="fa-solid fa-xmark text-[10px]"></i>
+                </button>
+            </span>
+        `).join('');
+    }
+
+    syncModalDateCheckbox(isTodayChecked) {
+        const dateInput = document.getElementById('taskDateInput');
+        const freqSelect = document.getElementById('taskFrequencyTypeSelect');
+        if (isTodayChecked && freqSelect.value === 'once') {
+            dateInput.value = this.getTodayISO();
+        }
+    }
+
+    saveTask(e) {
+        e.preventDefault();
+        const taskId = document.getElementById('editTaskId').value;
+        const title = document.getElementById('taskTitleInput').value.trim();
+        const description = document.getElementById('taskDescriptionInput').value.trim();
+        const startTime = document.getElementById('taskStartTimeInput').value;
+        const endTime = document.getElementById('taskEndTimeInput').value;
+        const url = document.getElementById('taskUrlInput').value.trim();
+        const categoryId = document.getElementById('taskCategorySelect').value;
+        const frequencyType = document.getElementById('taskFrequencyTypeSelect').value;
+        const dueDate = document.getElementById('taskDateInput').value;
+        const isToday = document.getElementById('taskIsTodayInput').checked;
+
+        const recurringDays = [];
+        if (frequencyType === 'recurring') {
+            document.querySelectorAll('input[name="recurringDay"]:checked').forEach(cb => {
+                recurringDays.push(parseInt(cb.value));
+            });
+        }
+
+        const multipleDates = frequencyType === 'multiple' ? [...this.selectedMultipleDates] : [];
+
+        if (taskId) {
+            const task = this.tasks.find(t => t.id === taskId);
+            if (task) {
+                task.title = title;
+                task.description = description;
+                task.startTime = startTime;
+                task.endTime = endTime;
+                task.url = url;
+                task.categoryId = categoryId;
+                task.frequencyType = frequencyType;
+                task.dueDate = dueDate;
+                task.multipleDates = multipleDates;
+                task.recurringDays = recurringDays;
+                task.isToday = isToday;
+            }
+        } else {
+            const newTask = {
+                id: 'task-' + Date.now(),
+                title,
+                description,
+                startTime,
+                endTime,
+                url,
+                categoryId,
+                frequencyType,
+                dueDate,
+                multipleDates,
+                recurringDays,
+                isToday,
+                completed: false,
+                lastCompletedDate: null,
+                completionHistory: {},
+                favorite: false,
+                createdAt: Date.now()
+            };
+            this.tasks.unshift(newTask);
+        }
+
+        this.saveLocalStorage();
+        this.closeModal('taskModal');
+        this.render();
+    }
+
+    editTask(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        document.getElementById('editTaskId').value = task.id;
+        document.getElementById('taskTitleInput').value = task.title;
+        document.getElementById('taskDescriptionInput').value = task.description || '';
+        document.getElementById('taskStartTimeInput').value = task.startTime || '';
+        document.getElementById('taskEndTimeInput').value = task.endTime || '';
+        document.getElementById('taskUrlInput').value = task.url || '';
+        document.getElementById('taskModalTitle').textContent = 'Edit Task';
+
+        const catSelect = document.getElementById('taskCategorySelect');
+        this.populateCategoryDropdown(catSelect, task.categoryId);
+
+        document.getElementById('taskFrequencyTypeSelect').value = task.frequencyType || 'once';
+        document.getElementById('taskDateInput').value = task.dueDate || this.getTodayISO();
+        document.getElementById('taskIsTodayInput').checked = !!task.isToday;
+
+        this.selectedMultipleDates = Array.isArray(task.multipleDates) ? [...task.multipleDates] : [];
+        this.renderSelectedMultipleDates();
+
+        this.handleFrequencyTypeChange(task.frequencyType || 'once');
+
+        if (task.frequencyType === 'recurring' && Array.isArray(task.recurringDays)) {
+            document.querySelectorAll('input[name="recurringDay"]').forEach(cb => {
+                cb.checked = task.recurringDays.includes(parseInt(cb.value));
+            });
+        }
+
+        this.openModal('taskModal');
+    }
+
+    toggleTaskComplete(taskId, dateISO) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        if (!dateISO) dateISO = this.getTodayISO();
+        if (!task.completionHistory) task.completionHistory = {};
+
+        const isCurrentlyCompleted = this.isTaskCompletedOnDate(task, dateISO);
+        const nextState = !isCurrentlyCompleted;
+
+        task.completionHistory[dateISO] = nextState;
+
+        if (dateISO === this.getTodayISO()) {
+            task.completed = nextState;
+        }
+
+        const userName = this.user.name || 'Warrior';
+
+        if (nextState) {
+            task.lastCompletedDate = dateISO;
+
+            const pointsEarned = this.calculateTaskPointValue(task, dateISO);
+            this.user.points += pointsEarned;
+            this.user.xp += pointsEarned * 10;
+            this.playChime();
+
+            const phrases = [
+                `Great job, ${userName}! Keep going!`,
+                `Outstanding work, ${userName}! Stay focused!`,
+                `Fantastic effort, ${userName}! You are crushing your goals!`,
+                `Way to go, ${userName}! Momentum is building!`,
+                `Superb progress, ${userName}! Victory awaits!`
+            ];
+            const randomMsg = phrases[Math.floor(Math.random() * phrases.length)];
+            this.showMotivationalToast(randomMsg + ` (+${pointsEarned} pts)`);
+
+            const todayTasks = this.tasks.filter(t => this.isTaskScheduledForToday(t));
+            const allTodayCompleted = todayTasks.length > 0 && todayTasks.every(t => this.isTaskCompletedOnDate(t, this.getTodayISO()));
+
+            if (allTodayCompleted) {
+                const celebrationMsg = `Incredible work, ${userName}! You crushed every single goal today!`;
+                document.getElementById('celebrationMessageText').textContent = celebrationMsg;
+                this.openModal('celebrationModal');
+            }
+
+            this.checkAchievements();
+        } else {
+            const pointsDeducted = this.calculateTaskPointValue(task, dateISO);
+            this.user.points = Math.max(0, this.user.points - pointsDeducted);
+            this.user.xp = Math.max(0, this.user.xp - pointsDeducted * 10);
+        }
+
+        this.calculateLevelProgress();
+        this.saveLocalStorage();
+        this.render();
+    }
+
+    toggleTaskFavorite(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (task) {
+            task.favorite = !task.favorite;
+            this.saveLocalStorage();
+            this.render();
+        }
+    }
+
+    deleteTask(taskId) {
+        this.confirmDelete('Are you sure you want to delete this task?', () => {
+            this.tasks = this.tasks.filter(t => t.id !== taskId);
+            this.saveLocalStorage();
+            this.render();
+        });
+    }
+
+    openTaskDetail(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        this.activeDetailTaskId = taskId;
+        const category = this.categories.find(c => c.id === task.categoryId) || { name: 'General', color: '#6366f1' };
+
+        document.getElementById('detailTaskTitle').textContent = task.title;
+        document.getElementById('detailTaskDescription').textContent = task.description || 'No additional notes provided.';
+        
+        const timeSlotElem = document.getElementById('detailTaskTimeSlot');
+        if (task.startTime) {
+            timeSlotElem.textContent = `⏰ Scheduled Time Slot: ${task.startTime}${task.endTime ? ' - ' + task.endTime : ''}`;
+        } else {
+            timeSlotElem.textContent = '⏰ No specific time slot (+2 pts)';
+        }
+
+        const catBadge = document.getElementById('detailTaskCategoryBadge');
+        catBadge.textContent = category.name;
+        catBadge.style.backgroundColor = category.color;
+
+        const urlContainer = document.getElementById('detailTaskUrlContainer');
+        if (task.url) {
+            urlContainer.classList.remove('hidden');
+            document.getElementById('detailTaskUrlLabel').textContent = task.url;
+            document.getElementById('detailTaskUrlBtn').href = task.url;
+        } else {
+            urlContainer.classList.add('hidden');
+        }
+
+        const ptsValue = this.calculateTaskPointValue(task, this.getTodayISO());
+        document.getElementById('detailTaskPoints').textContent = `+${ptsValue} pts ${task.startTime ? '(Timed Slot Window)' : '(Standard Untimed)'}`;
+        document.getElementById('detailTaskType').textContent = task.frequencyType.toUpperCase();
+
+        this.openModal('taskDetailModal');
+    }
+
+    editTaskFromDetail() {
+        if (this.activeDetailTaskId) {
+            this.closeModal('taskDetailModal');
+            this.editTask(this.activeDetailTaskId);
+        }
+    }
+
+    getLevelThresholds(level) {
+        const getStartForLevel = (l) => {
+            if (l <= 1) return 0;
+            const n = l - 1;
+            return 20 * n + (10 * n * (n - 1)) / 2;
+        };
+        const start = getStartForLevel(level);
+        const end = getStartForLevel(level + 1);
+        return { start, end, range: end - start };
+    }
+
+    calculateLevelProgress() {
+        let level = 1;
+        while (true) {
+            const thresh = this.getLevelThresholds(level);
+            if (this.user.points >= thresh.end) {
+                level++;
+            } else {
+                break;
+            }
+        }
+        this.user.level = level;
+    }
+
+    checkAchievements() {
+        if (!this.user.unlockedAchievements) this.user.unlockedAchievements = [];
+
+        const totalCompleted = this.tasks.filter(t => Object.values(t.completionHistory || {}).some(v => v === true) || t.completed).length;
+        const todayCompletedCount = this.tasks.filter(t => this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
+        const petCount = (this.user.inventory || []).filter(id => id.startsWith('pet-') || id.startsWith('sea-')).length;
+
+        GENERATED_ACHIEVEMENTS.forEach(ach => {
+            if (this.user.unlockedAchievements.includes(ach.id)) return;
+
+            let unlocked = false;
+            if (ach.type === 'totalTasks' && totalCompleted >= ach.target) unlocked = true;
+            else if (ach.type === 'singleDayVol' && todayCompletedCount >= ach.target) unlocked = true;
+            else if (ach.type === 'petCount' && petCount >= ach.target) unlocked = true;
+
+            if (unlocked) {
+                this.user.unlockedAchievements.push(ach.id);
+                this.user.points += ach.rewardCoins;
+                this.showMotivationalToast(`🏆 Quest Unlocked: ${ach.title}! Reward: +${ach.rewardCoins} coins!`);
+            }
+        });
+    }
+
+    saveCategory(e) {
+        e.preventDefault();
+        const name = document.getElementById('categoryNameInput').value.trim();
+        const icon = document.getElementById('categoryIconInput').value.trim() || 'fa-folder';
+        const color = document.getElementById('categoryColorInput').value;
+
+        const newCat = { id: 'cat-' + Date.now(), name, icon, color };
+        this.categories.push(newCat);
+        this.saveLocalStorage();
+        this.closeModal('categoryModal');
+        this.render();
+    }
+
+    deleteCategory(catId, event) {
+        if (event) event.stopPropagation();
+        this.confirmDelete('Deleting this category will set associated tasks to General.', () => {
+            this.categories = this.categories.filter(c => c.id !== catId);
+            this.tasks.forEach(t => {
+                if (t.categoryId === catId) t.categoryId = 'cat-general';
+            });
+            this.saveLocalStorage();
+            this.render();
+        });
+    }
+
+    switchShopTab(tabName) {
+        this.shopTab = tabName;
+        ['pets', 'achievements', 'lootboxes', 'themes', 'seasonal', 'badges'].forEach(t => {
+            const btn = document.getElementById(`shop-tab-${t}`);
+            if (btn) {
+                if (t === tabName) {
+                    btn.className = 'px-3 pb-2 text-xs font-bold border-b-2 border-indigo-500 text-indigo-400 whitespace-nowrap';
+                } else {
+                    btn.className = 'px-3 pb-2 text-xs font-bold border-b-2 border-transparent text-slate-400 hover:text-slate-200 whitespace-nowrap';
+                }
+            }
+        });
+        this.renderShop();
+    }
+
+    renderShop() {
+        const container = document.getElementById('shopItemsContainer');
+        document.getElementById('shopUserPoints').textContent = this.user.points;
+        if (!container) return;
+
+        if (this.shopTab === 'pets') {
+            const groups = ['Mammals', 'Birds', 'Reptiles', 'Aquatic', 'Mythical'];
+            container.innerHTML = groups.map(groupName => {
+                const groupPets = PET_CATALOGUE.filter(p => p.group === groupName);
+                if (groupPets.length === 0) return '';
+
+                return `
+                    <div class="space-y-3 pt-2">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                            <h4 class="font-black text-sm text-indigo-400 uppercase tracking-wider flex items-center space-x-2">
+                                <i class="fa-solid fa-paw text-xs"></i>
+                                <span>${groupName}</span>
+                            </h4>
+                            <span class="text-[10px] text-slate-500 font-semibold">${groupPets.length} species</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${groupPets.map(pet => this.renderShopCardHTML(pet)).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            return;
+        }
+
+        if (this.shopTab === 'seasonal') {
+            const seasons = ['Winter', 'Spring', 'Summer', 'Autumn', 'Halloween', 'Christmas'];
+            container.innerHTML = seasons.map(seasonName => {
+                const seasonItems = SEASONAL_CATALOGUE.filter(s => s.season === seasonName);
+                if (seasonItems.length === 0) return '';
+
+                return `
+                    <div class="space-y-3 pt-2">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                            <h4 class="font-black text-sm text-amber-400 uppercase tracking-wider flex items-center space-x-2">
+                                <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                                <span>${seasonName} Collection</span>
+                            </h4>
+                            <span class="text-[10px] text-slate-500 font-semibold">${seasonItems.length} seasonal items</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            ${seasonItems.map(item => this.renderShopCardHTML(item)).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            return;
+        }
+
+        if (this.shopTab === 'achievements') {
+            container.innerHTML = `
+                <div class="space-y-3">
+                    <p class="text-xs text-slate-400">Complete quests to claim bonus shop coins! (${(this.user.unlockedAchievements || []).length} / ${GENERATED_ACHIEVEMENTS.length} completed)</p>
+                    <div class="grid grid-cols-1 gap-2.5">
+                        ${GENERATED_ACHIEVEMENTS.map(ach => {
+                            const isUnlocked = (this.user.unlockedAchievements || []).includes(ach.id);
+                            return `
+                                <div class="p-3.5 rounded-xl bg-slate-900/90 border ${isUnlocked ? 'border-emerald-500/40 bg-emerald-950/10' : 'border-slate-800'} flex items-center justify-between gap-3">
+                                    <div class="flex items-center space-x-3 min-w-0">
+                                        <div class="w-10 h-10 rounded-xl ${isUnlocked ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'} flex items-center justify-center text-lg shrink-0">
+                                            <i class="fa-solid ${isUnlocked ? 'fa-circle-check' : 'fa-lock'}"></i>
+                                        </div>
+                                        <div class="min-w-0">
+                                            <h5 class="font-extrabold text-xs text-white truncate">${ach.title}</h5>
+                                            <p class="text-[11px] text-slate-400 truncate mt-0.5">${ach.desc}</p>
+                                        </div>
+                                    </div>
+                                    <div class="shrink-0 text-right">
+                                        <span class="text-xs font-black text-amber-400 block">+${ach.rewardCoins} coins</span>
+                                        <span class="text-[10px] font-bold ${isUnlocked ? 'text-emerald-400' : 'text-slate-500'} uppercase">${isUnlocked ? 'UNLOCKED' : 'IN PROGRESS'}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        let filteredItems = [];
+        if (this.shopTab === 'lootboxes') filteredItems = SHOP_ITEMS.filter(i => i.type === 'box');
+        else if (this.shopTab === 'themes') filteredItems = SHOP_ITEMS.filter(i => i.type === 'theme' && !i.season);
+        else if (this.shopTab === 'badges') filteredItems = SHOP_ITEMS.filter(i => i.type === 'badge' || i.type === 'rank');
+
+        container.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-3">${filteredItems.map(item => this.renderShopCardHTML(item)).join('')}</div>`;
+    }
+
+    renderShopCardHTML(item) {
+        const isOwned = (this.user.inventory || []).includes(item.id);
+        const isEquipped = item.type === 'theme' ? this.user.activeTheme === item.themeClass : 
+                           ((item.type === 'pet' || item.type === 'seasonal') ? this.user.activePet === item.icon : 
+                           (item.type === 'rank' ? (this.user.activeRank && this.user.activeRank.tier === item.rankTier) : this.user.activeTitle === item.title));
+
+        let visualElement = item.icon ? item.icon : '🎨';
+        if (item.type === 'rank' && item.icon) {
+            visualElement = `<i class="fa-solid ${item.icon}"></i>`;
+        }
+
+        return `
+            <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-3">
+                <div class="flex items-center space-x-3 min-w-0">
+                    <div class="w-11 h-11 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-xl shrink-0 shadow-inner">
+                        ${visualElement}
+                    </div>
+                    <div class="space-y-0.5 min-w-0">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-extrabold text-xs text-white truncate">${item.name}</span>
+                            ${isEquipped ? '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">EQUIPPED</span>' : ''}
+                        </div>
+                        <p class="text-[11px] text-slate-400 truncate">${item.desc || 'Marketplace Item'}</p>
+                        ${item.subGroup ? `<span class="text-[9px] font-bold text-slate-500 uppercase tracking-wider">${item.subGroup}</span>` : ''}
+                    </div>
+                </div>
+                <div class="shrink-0">
+                    ${item.type === 'box' ? `
+                        <button onclick="app.buyLootBox('${item.id}')" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-black text-xs shadow-md flex items-center space-x-1 transition">
+                            <i class="fa-solid fa-gift"></i>
+                            <span>${item.cost} pts</span>
+                        </button>
+                    ` : (isEquipped ? `
+                        <button disabled class="px-3 py-1.5 rounded-xl bg-slate-800 text-slate-500 text-xs font-bold cursor-not-allowed">Active</button>
+                    ` : (isOwned ? `
+                        <button onclick="app.equipShopItem('${item.id}')" class="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition">Equip</button>
+                    ` : `
+                        <button onclick="app.buyShopItem('${item.id}')" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 text-xs font-black shadow-md flex items-center space-x-1 transition">
+                            <i class="fa-solid fa-coins text-xs"></i>
+                            <span>${item.cost} pts</span>
+                        </button>
+                    `))}
+                </div>
+            </div>
+        `;
+    }
+
+    buyShopItem(itemId) {
+        const item = SHOP_ITEMS.find(i => i.id === itemId);
+        if (!item) return;
+
+        if (this.user.points < item.cost) {
+            this.confirmDelete('You do not have enough points/coins to purchase this item!', null);
+            return;
+        }
+
+        this.user.points -= item.cost;
+        if (!this.user.inventory) this.user.inventory = [];
+        this.user.inventory.push(item.id);
+
+        this.equipShopItem(itemId);
+        this.checkAchievements();
+    }
+
+    buyLootBox(boxId) {
+        const box = SHOP_ITEMS.find(i => i.id === boxId);
+        if (!box) return;
+
+        if (this.user.points < box.cost) {
+            this.confirmDelete('You do not have enough coins for this Loot Box!', null);
+            return;
+        }
+
+        this.user.points -= box.cost;
+        const availableRewards = SHOP_ITEMS.filter(i => i.type !== 'box' && !(this.user.inventory || []).includes(i.id));
+        let reward = availableRewards[Math.floor(Math.random() * availableRewards.length)];
+        
+        if (!reward) {
+            this.user.points += box.cost;
+            reward = { name: `${box.cost} Bonus Coins Refund`, icon: '💰' };
+        } else {
+            if (!this.user.inventory) this.user.inventory = [];
+            this.user.inventory.push(reward.id);
+        }
+
+        this.saveLocalStorage();
+        this.render();
+
+        document.getElementById('lootBoxDisplayIcon').textContent = reward.icon || '🎁';
+        document.getElementById('lootBoxTitle').textContent = `${box.name} Opened!`;
+        document.getElementById('lootBoxItemName').textContent = `Unlocked: ${reward.name}`;
+        this.openModal('lootBoxModal');
+    }
+
+    equipShopItem(itemId) {
+        const item = SHOP_ITEMS.find(i => i.id === itemId);
+        if (!item) return;
+
+        if (item.type === 'theme') {
+            this.user.activeTheme = item.themeClass;
+            document.body.className = `${item.themeClass} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
+        } else if (item.type === 'badge') {
+            this.user.activeTitle = item.title;
+        } else if (item.type === 'pet' || item.type === 'seasonal') {
+            if (item.icon) this.user.activePet = item.icon;
+            if (item.themeClass) {
+                this.user.activeTheme = item.themeClass;
+                document.body.className = `${item.themeClass} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
+            }
+        } else if (item.type === 'rank') {
+            this.user.activeRank = { tier: item.rankTier, cssClass: item.cssClass, icon: item.icon };
+        }
+
+        this.saveLocalStorage();
+        this.render();
+        this.renderShop();
+    }
+
+    toggleAudio(enabled) {
+        this.audioEnabled = enabled;
+        localStorage.setItem('focusquest_audio', enabled);
+    }
+
+    copySyncCode() {
+        const input = document.getElementById('syncCodeDisplay');
+        if (input) {
+            input.select();
+            document.execCommand('copy');
+            const textElem = document.getElementById('cloudStatusText');
+            if (textElem) textElem.textContent = 'Code Copied!';
+            setTimeout(() => this.updateSyncBadge(true, 'Synced'), 2000);
+        }
+    }
+
+    applySyncCodeInput() {
+        const input = document.getElementById('syncCodeDisplay');
+        if (input && input.value.trim()) {
+            this.syncCode = input.value.trim();
+            this.saveLocalStorage(false);
+            this.connectFirebaseSync();
+            this.closeModal('settingsModal');
+        }
+    }
+
+    renderDebugSummary() {
+        const uncompletedToday = this.tasks.filter(t => this.isTaskScheduledForToday(t) && !this.isTaskCompletedOnDate(t, this.getTodayISO()));
+        const container = document.getElementById('debugUncompletedSummary');
+        if (container) {
+            if (uncompletedToday.length === 0) {
+                container.textContent = 'No active today tasks to penalize.';
+            } else {
+                container.innerHTML = `Found <strong>${uncompletedToday.length}</strong> uncompleted task(s):<br>` +
+                    uncompletedToday.map(t => `• ${t.title} (-2 pts)`).join('<br>');
+            }
+        }
+    }
+
+    triggerMidnightSettlement() {
+        this.executeMidnightSettlementLogic(this.getTodayISO());
+        this.closeModal('debugModal');
+    }
+
+    zoomIntoDay(dateISO) {
+        this.zoomedDayISO = dateISO;
+        this.renderPlanner();
+    }
+
+    exitDayZoomView() {
+        this.zoomedDayISO = null;
+        this.renderPlanner();
+    }
+
+    changePlannerWeek(direction) {
+        this.plannerWeekOffset += direction;
+        this.renderPlanner();
+    }
+
+    render() {
+        this.renderSidebarInfo();
+        this.renderCategoryList();
+        this.renderHeaderTitle();
+        this.renderTodayBanner();
+
+        if (this.currentView === 'planner') {
+            document.getElementById('weeklyPlannerContainer').classList.remove('hidden');
+            document.getElementById('filtersAndSearchSection').classList.add('hidden');
+            this.renderPlanner();
+        } else {
+            document.getElementById('weeklyPlannerContainer').classList.add('hidden');
+            document.getElementById('filtersAndSearchSection').classList.remove('hidden');
+        }
+
+        this.renderTaskList();
+        this.updateNavigationBadges();
+    }
+
+    renderSidebarInfo() {
+        this.calculateLevelProgress();
+        document.getElementById('userLevelDisplay').textContent = this.user.level;
+        document.getElementById('userPointsDisplay').textContent = this.user.points;
+        document.getElementById('userRankTitle').textContent = this.user.activeTitle || 'Procrastinator';
+
+        const activePet = this.user.activePet || '🐱';
+        document.getElementById('sidebarPetDisplay').textContent = activePet;
+        document.getElementById('mobileActivePetIcon').textContent = activePet;
+
+        const rankBadge = document.getElementById('userRankBadge');
+        const rankLabel = document.getElementById('userRankTierLabel');
+        const rankIcon = document.getElementById('rankBadgeIcon');
+        const activeRank = this.user.activeRank || { tier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved' };
+        
+        if (rankBadge && rankLabel) {
+            rankBadge.className = `${activeRank.cssClass} px-2.5 py-1 rounded-xl font-black text-xs uppercase tracking-wider flex items-center space-x-1.5 shadow-md`;
+            rankLabel.textContent = activeRank.tier;
+            if (rankIcon) rankIcon.className = `fa-solid ${activeRank.icon || 'fa-shield-halved'} text-xs`;
+        }
+
+        const thresh = this.getLevelThresholds(this.user.level);
+        const currentInLevel = Math.max(0, this.user.points - thresh.start);
+        const percent = Math.min(100, Math.max(0, (currentInLevel / thresh.range) * 100));
+
+        document.getElementById('levelProgressBar').style.width = `${percent}%`;
+        document.getElementById('progressText').textContent = `${currentInLevel} / ${thresh.range} pts to Level ${this.user.level + 1}`;
+    }
+
+    renderCategoryList() {
+        const container = document.getElementById('categoryListContainer');
+        if (!container) return;
+
+        container.innerHTML = this.categories.map(cat => {
+            const isSelected = this.currentView === cat.id || this.activeCategoryFilter === cat.id;
+            const catTaskCount = this.tasks.filter(t => t.categoryId === cat.id && !this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
+
+            return `
+                <div onclick="app.filterByCategory('${cat.id}')" class="group flex items-center justify-between px-3.5 py-2 rounded-xl text-sm font-medium transition cursor-pointer ${isSelected ? 'bg-slate-800 text-white border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'}">
+                    <div class="flex items-center space-x-3 min-w-0">
+                        <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${cat.color}"></span>
+                        <span class="truncate">${cat.name}</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs bg-slate-900/80 px-2 py-0.5 rounded-full text-slate-400 font-semibold">${catTaskCount}</span>
+                        ${cat.id !== 'cat-general' ? `
+                            <button onclick="app.deleteCategory('${cat.id}', event)" class="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-rose-400 transition" title="Delete Category">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    renderHeaderTitle() {
+        const titleElem = document.getElementById('currentViewTitle');
+        const subElem = document.getElementById('currentViewSubtitle');
+
+        if (this.currentView === 'today') {
+            titleElem.firstElementChild.textContent = "Today's Focus";
+            subElem.textContent = "Complete active daily tasks for bonus points (+3 pts in specific time slot, +2 pts untimed).";
+        } else if (this.currentView === 'planner') {
+            titleElem.firstElementChild.textContent = "Weekly Planner";
+            subElem.textContent = "Schedule and organize tasks across calendar days. Double tap a day to zoom into full view.";
+        } else if (this.currentView === 'all') {
+            titleElem.firstElementChild.textContent = "All Tasks Pool";
+            subElem.textContent = "Tasks strictly sorted by category order (General, Work/Study, Health & Fitness, Personal).";
+        } else if (this.currentView === 'favorites') {
+            titleElem.firstElementChild.textContent = "Starred Favorites";
+            subElem.textContent = "High priority starred task items.";
+        } else {
+            const category = this.categories.find(c => c.id === this.currentView);
+            titleElem.firstElementChild.textContent = category ? category.name : "Category Tasks";
+            subElem.textContent = `Tasks cataloged under ${category ? category.name : 'Category'}.`;
+        }
+    }
+
+    renderTodayBanner() {
+        const todayBanner = document.getElementById('todayProgressBanner');
+        if (this.currentView !== 'today') {
+            todayBanner.classList.add('hidden');
+            return;
+        }
+        todayBanner.classList.remove('hidden');
+
+        const todayTasks = this.tasks.filter(t => this.isTaskScheduledForToday(t));
+        const completedCount = todayTasks.filter(t => this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
+        const totalCount = todayTasks.length;
+        const percent = totalCount === 0 ? 0 : Math.round((completedCount / totalCount) * 100);
+
+        document.getElementById('completedTodayCount').textContent = completedCount;
+        document.getElementById('totalTodayCount').textContent = totalCount;
+        document.getElementById('todayCompletionPercent').textContent = `${percent}%`;
+    }
+
+    renderPlanner() {
+        const grid = document.getElementById('plannerDaysGrid');
+        const exitZoomBtn = document.getElementById('exitDayZoomBtn');
+        const headerTitle = document.getElementById('plannerHeaderTitle');
+        const headerSubtitle = document.getElementById('plannerHeaderSubtitle');
+        const navControls = document.getElementById('weeklyNavControls');
+        const catBlocks = document.getElementById('categoryBlocksWrapper');
+        if (!grid) return;
+
+        const curr = new Date();
+        const firstDayOfWeek = curr.getDate() - curr.getDay() + (this.plannerWeekOffset * 7);
+        const days = [];
+        for (let i = 0; i < 7; i++) {
+            days.push(new Date(curr.setDate(firstDayOfWeek + i)));
+        }
+
+        const todayStr = this.getTodayISO();
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        if (this.zoomedDayISO) {
+            exitZoomBtn.classList.remove('hidden');
+            navControls.classList.add('hidden');
+            if (catBlocks) catBlocks.classList.add('hidden');
+
+            const zoomedDateObj = new Date(this.zoomedDayISO + 'T00:00:00');
+            const dayName = dayNames[zoomedDateObj.getDay()];
+            headerTitle.innerHTML = `<i class="fa-solid fa-calendar-day text-indigo-400 mr-2"></i>Day Zoom: ${dayName}, ${this.zoomedDayISO}`;
+            headerSubtitle.textContent = "Full-page detailed schedule view. Double-tap to exit zoom mode.";
+
+            grid.className = "grid grid-cols-1 gap-4";
+
+            const dayTasks = this.sortTasksByStartTime(this.tasks.filter(t => this.isTaskScheduledForDate(t, this.zoomedDayISO)));
+            const isToday = this.zoomedDayISO === todayStr;
+            const isPastDay = this.zoomedDayISO < todayStr;
+
+            grid.innerHTML = `
+                <div class="p-6 rounded-3xl bg-slate-900/90 border-2 ${isToday ? 'border-indigo-500 shadow-2xl shadow-indigo-500/20' : 'border-slate-800'} space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center space-x-3">
+                            <span class="text-2xl font-black text-white">${dayName}</span>
+                            <span class="text-sm font-bold text-slate-400">${this.zoomedDayISO}</span>
+                        </div>
+                        <span class="text-xs font-semibold text-slate-400">${dayTasks.length} task(s) assigned</span>
+                    </div>
+
+                    <div class="space-y-3">
+                        ${dayTasks.length === 0 ? `
+                            <div class="p-8 text-center text-slate-500 font-semibold text-sm">No tasks scheduled for this day.</div>
+                        ` : dayTasks.map(t => {
+                            const cat = this.categories.find(c => c.id === t.categoryId) || { color: '#6366f1' };
+                            const isDoneOnDay = this.isTaskCompletedOnDate(t, this.zoomedDayISO);
+                            const isMissedOnPastDay = isPastDay && !isDoneOnDay;
+
+                            return `
+                                <div class="p-4 rounded-2xl bg-slate-800/80 border-l-4 flex items-center justify-between space-x-4 transition hover:bg-slate-700/80" style="border-left-color: ${cat.color}">
+                                    <div class="space-y-1 min-w-0 flex-1">
+                                        <div onclick="app.openTaskDetail('${t.id}')" class="font-extrabold text-base cursor-pointer truncate ${isDoneOnDay ? 'line-through text-slate-500' : (isMissedOnPastDay ? 'text-rose-400' : 'text-white')}">
+                                            ${t.title}
+                                        </div>
+                                        <div class="flex items-center space-x-3 text-xs text-slate-400">
+                                            ${t.startTime ? `<span class="font-bold text-indigo-400"><i class="fa-solid fa-clock mr-1"></i>${t.startTime}${t.endTime ? ' - ' + t.endTime : ''} (+3 pts inside window)</span>` : '<span class="text-slate-500">No specific time slot (+2 pts)</span>'}
+                                            ${t.description ? `<span class="truncate">${t.description}</span>` : ''}
+                                        </div>
+                                    </div>
+                                    <button onclick="app.toggleTaskComplete('${t.id}', '${this.zoomedDayISO}')" class="w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition ${isDoneOnDay ? 'bg-indigo-600 border-indigo-600 text-white' : (isMissedOnPastDay ? 'border-rose-500/50 bg-rose-950/40 text-rose-400' : 'border-slate-600 bg-slate-900/60 hover:border-indigo-500')}">
+                                        ${isDoneOnDay ? '<i class="fa-solid fa-check text-xs"></i>' : (isMissedOnPastDay ? '<i class="fa-solid fa-xmark text-xs"></i>' : '')}
+                                    </button>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        exitZoomBtn.classList.add('hidden');
+        navControls.classList.remove('hidden');
+        if (catBlocks) catBlocks.classList.remove('hidden');
+
+        headerTitle.innerHTML = `<i class="fa-solid fa-calendar-week text-indigo-400 mr-2"></i>Weekly Calendar Planner`;
+        headerSubtitle.textContent = "Plan tasks in advance for any day of the week. Double-tap/click any day to zoom in.";
+
+        const weekStartStr = days[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const weekEndStr = days[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        document.getElementById('plannerWeekRangeLabel').textContent = `${weekStartStr} - ${weekEndStr}`;
+
+        grid.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3";
+
+        grid.innerHTML = days.map(dayDate => {
+            const isoStr = dayDate.toISOString().split('T')[0];
+            const isToday = isoStr === todayStr;
+            const isPastDay = isoStr < todayStr;
+            const dayIdx = dayDate.getDay();
+
+            const dayTasks = this.sortTasksByStartTime(this.tasks.filter(t => this.isTaskScheduledForDate(t, isoStr)));
+
+            return `
+                <div ondblclick="app.zoomIntoDay('${isoStr}')" class="p-3.5 rounded-2xl bg-slate-900/90 border ${isToday ? 'neon-today-card border-indigo-500' : 'border-slate-800'} flex flex-col space-y-3 min-h-[170px] cursor-pointer hover:border-indigo-500/50 transition">
+                    <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                        <div>
+                            <span class="text-xs font-bold uppercase tracking-wider ${isToday ? 'text-indigo-400' : 'text-slate-400'}">${dayNames[dayIdx]}</span>
+                            <div class="text-sm font-black text-white">${dayDate.getDate()}</div>
+                        </div>
+                        ${isToday ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">TODAY</span>' : ''}
+                    </div>
+
+                    <div class="space-y-2 flex-1">
+                        ${dayTasks.map(t => {
+                            const cat = this.categories.find(c => c.id === t.categoryId) || { color: '#6366f1' };
+                            const isDoneOnDay = this.isTaskCompletedOnDate(t, isoStr);
+                            const isMissedOnPastDay = isPastDay && !isDoneOnDay;
+
+                            return `
+                                <div class="p-2 rounded-xl bg-slate-800/80 border-l-4 hover:bg-slate-700/80 transition flex items-center justify-between space-x-2 text-xs" style="border-left-color: ${cat.color}">
+                                    <div onclick="app.openTaskDetail('${t.id}')" class="space-y-0.5 flex-1 min-w-0">
+                                        <div class="font-bold truncate ${isDoneOnDay ? 'line-through text-slate-500' : (isMissedOnPastDay ? 'text-rose-400/90' : 'text-slate-200')}">
+                                            ${t.title}
+                                        </div>
+                                        ${t.startTime ? `<div class="text-[10px] font-semibold text-indigo-400">${t.startTime}</div>` : ''}
+                                    </div>
+                                    <button onclick="app.toggleTaskComplete('${t.id}', '${isoStr}')" class="w-4 h-4 rounded border flex items-center justify-center shrink-0 transition ${isDoneOnDay ? 'bg-indigo-600 border-indigo-600 text-white' : (isMissedOnPastDay ? 'border-rose-500/50 bg-rose-950/40 text-rose-400' : 'border-slate-600 bg-slate-900/60 hover:border-indigo-500')}">
+                                        ${isDoneOnDay ? '<i class="fa-solid fa-check text-[9px]"></i>' : (isMissedOnPastDay ? '<i class="fa-solid fa-xmark text-[9px]"></i>' : '')}
+                                    </button>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        const poolsContainer = document.getElementById('plannerCategoryPoolsContainer');
+        if (poolsContainer) {
+            poolsContainer.innerHTML = this.categories.map(cat => {
+                const catTasks = this.tasks.filter(t => t.categoryId === cat.id && !this.isTaskCompletedOnDate(t, this.getTodayISO()));
+                return `
+                    <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+                        <div class="flex items-center space-x-2 font-bold text-xs text-white">
+                            <span class="w-2.5 h-2.5 rounded-full" style="background-color: ${cat.color}"></span>
+                            <span>${cat.name} (${catTasks.length})</span>
+                        </div>
+                        <div class="space-y-1.5">
+                            ${catTasks.map(t => `
+                                <div class="p-2 rounded-lg bg-slate-800/50 text-xs text-slate-300 truncate flex items-center justify-between">
+                                    <span class="truncate">${t.title}</span>
+                                    ${t.startTime ? `<span class="text-[10px] font-semibold text-indigo-400 ml-1">${t.startTime}</span>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+
+    renderTaskList() {
+        const container = document.getElementById('taskContainer');
+        const filterBar = document.getElementById('activeCategoryFilterBar');
+        if (!container) return;
+
+        if (this.activeCategoryFilter) {
+            const cat = this.categories.find(c => c.id === this.activeCategoryFilter);
+            filterBar.classList.remove('hidden');
+            document.getElementById('activeCategoryFilterName').textContent = cat ? cat.name : 'Category';
+        } else {
+            filterBar.classList.add('hidden');
+        }
+
+        let filtered = [...this.tasks];
+
+        if (this.currentView === 'today') {
+            filtered = filtered.filter(t => this.isTaskScheduledForToday(t));
+        } else if (this.currentView === 'favorites') {
+            filtered = filtered.filter(t => t.favorite);
+        } else if (this.currentView !== 'all' && this.currentView !== 'planner') {
+            filtered = filtered.filter(t => t.categoryId === this.currentView);
+        }
+
+        if (this.activeCategoryFilter) {
+            filtered = filtered.filter(t => t.categoryId === this.activeCategoryFilter);
+        }
+
+        if (this.filterState === 'active') {
+            filtered = filtered.filter(t => !this.isTaskCompletedOnDate(t, this.getTodayISO()));
+        } else if (this.filterState === 'completed') {
+            filtered = filtered.filter(t => this.isTaskCompletedOnDate(t, this.getTodayISO()));
+        }
+
+        if (this.searchQuery) {
+            filtered = filtered.filter(t => t.title.toLowerCase().includes(this.searchQuery) || (t.description && t.description.toLowerCase().includes(this.searchQuery)));
+        }
+
+        if (this.currentView === 'all') {
+            const categoryOrder = ['cat-general', 'cat-work', 'cat-health', 'cat-personal'];
+            filtered.sort((a, b) => {
+                let idxA = categoryOrder.indexOf(a.categoryId);
+                let idxB = categoryOrder.indexOf(b.categoryId);
+                if (idxA === -1) idxA = 99;
+                if (idxB === -1) idxB = 99;
+                if (idxA !== idxB) return idxA - idxB;
+                
+                if (!a.startTime && !b.startTime) return 0;
+                if (!a.startTime) return 1;
+                if (!b.startTime) return -1;
+                return a.startTime.localeCompare(b.startTime);
+            });
+        } else {
+            this.sortTasksByStartTime(filtered);
+        }
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="p-12 text-center rounded-2xl bg-cardBg/30 border border-borderCol/40 space-y-3">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-600/10 text-indigo-400 flex items-center justify-center mx-auto text-xl">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                    <h4 class="font-extrabold text-base text-white">No tasks found</h4>
+                    <p class="text-xs text-slate-400">Create a task or clear filters to view items.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = filtered.map(task => {
+            const category = this.categories.find(c => c.id === task.categoryId) || { name: 'General', color: '#6366f1', icon: 'fa-folder' };
+            const isTodayBet = this.isTaskScheduledForToday(task);
+            const isCompletedToday = this.isTaskCompletedOnDate(task, this.getTodayISO());
+            const ptsVal = this.calculateTaskPointValue(task, this.getTodayISO());
+
+            return `
+                <div class="p-4 rounded-2xl bg-cardBg/80 border transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isCompletedToday ? 'opacity-60 border-slate-800' : (isTodayBet ? 'border-indigo-500/50 hover:border-indigo-500 penalty-pulse' : 'border-borderCol/60 hover:border-slate-600')}">
+                    <div class="flex items-start space-x-3.5 min-w-0">
+                        <button onclick="app.toggleTaskComplete('${task.id}')" class="mt-0.5 w-5 h-5 rounded-lg border flex items-center justify-center transition shrink-0 ${isCompletedToday ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-600 hover:border-indigo-500 bg-slate-900/60'}">
+                            ${isCompletedToday ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
+                        </button>
+                        
+                        <div class="min-w-0 space-y-1">
+                            <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                                <span onclick="app.openTaskDetail('${task.id}')" class="font-extrabold text-sm sm:text-base text-white cursor-pointer hover:text-indigo-400 transition truncate ${isCompletedToday ? 'line-through text-slate-400' : ''}">${task.title}</span>
+                                
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full text-white shrink-0" style="background-color: ${category.color}20; color: ${category.color}; border: 1px solid ${category.color}40">
+                                    <i class="fa-solid ${category.icon} mr-1"></i>${category.name}
+                                </span>
+
+                                ${task.startTime ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-500/40 shrink-0"><i class="fa-solid fa-clock mr-1"></i>${task.startTime}${task.endTime ? ' - ' + task.endTime : ''}</span>` : ''}
+
+                                ${isTodayBet ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">+${ptsVal} PTS BET</span>` : ''}
+                            </div>
+
+                            ${task.description ? `<p class="text-xs text-slate-400 line-clamp-1 truncate">${task.description}</p>` : ''}
+                            
+                            <div class="flex items-center space-x-3 text-[11px] text-slate-400 pt-0.5">
+                                ${task.dueDate ? `<span><i class="fa-solid fa-calendar mr-1 text-slate-500"></i>${task.dueDate}</span>` : ''}
+                                ${task.frequencyType === 'multiple' && Array.isArray(task.multipleDates) ? `<span><i class="fa-solid fa-calendar-days mr-1 text-slate-500"></i>${task.multipleDates.length} selected date(s)</span>` : ''}
+                                ${task.url ? `<a href="${task.url}" target="_blank" class="text-indigo-400 hover:underline"><i class="fa-solid fa-link mr-1"></i>Link</a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-1 shrink-0 justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800">
+                        <button onclick="app.toggleTaskFavorite('${task.id}')" class="p-2 rounded-xl text-slate-400 hover:text-amber-400 hover:bg-slate-800 transition" title="Star Task">
+                            <i class="${task.favorite ? 'fa-solid fa-star text-amber-400' : 'fa-regular fa-star'}"></i>
+                        </button>
+                        <button onclick="app.editTask('${task.id}')" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition" title="Edit Task">
+                            <i class="fa-solid fa-pen text-xs"></i>
+                        </button>
+                        <button onclick="app.deleteTask('${task.id}')" class="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition" title="Delete Task">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    updateNavigationBadges() {
+        const todayCount = this.tasks.filter(t => this.isTaskScheduledForToday(t) && !this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
+        const allCount = this.tasks.filter(t => !this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
+        const favCount = this.tasks.filter(t => t.favorite && !this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
+
+        document.getElementById('todayCountBadge').textContent = todayCount;
+        document.getElementById('allCountBadge').textContent = allCount;
+        document.getElementById('favoritesCountBadge').textContent = favCount;
+        document.getElementById('plannerCountBadge').textContent = allCount;
+    }
+}
+
+let app;
+window.onload = function() {
+    app = new FocusQuestApp();
+};
+</script>
+</body>
+</html>
