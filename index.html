@@ -443,6 +443,16 @@
                 <textarea id="taskDescriptionInput" rows="2" placeholder="e.g., Read pages 40-55..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
             </div>
 
+            <!-- ECHTE BILDDATEIEN UPLOAD -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Upload Image / Screenshot (Optional)</label>
+                <input type="file" id="taskImageInput" accept="image/*" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+                <div id="imagePreviewContainer" class="mt-2 hidden">
+                    <img id="taskImagePreview" src="" alt="Preview" class="w-full h-32 object-cover rounded-xl border border-slate-700">
+                    <button type="button" onclick="app.clearTaskImage()" class="text-xs text-rose-400 hover:underline mt-1">Remove Image</button>
+                </div>
+            </div>
+
             <div class="grid grid-cols-2 gap-3 p-3 rounded-xl bg-slate-900/70 border border-slate-800">
                 <div>
                     <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Start Time (Optional)</label>
@@ -541,34 +551,6 @@
     </div>
 </div>
 
-<!-- Daily Cleanup Modal -->
-<div id="dailyCleanupModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-md overflow-hidden shadow-2xl p-6 space-y-4 my-auto">
-        <div class="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto text-xl border border-indigo-500/30">
-            <i class="fa-solid fa-broom"></i>
-        </div>
-        <div class="text-center">
-            <h3 class="font-extrabold text-base text-white">Daily Cleanup</h3>
-            <p id="dailyCleanupQuestion" class="text-xs text-slate-300 mt-1">Delete all completed tasks from yesterday?</p>
-        </div>
-        
-        <div id="dailyCleanupChecklistWrapper" class="hidden space-y-2 pt-2 border-t border-slate-800 max-h-48 overflow-y-auto text-left">
-            <p class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Select completed tasks to delete:</p>
-            <div id="dailyCleanupChecklist" class="space-y-1.5"></div>
-        </div>
-
-        <div id="dailyCleanupInitialButtons" class="flex space-x-3 pt-2">
-            <button onclick="app.handleDailyCleanupNo()" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold transition">No</button>
-            <button onclick="app.handleDailyCleanupYes()" class="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold shadow-lg shadow-indigo-600/20 transition">Yes</button>
-        </div>
-
-        <div id="dailyCleanupSelectButtons" class="hidden flex space-x-3 pt-2">
-            <button onclick="app.closeModal('dailyCleanupModal')" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition">Cancel</button>
-            <button onclick="app.confirmSelectedDailyCleanup()" class="flex-1 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-sm font-bold transition">Confirm</button>
-        </div>
-    </div>
-</div>
-
 <!-- Delete Confirmation Modal -->
 <div id="deleteConfirmModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl p-6 text-center space-y-5 my-auto">
@@ -610,6 +592,12 @@
             <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Instructions & Notes</label>
                 <div id="detailTaskDescription" class="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed break-words">No additional notes provided.</div>
+            </div>
+
+            <!-- ANZEIGE DES HOCHGELADENEN BILDES -->
+            <div id="detailTaskImageContainer" class="hidden p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Attached Image / Screenshot</label>
+                <img id="detailTaskImage" src="" alt="Task Attachment" class="w-full max-h-64 object-contain rounded-xl border border-slate-700 bg-slate-950">
             </div>
 
             <div id="detailTaskUrlContainer" class="hidden p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 flex items-center justify-between">
@@ -1051,7 +1039,6 @@ class FocusQuestApp {
         this.activeDetailTaskId = null;
         this.pendingDeleteAction = null;
         this.selectedMultipleDates = [];
-        this.yesterdayCleanupTasks = [];
         this.zoomedDayISO = null;
 
         this.notifiedTaskMap = {};
@@ -1439,7 +1426,6 @@ class FocusQuestApp {
             }
             this.user.lastSettlementDate = todayStr;
             this.saveLocalStorage();
-            this.checkAndPromptDailyCleanup();
         }
     }
 
@@ -1462,10 +1448,12 @@ class FocusQuestApp {
                 task.completionHistory[settlementDate] = false;
                 task.isToday = false;
 
+                // GEÄNDERT: Einmalige Aufgaben werden bei Verpassen NICHT gelöscht, sondern wandern in "undated"
                 if (task.frequencyType === 'once') {
                     task.frequencyType = 'undated';
                     task.dueDate = '';
                 }
+                // Wöchentliche/wiederkehrende Aufgaben ("recurring") bleiben erhalten und werden für Folge-Tage nicht gelöscht.
             }
         });
 
@@ -1480,65 +1468,6 @@ class FocusQuestApp {
         }
 
         this.render();
-    }
-
-    checkAndPromptDailyCleanup() {
-        const yesterdayISO = this.getYesterdayISO();
-        this.yesterdayCleanupTasks = this.tasks.filter(t => this.isTaskCompletedOnDate(t, yesterdayISO));
-
-        if (this.yesterdayCleanupTasks.length > 0) {
-            const questionElem = document.getElementById('dailyCleanupQuestion');
-            if (questionElem) questionElem.textContent = "Delete all completed tasks from yesterday?";
-            
-            document.getElementById('dailyCleanupChecklistWrapper').classList.add('hidden');
-            document.getElementById('dailyCleanupInitialButtons').classList.remove('hidden');
-            document.getElementById('dailyCleanupSelectButtons').classList.add('hidden');
-
-            this.openModal('dailyCleanupModal');
-        }
-    }
-
-    handleDailyCleanupYes() {
-        const taskIdsToDelete = this.yesterdayCleanupTasks.map(t => t.id);
-        this.confirmDelete("Are you sure you want to completely delete all completed tasks from yesterday?", () => {
-            this.tasks = this.tasks.filter(t => !taskIdsToDelete.includes(t.id));
-            this.saveLocalStorage();
-            this.closeModal('dailyCleanupModal');
-            this.render();
-        });
-    }
-
-    handleDailyCleanupNo() {
-        document.getElementById('dailyCleanupInitialButtons').classList.add('hidden');
-        document.getElementById('dailyCleanupChecklistWrapper').classList.remove('hidden');
-        document.getElementById('dailyCleanupSelectButtons').classList.remove('hidden');
-
-        const container = document.getElementById('dailyCleanupChecklist');
-        if (container) {
-            container.innerHTML = this.yesterdayCleanupTasks.map(t => `
-                <label class="flex items-center space-x-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer hover:border-indigo-500">
-                    <input type="checkbox" value="${t.id}" class="cleanupTaskCheckbox rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500" checked>
-                    <span class="text-slate-200 truncate font-semibold">${t.title}</span>
-                </label>
-            `).join('');
-        }
-    }
-
-    confirmSelectedDailyCleanup() {
-        const checkedBoxes = document.querySelectorAll('.cleanupTaskCheckbox:checked');
-        const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
-
-        if (selectedIds.length === 0) {
-            this.closeModal('dailyCleanupModal');
-            return;
-        }
-
-        this.confirmDelete("Are you sure you want to completely delete these tasks?", () => {
-            this.tasks = this.tasks.filter(t => !selectedIds.includes(t.id));
-            this.saveLocalStorage();
-            this.closeModal('dailyCleanupModal');
-            this.render();
-        });
     }
 
     toggleSidebar() {
@@ -1679,6 +1608,10 @@ class FocusQuestApp {
         document.getElementById('taskStartTimeInput').value = '';
         document.getElementById('taskEndTimeInput').value = '';
         document.getElementById('taskUrlInput').value = '';
+        document.getElementById('taskImageInput').value = '';
+        document.getElementById('imagePreviewContainer').classList.add('hidden');
+        document.getElementById('taskImagePreview').src = '';
+        this.tempTaskImageData = null;
         document.getElementById('taskModalTitle').textContent = 'Create New Task';
 
         const catSelect = document.getElementById('taskCategorySelect');
@@ -1754,6 +1687,13 @@ class FocusQuestApp {
         }
     }
 
+    clearTaskImage() {
+        this.tempTaskImageData = null;
+        document.getElementById('taskImageInput').value = '';
+        document.getElementById('imagePreviewContainer').classList.add('hidden');
+        document.getElementById('taskImagePreview').src = '';
+    }
+
     saveTask(e) {
         e.preventDefault();
         const taskId = document.getElementById('editTaskId').value;
@@ -1776,47 +1716,69 @@ class FocusQuestApp {
 
         const multipleDates = frequencyType === 'multiple' ? [...this.selectedMultipleDates] : [];
 
-        if (taskId) {
-            const task = this.tasks.find(t => t.id === taskId);
-            if (task) {
-                task.title = title;
-                task.description = description;
-                task.startTime = startTime;
-                task.endTime = endTime;
-                task.url = url;
-                task.categoryId = categoryId;
-                task.frequencyType = frequencyType;
-                task.dueDate = dueDate;
-                task.multipleDates = multipleDates;
-                task.recurringDays = recurringDays;
-                task.isToday = isToday;
+        const imageFile = document.getElementById('taskImageInput').files[0];
+        
+        const finishSave = (imageData) => {
+            if (taskId) {
+                const task = this.tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.title = title;
+                    task.description = description;
+                    task.startTime = startTime;
+                    task.endTime = endTime;
+                    task.url = url;
+                    if (imageData !== undefined) task.imageData = imageData;
+                    task.categoryId = categoryId;
+                    task.frequencyType = frequencyType;
+                    task.dueDate = dueDate;
+                    task.multipleDates = multipleDates;
+                    task.recurringDays = recurringDays;
+                    task.isToday = isToday;
+                }
+            } else {
+                const newTask = {
+                    id: 'task-' + Date.now(),
+                    title,
+                    description,
+                    startTime,
+                    endTime,
+                    url,
+                    imageData: imageData || null,
+                    categoryId,
+                    frequencyType,
+                    dueDate,
+                    multipleDates,
+                    recurringDays,
+                    isToday,
+                    completed: false,
+                    lastCompletedDate: null,
+                    completionHistory: {},
+                    favorite: false,
+                    createdAt: Date.now()
+                };
+                this.tasks.unshift(newTask);
             }
-        } else {
-            const newTask = {
-                id: 'task-' + Date.now(),
-                title,
-                description,
-                startTime,
-                endTime,
-                url,
-                categoryId,
-                frequencyType,
-                dueDate,
-                multipleDates,
-                recurringDays,
-                isToday,
-                completed: false,
-                lastCompletedDate: null,
-                completionHistory: {},
-                favorite: false,
-                createdAt: Date.now()
-            };
-            this.tasks.unshift(newTask);
-        }
 
-        this.saveLocalStorage();
-        this.closeModal('taskModal');
-        this.render();
+            this.saveLocalStorage();
+            this.closeModal('taskModal');
+            this.render();
+        };
+
+        if (imageFile) {
+            const reader = new FileReader();
+            reader.onload = (uploadEvent) => {
+                finishSave(uploadEvent.target.result);
+            };
+            reader.readAsDataURL(imageFile);
+        } else {
+            // Falls kein neues Bild ausgewählt wurde, behalte das alte oder null
+            let existingImage = null;
+            if (taskId) {
+                const oldTask = this.tasks.find(t => t.id === taskId);
+                if (oldTask) existingImage = oldTask.imageData;
+            }
+            finishSave(this.tempTaskImageData !== undefined ? this.tempTaskImageData : existingImage);
+        }
     }
 
     editTask(taskId) {
@@ -1830,6 +1792,15 @@ class FocusQuestApp {
         document.getElementById('taskEndTimeInput').value = task.endTime || '';
         document.getElementById('taskUrlInput').value = task.url || '';
         document.getElementById('taskModalTitle').textContent = 'Edit Task';
+
+        this.tempTaskImageData = task.imageData || null;
+        if (task.imageData) {
+            document.getElementById('taskImagePreview').src = task.imageData;
+            document.getElementById('imagePreviewContainer').classList.remove('hidden');
+        } else {
+            document.getElementById('imagePreviewContainer').classList.add('hidden');
+            document.getElementById('taskImagePreview').src = '';
+        }
 
         const catSelect = document.getElementById('taskCategorySelect');
         this.populateCategoryDropdown(catSelect, task.categoryId);
@@ -1946,6 +1917,17 @@ class FocusQuestApp {
         const catBadge = document.getElementById('detailTaskCategoryBadge');
         catBadge.textContent = category.name;
         catBadge.style.backgroundColor = category.color;
+
+        // BILD ANZEIGEN IM DETAIL MODAL
+        const imgContainer = document.getElementById('detailTaskImageContainer');
+        const detailImg = document.getElementById('detailTaskImage');
+        if (task.imageData) {
+            detailImg.src = task.imageData;
+            imgContainer.classList.remove('hidden');
+        } else {
+            imgContainer.classList.add('hidden');
+            detailImg.src = '';
+        }
 
         const urlContainer = document.getElementById('detailTaskUrlContainer');
         if (task.url) {
@@ -2451,7 +2433,6 @@ class FocusQuestApp {
         const catBlocks = document.getElementById('categoryBlocksWrapper');
         if (!grid) return;
 
-        // KORRIGIERTE DATUMS- UND WOCHENBERECHNUNG (Verhindert Monats- und Reihenfolgefehler)
         const curr = new Date();
         curr.setDate(curr.getDate() + (this.plannerWeekOffset * 7));
         const currentDayOfWeek = curr.getDay();
@@ -2695,6 +2676,8 @@ class FocusQuestApp {
                                 </span>
 
                                 ${task.startTime ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-500/40 shrink-0"><i class="fa-solid fa-clock mr-1"></i>${task.startTime}${task.endTime ? ' - ' + task.endTime : ''}</span>` : ''}
+
+                                ${task.imageData ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-950 text-purple-300 border border-purple-500/40 shrink-0"><i class="fa-solid fa-image mr-1"></i>Image</span>` : ''}
 
                                 ${isTodayBet ? `<span class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">+${ptsVal} PTS BET</span>` : ''}
                             </div>
