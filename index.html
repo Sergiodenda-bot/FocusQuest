@@ -830,6 +830,26 @@
                     </div>
                 </div>
             </div>
+
+            <!-- NEU: COPY & PASTE TASKS BUTTONS -->
+            <div class="pt-4 border-t border-slate-800 space-y-3">
+                <h4 class="text-sm font-bold text-indigo-400 flex items-center space-x-2">
+                    <i class="fa-solid fa-file-export"></i>
+                    <span>Manual Task Backup & Transfer</span>
+                </h4>
+                <p class="text-xs text-slate-300">Copy all your tasks to clipboard or paste tasks from another device/account.</p>
+                
+                <div class="flex space-x-2">
+                    <button onclick="app.copyAllTasksToClipboard()" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-copy"></i>
+                        <span>Copy Tasks</span>
+                    </button>
+                    <button onclick="app.pasteAllTasksFromClipboard()" class="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-paste"></i>
+                        <span>Paste Tasks</span>
+                    </button>
+                </div>
+            </div>
             
             <div class="flex justify-end pt-2">
                 <button onclick="app.saveProfileSettings()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/20">
@@ -1334,6 +1354,46 @@ class FocusQuestApp {
         this.showMotivationalToast(`Profile updated, ${this.user.name}! Settings saved successfully.`);
     }
 
+    // NEU: COPY & PASTE TASKS FUNKTIONEN
+    copyAllTasksToClipboard() {
+        const tasksJson = JSON.stringify(this.tasks, null, 2);
+        navigator.clipboard.writeText(tasksJson).then(() => {
+            this.showMotivationalToast("All tasks copied to clipboard successfully!");
+        }).catch(() => {
+            this.showMotivationalToast("Failed to copy tasks.");
+        });
+    }
+
+    async pasteAllTasksFromClipboard() {
+        try {
+            const clipboardText = await navigator.clipboard.readText();
+            if (!clipboardText) {
+                this.showMotivationalToast("Clipboard is empty.");
+                return;
+            }
+            const parsedTasks = JSON.parse(clipboardText);
+            if (!Array.isArray(parsedTasks)) {
+                this.showMotivationalToast("Invalid tasks format in clipboard.");
+                return;
+            }
+
+            this.confirmDelete(`Do you want to import ${parsedTasks.length} task(s)? This will merge them with your current tasks.`, () => {
+                // Zusammenführen ohne doppelte IDs
+                const existingIds = new Set(this.tasks.map(t => t.id));
+                parsedTasks.forEach(pt => {
+                    if (!existingIds.has(pt.id)) {
+                        this.tasks.push(pt);
+                    }
+                });
+                this.saveLocalStorage();
+                this.render();
+                this.showMotivationalToast(`Successfully imported tasks!`);
+            });
+        } catch (e) {
+            this.showMotivationalToast("Could not read valid task data from clipboard.");
+        }
+    }
+
     getTodayISO() {
         let timezone = this.user.timezone;
         if (!timezone || timezone === 'auto') {
@@ -1448,12 +1508,10 @@ class FocusQuestApp {
                 task.completionHistory[settlementDate] = false;
                 task.isToday = false;
 
-                // GEÄNDERT: Einmalige Aufgaben werden bei Verpassen NICHT gelöscht, sondern wandern in "undated"
                 if (task.frequencyType === 'once') {
                     task.frequencyType = 'undated';
                     task.dueDate = '';
                 }
-                // Wöchentliche/wiederkehrende Aufgaben ("recurring") bleiben erhalten und werden für Folge-Tage nicht gelöscht.
             }
         });
 
@@ -1771,7 +1829,6 @@ class FocusQuestApp {
             };
             reader.readAsDataURL(imageFile);
         } else {
-            // Falls kein neues Bild ausgewählt wurde, behalte das alte oder null
             let existingImage = null;
             if (taskId) {
                 const oldTask = this.tasks.find(t => t.id === taskId);
@@ -1918,7 +1975,6 @@ class FocusQuestApp {
         catBadge.textContent = category.name;
         catBadge.style.backgroundColor = category.color;
 
-        // BILD ANZEIGEN IM DETAIL MODAL
         const imgContainer = document.getElementById('detailTaskImageContainer');
         const detailImg = document.getElementById('detailTaskImage');
         if (task.imageData) {
