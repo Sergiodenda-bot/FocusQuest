@@ -1221,6 +1221,19 @@ class FocusQuestApp {
         });
     }
 
+    updateSyncBadge(isSynced, statusText) {
+        const dotStatic = document.getElementById('syncDotStatic');
+        const dotPing = document.getElementById('syncDotPing');
+        const textElem = document.getElementById('cloudStatusText');
+        if (textElem) textElem.textContent = statusText || (isSynced ? 'Synced' : 'Offline');
+        if (dotStatic) {
+            dotStatic.className = `relative inline-flex rounded-full h-2 w-2 ${isSynced ? 'bg-emerald-500' : 'bg-rose-500'}`;
+        }
+        if (dotPing) {
+            dotPing.className = `animate-ping absolute inline-flex h-full w-full rounded-full ${isSynced ? 'bg-emerald-400' : 'bg-rose-400'} opacity-75`;
+        }
+    }
+
     initFirebase() {
         try {
             if (!firebase.apps.length) {
