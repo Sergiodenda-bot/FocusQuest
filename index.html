@@ -329,7 +329,7 @@
                     </div>
                     <div>
                         <h3 class="font-extrabold text-sm sm:text-base text-white">Daily Bet Active</h3>
-                        <p class="text-xs text-slate-300 mt-0.5">Tasks done inside specific time slots earn <span class="text-amber-400 font-bold" id="todayPointBonusLabel">+3 Points</span> (+2 for general/untimed tasks).</p>
+                        <p class="text-xs text-slate-300 mt-0.5">Tasks done inside specific time slots earn <span class="text-amber-400 font-bold" id="todayPointBonusLabel">+3 Points</span> (+2 for today's general tasks, +1 for other days).</p>
                     </div>
                 </div>
                 <div class="flex items-center justify-between sm:justify-start space-x-3 bg-slate-950/70 px-4 py-2.5 rounded-xl border border-slate-800 shrink-0">
@@ -354,7 +354,7 @@
                                 <i class="fa-solid fa-calendar-week text-indigo-400"></i>
                                 <span>Weekly Calendar Planner</span>
                             </h3>
-                            <p id="plannerHeaderSubtitle" class="text-xs text-slate-400 mt-0.5">Double-tap any day to zoom into day view. Specific time slots give 3 pts; untimed tasks give 2 pts.</p>
+                            <p id="plannerHeaderSubtitle" class="text-xs text-slate-400 mt-0.5">Double-tap any day to zoom into day view. Today tasks give 2-3 pts; other days give 1 pt.</p>
                         </div>
                     </div>
                     <div id="weeklyNavControls" class="flex items-center space-x-2">
@@ -461,7 +461,7 @@
                     <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">End Time (Optional)</label>
                     <input type="time" id="taskEndTimeInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
                 </div>
-                <p class="text-[10px] text-amber-400 col-span-2 font-semibold">Completing during specific start/end time slot awards +3 pts (+2 pts if untimed or outside window).</p>
+                <p class="text-[10px] text-amber-400 col-span-2 font-semibold">Today tasks give 3 pts (in time slot) or 2 pts. Other days give 1 pt.</p>
             </div>
 
             <div>
@@ -610,7 +610,7 @@
             </div>
 
             <div class="flex items-center justify-between text-xs text-slate-400 border-t border-slate-800 pt-3">
-                <div>Point Value: <strong id="detailTaskPoints" class="text-amber-400 font-extrabold">+3 pts (Time Slot)</strong></div>
+                <div>Point Value: <strong id="detailTaskPoints" class="text-amber-400 font-extrabold">+2 pts</strong></div>
                 <div>Type: <span id="detailTaskType" class="text-slate-200 font-semibold">Scheduled</span></div>
             </div>
 
@@ -718,7 +718,7 @@
         </div>
         <div class="p-6 space-y-4">
             <p class="text-xs text-slate-300 leading-relaxed">
-                Manually trigger midnight check. Uncompleted scheduled tasks for today deduct <strong class="text-rose-400">-2 points each</strong>. If 7+ tasks were completed today, a **+2 point High-Volume bonus** will be awarded!
+                Manually trigger midnight check. If 7+ tasks were completed today, a **+2 point High-Volume bonus** will be awarded!
             </p>
             <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-400" id="debugUncompletedSummary">
             </div>
@@ -759,7 +759,7 @@
                         <option value="Asia/Tokyo">Japan - Tokyo (JST)</option>
                         <option value="Australia/Sydney">Australia - Sydney (AEST)</option>
                     </select>
-                    <p class="text-[11px] text-amber-400 mt-1 font-semibold">Completing timed tasks in your configured timezone awards +3 points per task (+2 for untimed).</p>
+                    <p class="text-[11px] text-amber-400 mt-1 font-semibold">Today tasks give 2-3 points; other days give 1 point.</p>
                 </div>
             </div>
 
@@ -1283,22 +1283,6 @@ class FocusQuestApp {
         this.dbRef.set(payload).catch(() => {});
     }
 
-    updateSyncBadge(active, text) {
-        const textElem = document.getElementById('cloudStatusText');
-        const pingElem = document.getElementById('syncDotPing');
-        const staticElem = document.getElementById('syncDotStatic');
-        if (textElem) textElem.textContent = text;
-        if (pingElem && staticElem) {
-            if (active) {
-                pingElem.className = 'animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75';
-                staticElem.className = 'relative inline-flex rounded-full h-2 w-2 bg-emerald-500';
-            } else {
-                pingElem.className = 'hidden';
-                staticElem.className = 'relative inline-flex rounded-full h-2 w-2 bg-rose-500';
-            }
-        }
-    }
-
     saveLocalStorage(pushToCloud = true) {
         localStorage.setItem('focusquest_tasks', JSON.stringify(this.tasks));
         localStorage.setItem('focusquest_categories', JSON.stringify(this.categories));
@@ -1452,18 +1436,22 @@ class FocusQuestApp {
 
     calculateTaskPointValue(task, dateISO) {
         if (!dateISO) dateISO = this.getTodayISO();
+        
+        // Wenn es NICHT heute ist, gibt es genau 1 Punkt!
+        if (dateISO !== this.getTodayISO()) {
+            return 1;
+        }
+
+        // Wenn es heute ist, gelten die normalen Regeln (3 Punkte im Zeitslot, sonst 2 Punkte)
         if (!task.startTime) return 2;
 
-        if (dateISO === this.getTodayISO()) {
-            const now = new Date();
-            const currentHM = now.toTimeString().substring(0, 5);
-            const startTime = task.startTime;
-            const endTime = task.endTime || '23:59';
+        const now = new Date();
+        const currentHM = now.toTimeString().substring(0, 5);
+        const startTime = task.startTime;
+        const endTime = task.endTime || '23:59';
 
-            if (currentHM >= startTime && currentHM <= endTime) {
-                return 3;
-            }
-            return 2;
+        if (currentHM >= startTime && currentHM <= endTime) {
+            return 3;
         }
         return 2;
     }
@@ -1477,9 +1465,6 @@ class FocusQuestApp {
         });
 
         if (this.user.lastSettlementDate !== todayStr) {
-            // BEHOBEN: Hier wurde früher automatisch eine harte Strafe (-2 Punkte) ausgelöst, 
-            // wenn Tasks an vergangenen Tagen nicht als erledigt markiert waren. 
-            // Jetzt wird das automatische Abziehen von Punkten deaktiviert, damit es keine Frust-Fehler gibt!
             this.user.lastSettlementDate = todayStr;
             this.saveLocalStorage();
         }
@@ -1487,7 +1472,6 @@ class FocusQuestApp {
 
     executeMidnightSettlementLogic(settlementDate) {
         if (!settlementDate) settlementDate = this.getTodayISO();
-        let penalties = 0;
         let tasksCompletedOnSettlementDay = 0;
 
         this.tasks.forEach(task => {
@@ -1905,7 +1889,7 @@ class FocusQuestApp {
                 `Superb progress, ${userName}! Victory awaits!`
             ];
             const randomMsg = phrases[Math.floor(Math.random() * phrases.length)];
-            this.showMotivationalToast(randomMsg + ` (+${pointsEarned} pts)`);
+            this.showMotivationalToast(randomMsg + ` (+${pointsEarned} pt${pointsEarned > 1 ? 's' : ''})`);
 
             const todayTasks = this.tasks.filter(t => this.isTaskScheduledForToday(t));
             const allTodayCompleted = todayTasks.length > 0 && todayTasks.every(t => this.isTaskCompletedOnDate(t, this.getTodayISO()));
@@ -1959,7 +1943,7 @@ class FocusQuestApp {
         if (task.startTime) {
             timeSlotElem.textContent = `⏰ Scheduled Time Slot: ${task.startTime}${task.endTime ? ' - ' + task.endTime : ''}`;
         } else {
-            timeSlotElem.textContent = '⏰ No specific time slot (+2 pts)';
+            timeSlotElem.textContent = '⏰ No specific time slot';
         }
 
         const catBadge = document.getElementById('detailTaskCategoryBadge');
@@ -1986,7 +1970,7 @@ class FocusQuestApp {
         }
 
         const ptsValue = this.calculateTaskPointValue(task, this.getTodayISO());
-        document.getElementById('detailTaskPoints').textContent = `+${ptsValue} pts ${task.startTime ? '(Timed Slot Window)' : '(Standard Untimed)'}`;
+        document.getElementById('detailTaskPoints').textContent = `+${ptsValue} pts`;
         document.getElementById('detailTaskType').textContent = task.frequencyType.toUpperCase();
 
         this.openModal('taskDetailModal');
@@ -2327,9 +2311,9 @@ class FocusQuestApp {
         const container = document.getElementById('debugUncompletedSummary');
         if (container) {
             if (uncompletedToday.length === 0) {
-                container.textContent = 'No active today tasks to penalize.';
+                container.textContent = 'No active today tasks.';
             } else {
-                container.innerHTML = `Found <strong>${uncompletedToday.length}</strong> uncompleted task(s):<br>` +
+                container.innerHTML = `Found <strong>${uncompletedToday.length}</strong> active task(s):<br>` +
                     uncompletedToday.map(t => `• ${t.title}`).join('<br>');
             }
         }
