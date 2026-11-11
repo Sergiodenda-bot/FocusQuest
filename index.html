@@ -443,7 +443,6 @@
                 <textarea id="taskDescriptionInput" rows="2" placeholder="e.g., Read pages 40-55..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
             </div>
 
-            <!-- ECHTE BILDDATEIEN UPLOAD -->
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Upload Image / Screenshot (Optional)</label>
                 <input type="file" id="taskImageInput" accept="image/*" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-xs text-slate-300 file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
@@ -594,7 +593,6 @@
                 <div id="detailTaskDescription" class="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed break-words">No additional notes provided.</div>
             </div>
 
-            <!-- ANZEIGE DES HOCHGELADENEN BILDES -->
             <div id="detailTaskImageContainer" class="hidden p-3 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Attached Image / Screenshot</label>
                 <img id="detailTaskImage" src="" alt="Task Attachment" class="w-full max-h-64 object-contain rounded-xl border border-slate-700 bg-slate-950">
@@ -831,7 +829,7 @@
                 </div>
             </div>
 
-            <!-- NEU: COPY & PASTE TASKS BUTTONS -->
+            <!-- COPY & PASTE TASKS BUTTONS -->
             <div class="pt-4 border-t border-slate-800 space-y-3">
                 <h4 class="text-sm font-bold text-indigo-400 flex items-center space-x-2">
                     <i class="fa-solid fa-file-export"></i>
@@ -1354,7 +1352,6 @@ class FocusQuestApp {
         this.showMotivationalToast(`Profile updated, ${this.user.name}! Settings saved successfully.`);
     }
 
-    // NEU: COPY & PASTE TASKS FUNKTIONEN
     copyAllTasksToClipboard() {
         const tasksJson = JSON.stringify(this.tasks, null, 2);
         navigator.clipboard.writeText(tasksJson).then(() => {
@@ -1378,7 +1375,6 @@ class FocusQuestApp {
             }
 
             this.confirmDelete(`Do you want to import ${parsedTasks.length} task(s)? This will merge them with your current tasks.`, () => {
-                // Zusammenführen ohne doppelte IDs
                 const existingIds = new Set(this.tasks.map(t => t.id));
                 parsedTasks.forEach(pt => {
                     if (!existingIds.has(pt.id)) {
@@ -1481,9 +1477,9 @@ class FocusQuestApp {
         });
 
         if (this.user.lastSettlementDate !== todayStr) {
-            if (this.user.lastSettlementDate) {
-                this.executeMidnightSettlementLogic(this.user.lastSettlementDate);
-            }
+            // BEHOBEN: Hier wurde früher automatisch eine harte Strafe (-2 Punkte) ausgelöst, 
+            // wenn Tasks an vergangenen Tagen nicht als erledigt markiert waren. 
+            // Jetzt wird das automatische Abziehen von Punkten deaktiviert, damit es keine Frust-Fehler gibt!
             this.user.lastSettlementDate = todayStr;
             this.saveLocalStorage();
         }
@@ -1503,7 +1499,6 @@ class FocusQuestApp {
             }
 
             if (scheduledForSettlementDay && !completedOnSettlementDay) {
-                penalties += 2;
                 if (!task.completionHistory) task.completionHistory = {};
                 task.completionHistory[settlementDate] = false;
                 task.isToday = false;
@@ -1514,10 +1509,6 @@ class FocusQuestApp {
                 }
             }
         });
-
-        if (penalties > 0) {
-            this.user.points = Math.max(0, this.user.points - penalties);
-        }
 
         if (tasksCompletedOnSettlementDay >= 7) {
             this.user.points += 2;
@@ -2339,7 +2330,7 @@ class FocusQuestApp {
                 container.textContent = 'No active today tasks to penalize.';
             } else {
                 container.innerHTML = `Found <strong>${uncompletedToday.length}</strong> uncompleted task(s):<br>` +
-                    uncompletedToday.map(t => `• ${t.title} (-2 pts)`).join('<br>');
+                    uncompletedToday.map(t => `• ${t.title}`).join('<br>');
             }
         }
     }
@@ -2519,7 +2510,6 @@ class FocusQuestApp {
 
             const dayTasks = this.sortTasksByStartTime(this.tasks.filter(t => this.isTaskScheduledForDate(t, this.zoomedDayISO)));
             const isToday = this.zoomedDayISO === todayStr;
-            const isPastDay = this.zoomedDayISO < todayStr;
 
             grid.innerHTML = `
                 <div class="p-6 rounded-3xl bg-slate-900/90 border-2 ${isToday ? 'border-indigo-500 shadow-2xl shadow-indigo-500/20' : 'border-slate-800'} space-y-4">
@@ -2537,21 +2527,20 @@ class FocusQuestApp {
                         ` : dayTasks.map(t => {
                             const cat = this.categories.find(c => c.id === t.categoryId) || { color: '#6366f1' };
                             const isDoneOnDay = this.isTaskCompletedOnDate(t, this.zoomedDayISO);
-                            const isMissedOnPastDay = isPastDay && !isDoneOnDay;
 
                             return `
                                 <div class="p-4 rounded-2xl bg-slate-800/80 border-l-4 flex items-center justify-between space-x-4 transition hover:bg-slate-700/80" style="border-left-color: ${cat.color}">
                                     <div class="space-y-1 min-w-0 flex-1">
-                                        <div onclick="app.openTaskDetail('${t.id}')" class="font-extrabold text-base cursor-pointer truncate ${isDoneOnDay ? 'line-through text-slate-500' : (isMissedOnPastDay ? 'text-rose-400' : 'text-white')}">
+                                        <div onclick="app.openTaskDetail('${t.id}')" class="font-extrabold text-base cursor-pointer truncate ${isDoneOnDay ? 'line-through text-slate-500' : 'text-white'}">
                                             ${t.title}
                                         </div>
                                         <div class="flex items-center space-x-3 text-xs text-slate-400">
-                                            ${t.startTime ? `<span class="font-bold text-indigo-400"><i class="fa-solid fa-clock mr-1"></i>${t.startTime}${t.endTime ? ' - ' + t.endTime : ''} (+3 pts inside window)</span>` : '<span class="text-slate-500">No specific time slot (+2 pts)</span>'}
+                                            ${t.startTime ? `<span class="font-bold text-indigo-400"><i class="fa-solid fa-clock mr-1"></i>${t.startTime}${t.endTime ? ' - ' + t.endTime : ''}</span>` : '<span class="text-slate-500">No specific time slot</span>'}
                                             ${t.description ? `<span class="truncate">${t.description}</span>` : ''}
                                         </div>
                                     </div>
-                                    <button onclick="app.toggleTaskComplete('${t.id}', '${this.zoomedDayISO}')" class="w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition ${isDoneOnDay ? 'bg-indigo-600 border-indigo-600 text-white' : (isMissedOnPastDay ? 'border-rose-500/50 bg-rose-950/40 text-rose-400' : 'border-slate-600 bg-slate-900/60 hover:border-indigo-500')}">
-                                        ${isDoneOnDay ? '<i class="fa-solid fa-check text-xs"></i>' : (isMissedOnPastDay ? '<i class="fa-solid fa-xmark text-xs"></i>' : '')}
+                                    <button onclick="app.toggleTaskComplete('${t.id}', '${this.zoomedDayISO}')" class="w-6 h-6 rounded-lg border flex items-center justify-center shrink-0 transition ${isDoneOnDay ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-600 bg-slate-900/60 hover:border-indigo-500'}">
+                                        ${isDoneOnDay ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
                                     </button>
                                 </div>
                             `;
@@ -2578,7 +2567,6 @@ class FocusQuestApp {
         grid.innerHTML = days.map(dayDate => {
             const isoStr = dayDate.toISOString().split('T')[0];
             const isToday = isoStr === todayStr;
-            const isPastDay = isoStr < todayStr;
             const dayIdx = dayDate.getDay();
 
             const dayTasks = this.sortTasksByStartTime(this.tasks.filter(t => this.isTaskScheduledForDate(t, isoStr)));
@@ -2597,18 +2585,17 @@ class FocusQuestApp {
                         ${dayTasks.map(t => {
                             const cat = this.categories.find(c => c.id === t.categoryId) || { color: '#6366f1' };
                             const isDoneOnDay = this.isTaskCompletedOnDate(t, isoStr);
-                            const isMissedOnPastDay = isPastDay && !isDoneOnDay;
 
                             return `
                                 <div class="p-2 rounded-xl bg-slate-800/80 border-l-4 hover:bg-slate-700/80 transition flex items-center justify-between space-x-2 text-xs" style="border-left-color: ${cat.color}">
                                     <div onclick="app.openTaskDetail('${t.id}')" class="space-y-0.5 flex-1 min-w-0">
-                                        <div class="font-bold truncate ${isDoneOnDay ? 'line-through text-slate-500' : (isMissedOnPastDay ? 'text-rose-400/90' : 'text-slate-200')}">
+                                        <div class="font-bold truncate ${isDoneOnDay ? 'line-through text-slate-500' : 'text-slate-200'}">
                                             ${t.title}
                                         </div>
                                         ${t.startTime ? `<div class="text-[10px] font-semibold text-indigo-400">${t.startTime}</div>` : ''}
                                     </div>
-                                    <button onclick="app.toggleTaskComplete('${t.id}', '${isoStr}')" class="w-4 h-4 rounded border flex items-center justify-center shrink-0 transition ${isDoneOnDay ? 'bg-indigo-600 border-indigo-600 text-white' : (isMissedOnPastDay ? 'border-rose-500/50 bg-rose-950/40 text-rose-400' : 'border-slate-600 bg-slate-900/60 hover:border-indigo-500')}">
-                                        ${isDoneOnDay ? '<i class="fa-solid fa-check text-[9px]"></i>' : (isMissedOnPastDay ? '<i class="fa-solid fa-xmark text-[9px]"></i>' : '')}
+                                    <button onclick="app.toggleTaskComplete('${t.id}', '${isoStr}')" class="w-4 h-4 rounded border flex items-center justify-center shrink-0 transition ${isDoneOnDay ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-600 bg-slate-900/60 hover:border-indigo-500'}">
+                                        ${isDoneOnDay ? '<i class="fa-solid fa-check text-[9px]"></i>' : ''}
                                     </button>
                                 </div>
                             `;
