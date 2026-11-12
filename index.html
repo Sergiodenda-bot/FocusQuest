@@ -538,7 +538,7 @@
                 <input type="checkbox" id="taskIsTodayInput" onchange="app.syncModalDateCheckbox(this.checked)" class="w-4 h-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-indigo-500">
                 <div>
                     <label for="taskIsTodayInput" class="text-sm font-bold text-slate-200 cursor-pointer">Assign to Today's Focus</label>
-                    <p class="text-[11px] text-slate-400">Shortcut to schedule task for today.</p>
+                    <p class="text-[11px] text-slate-400">Shortcut to schedule task strictly for today.</p>
                 </div>
             </div>
 
@@ -1450,12 +1450,10 @@ class FocusQuestApp {
     calculateTaskPointValue(task, dateISO) {
         if (!dateISO) dateISO = this.getTodayISO();
         
-        // Wenn es NICHT heute ist, gibt es genau 1 Punkt!
         if (dateISO !== this.getTodayISO()) {
             return 1;
         }
 
-        // Wenn es heute ist, gelten die normalen Regeln (3 Punkte im Zeitslot, sonst 2 Punkte)
         if (!task.startTime) return 2;
 
         const now = new Date();
@@ -1728,8 +1726,10 @@ class FocusQuestApp {
     syncModalDateCheckbox(isTodayChecked) {
         const dateInput = document.getElementById('taskDateInput');
         const freqSelect = document.getElementById('taskFrequencyTypeSelect');
-        if (isTodayChecked && freqSelect.value === 'once') {
+        if (isTodayChecked) {
+            freqSelect.value = 'once';
             dateInput.value = this.getTodayISO();
+            this.handleFrequencyTypeChange('once');
         }
     }
 
@@ -1749,9 +1749,14 @@ class FocusQuestApp {
         const endTime = document.getElementById('taskEndTimeInput').value;
         const url = document.getElementById('taskUrlInput').value.trim();
         const categoryId = document.getElementById('taskCategorySelect').value;
-        const frequencyType = document.getElementById('taskFrequencyTypeSelect').value;
-        const dueDate = document.getElementById('taskDateInput').value;
+        let frequencyType = document.getElementById('taskFrequencyTypeSelect').value;
+        let dueDate = document.getElementById('taskDateInput').value;
         const isToday = document.getElementById('taskIsTodayInput').checked;
+
+        if (isToday) {
+            frequencyType = 'once';
+            dueDate = this.getTodayISO();
+        }
 
         const recurringDays = [];
         if (frequencyType === 'recurring') {
@@ -1761,7 +1766,6 @@ class FocusQuestApp {
         }
 
         const multipleDates = frequencyType === 'multiple' ? [...this.selectedMultipleDates] : [];
-
         const imageFile = document.getElementById('taskImageInput').files[0];
         
         const finishSave = (imageData) => {
@@ -2068,6 +2072,21 @@ class FocusQuestApp {
         });
     }
 
+    moveCategory(catId, direction, event) {
+        if (event) event.stopPropagation();
+        const index = this.categories.findIndex(c => c.id === catId);
+        if (index === -1) return;
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= this.categories.length) return;
+
+        const temp = this.categories[index];
+        this.categories[index] = this.categories[newIndex];
+        this.categories[newIndex] = temp;
+
+        this.saveLocalStorage();
+        this.render();
+    }
+
     switchShopTab(tabName) {
         this.shopTab = tabName;
         ['pets', 'achievements', 'lootboxes', 'themes', 'seasonal', 'badges'].forEach(t => {
@@ -2315,7 +2334,7 @@ class FocusQuestApp {
             this.syncCode = input.value.trim();
             this.saveLocalStorage(false);
             this.connectFirebaseSync();
-            this.closeModal('settingsModal');
+            this.showMotivationalToast("Sync Code successfully saved and connected!");
         }
     }
 
@@ -2404,7 +2423,7 @@ class FocusQuestApp {
         const container = document.getElementById('categoryListContainer');
         if (!container) return;
 
-        container.innerHTML = this.categories.map(cat => {
+        container.innerHTML = this.categories.map((cat, index) => {
             const isSelected = this.currentView === cat.id || this.activeCategoryFilter === cat.id;
             const catTaskCount = this.tasks.filter(t => t.categoryId === cat.id && !this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
 
@@ -2414,13 +2433,13 @@ class FocusQuestApp {
                         <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${cat.color}"></span>
                         <span class="truncate">${cat.name}</span>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="text-xs bg-slate-900/80 px-2 py-0.5 rounded-full text-slate-400 font-semibold">${catTaskCount}</span>
-                        ${cat.id !== 'cat-general' ? `
-                            <button onclick="app.deleteCategory('${cat.id}', event)" class="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-rose-400 transition" title="Delete Category">
-                                <i class="fa-solid fa-trash-can text-xs"></i>
-                            </button>
-                        ` : ''}
+                    <div class="flex items-center space-x-1">
+                        <span class="text-xs bg-slate-900/80 px-2 py-0.5 rounded-full text-slate-400 font-semibold mr-1">${catTaskCount}</span>
+                        <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-0.5 transition">
+                            ${index > 0 ? `<button onclick="app.moveCategory('${cat.id}', -1, event)" class="p-1 text-slate-400 hover:text-white transition" title="Move Up"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>` : ''}
+                            ${index < this.categories.length - 1 ? `<button onclick="app.moveCategory('${cat.id}', 1, event)" class="p-1 text-slate-400 hover:text-white transition" title="Move Down"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>` : ''}
+                            ${cat.id !== 'cat-general' ? `<button onclick="app.deleteCategory('${cat.id}', event)" class="p-1 text-slate-400 hover:text-rose-400 transition" title="Delete Category"><i class="fa-solid fa-trash-can text-[10px]"></i></button>` : ''}
+                        </div>
                     </div>
                 </div>
             `;
@@ -2664,7 +2683,7 @@ class FocusQuestApp {
         }
 
         if (this.currentView === 'all') {
-            const categoryOrder = ['cat-general', 'cat-work', 'cat-health', 'cat-personal'];
+            const categoryOrder = this.categories.map(c => c.id);
             filtered.sort((a, b) => {
                 let idxA = categoryOrder.indexOf(a.categoryId);
                 let idxB = categoryOrder.indexOf(b.categoryId);
