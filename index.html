@@ -825,6 +825,12 @@
                                 </button>
                             </div>
                         </div>
+                        <div class="mt-2 text-right">
+                            <button onclick="app.createNewSyncCodePrompt()" class="text-xs text-indigo-400 hover:text-indigo-300 font-bold underline transition flex items-center justify-end space-x-1 ml-auto">
+                                <i class="fa-solid fa-plus-circle text-xs"></i>
+                                <span>Create New Code (Start Fresh)</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1252,6 +1258,11 @@ class FocusQuestApp {
         if (!this.db || !this.syncCode) return;
         this.updateSyncBadge(true, 'Syncing...');
         const sanitizedCode = this.syncCode.replace(/[.#$/[\]]/g, "_");
+        
+        if (this.dbRef) {
+            this.dbRef.off();
+        }
+
         this.dbRef = this.db.ref('users/' + sanitizedCode);
 
         this.dbRef.on('value', (snapshot) => {
@@ -2334,8 +2345,28 @@ class FocusQuestApp {
             this.syncCode = input.value.trim();
             this.saveLocalStorage(false);
             this.connectFirebaseSync();
-            this.showMotivationalToast("Sync Code successfully saved and connected!");
+            this.showMotivationalToast(`Connected to sync code: ${this.syncCode}`);
         }
+    }
+
+    createNewSyncCodePrompt() {
+        const newCodeInput = prompt("Enter a name/code for your new workspace (e.g. Brother, Focus2, etc.):", "FQ-" + Math.random().toString(36).substring(2, 7).toUpperCase());
+        if (!newCodeInput) return;
+        const sanitized = newCodeInput.trim();
+        if (!sanitized) return;
+
+        this.syncCode = sanitized;
+        const input = document.getElementById('syncCodeDisplay');
+        if (input) input.value = this.syncCode;
+
+        this.tasks = [];
+        this.user.points = 0;
+        this.user.level = 1;
+        this.user.xp = 0;
+        this.saveLocalStorage();
+        this.connectFirebaseSync();
+        this.render();
+        this.showMotivationalToast(`Created and connected to new code: ${this.syncCode}`);
     }
 
     renderDebugSummary() {
