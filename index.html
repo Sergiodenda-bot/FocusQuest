@@ -1025,6 +1025,8 @@ collectionCounts.forEach(count => {
 
 class FocusQuestApp {
     constructor() {
+        this.syncCode = localStorage.getItem('focusquest_sync_code') || this.generateSyncCode();
+        
         this.tasks = [];
         this.categories = [
             { id: 'cat-general', name: 'General', icon: 'fa-folder', color: '#6366f1' },
@@ -1052,7 +1054,6 @@ class FocusQuestApp {
             notificationOffset: 0
         };
 
-        this.syncCode = localStorage.getItem('focusquest_sync_code') || this.generateSyncCode();
         this.sidebarCollapsed = false;
         this.currentView = 'today';
         this.filterState = 'all';
@@ -1093,6 +1094,11 @@ class FocusQuestApp {
         const code = 'FQ-' + Math.random().toString(36).substring(2, 7).toUpperCase();
         localStorage.setItem('focusquest_sync_code', code);
         return code;
+    }
+
+    getStorageKey(key) {
+        const sanitized = (this.syncCode || 'DEFAULT').replace(/[.#$/[\]]/g, "_");
+        return `focusquest_${key}_${sanitized}`;
     }
 
     setupDateHeader() {
@@ -1271,7 +1277,7 @@ class FocusQuestApp {
             if (cloudData) {
                 this.isSyncingFromCloud = true;
                 
-                // INTELLIGENT SMART MERGE (Fixes flight mode race conditions & overwriting)
+                // INTELLIGENT SMART MERGE (Specific to this code world)
                 const mergedTasksMap = new Map();
                 (this.tasks || []).forEach(t => mergedTasksMap.set(t.id, t));
                 (cloudData.tasks || []).forEach(ct => {
@@ -1296,7 +1302,7 @@ class FocusQuestApp {
                 });
                 this.categories = Array.from(mergedCatsMap.values());
 
-                // Merge user stats (max points, union of inventory & achievements)
+                // Merge user stats
                 if (cloudData.user) {
                     const cu = cloudData.user;
                     this.user.points = Math.max(this.user.points || 0, cu.points || 0);
@@ -1314,11 +1320,11 @@ class FocusQuestApp {
                 }
 
                 const maxUpdatedAt = Math.max(
-                    parseInt(localStorage.getItem('focusquest_updated_at') || '0'),
+                    parseInt(localStorage.getItem(this.getStorageKey('updated_at')) || '0'),
                     parseInt(cloudData.updatedAt || '0'),
                     Date.now()
                 );
-                localStorage.setItem('focusquest_updated_at', maxUpdatedAt);
+                localStorage.setItem(this.getStorageKey('updated_at'), maxUpdatedAt);
                 this.saveLocalStorage(false);
                 this.isSyncingFromCloud = false;
                 this.render();
@@ -1334,7 +1340,7 @@ class FocusQuestApp {
     syncToCloud() {
         if (!this.dbRef || this.isSyncingFromCloud) return;
         const nowTimestamp = Date.now();
-        localStorage.setItem('focusquest_updated_at', nowTimestamp);
+        localStorage.setItem(this.getStorageKey('updated_at'), nowTimestamp);
 
         const payload = {
             tasks: this.tasks,
@@ -1346,21 +1352,57 @@ class FocusQuestApp {
     }
 
     saveLocalStorage(pushToCloud = true) {
-        localStorage.setItem('focusquest_tasks', JSON.stringify(this.tasks));
-        localStorage.setItem('focusquest_categories', JSON.stringify(this.categories));
-        localStorage.setItem('focusquest_user', JSON.stringify(this.user));
+        localStorage.setItem(this.getStorageKey('tasks'), JSON.stringify(this.tasks));
+        localStorage.setItem(this.getStorageKey('categories'), JSON.stringify(this.categories));
+        localStorage.setItem(this.getStorageKey('user'), JSON.stringify(this.user));
         localStorage.setItem('focusquest_sync_code', this.syncCode);
         if (pushToCloud) this.syncToCloud();
     }
 
     loadLocalStorage() {
-        const storedTasks = localStorage.getItem('focusquest_tasks');
-        const storedCats = localStorage.getItem('focusquest_categories');
-        const storedUser = localStorage.getItem('focusquest_user');
+        const storedTasks = localStorage.getItem(this.getStorageKey('tasks'));
+        const storedCats = localStorage.getItem(this.getStorageKey('categories'));
+        const storedUser = localStorage.getItem(this.getStorageKey('user'));
 
-        if (storedTasks) this.tasks = JSON.parse(storedTasks);
-        if (storedCats) this.categories = JSON.parse(storedCats);
-        if (storedUser) this.user = { ...this.user, ...JSON.parse(storedUser) };
+        if (storedTasks) {
+            this.tasks = JSON.parse(storedTasks);
+        } else {
+            this.tasks = [];
+        }
+
+        if (storedCats) {
+            this.categories = JSON.parse(storedCats);
+        } else {
+            this.categories = [
+                { id: 'cat-general', name: 'General', icon: 'fa-folder', color: '#6366f1' },
+                { id: 'cat-work', name: 'Work / Study', icon: 'fa-briefcase', color: '#3b82f6' },
+                { id: 'cat-health', name: 'Health & Fitness', icon: 'fa-heart-pulse', color: '#10b981' },
+                { id: 'cat-personal', name: 'Personal', icon: 'fa-user', color: '#f59e0b' }
+            ];
+        }
+
+        if (storedUser) {
+            this.user = { ...this.user, ...JSON.parse(storedUser) };
+        } else {
+            this.user = {
+                name: 'Warrior',
+                timezone: 'auto',
+                points: 0,
+                level: 1,
+                xp: 0,
+                activeTitle: 'Procrastinator',
+                activeTheme: 'theme-midnight',
+                activePet: '🐱',
+                activeRank: { tier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved' },
+                inventory: ['theme-midnight', 'pet-cat', 'rank-bronze'],
+                unlockedAchievements: [],
+                currentStreak: 0,
+                lastCompletedDate: null,
+                lastSettlementDate: null,
+                notificationsEnabled: false,
+                notificationOffset: 0
+            };
+        }
 
         this.tasks.forEach(t => {
             if (!t.completionHistory) t.completionHistory = {};
@@ -2424,28 +2466,32 @@ class FocusQuestApp {
     applySyncCodeInput() {
         const input = document.getElementById('syncCodeDisplay');
         if (input && input.value.trim()) {
-            this.syncCode = input.value.trim();
-            this.saveLocalStorage(false);
+            const newCode = input.value.trim();
+            if (newCode === this.syncCode) return;
+            
+            this.syncCode = newCode;
+            localStorage.setItem('focusquest_sync_code', this.syncCode);
+            
+            // Clean load of local storage for this specific code world
+            this.loadLocalStorage();
             this.connectFirebaseSync();
-            this.showMotivationalToast(`Connected to sync code: ${this.syncCode}`);
+            this.showMotivationalToast(`Switched to sync code: ${this.syncCode}`);
         }
     }
 
     createNewSyncCodePrompt() {
-        const newCodeInput = prompt("Enter a name/code for your new workspace (e.g. Brother, Focus2, etc.):", "FQ-" + Math.random().toString(36).substring(2, 7).toUpperCase());
+        const newCodeInput = prompt("Enter a name/code for your new workspace (e.g. Samuel, Search, etc.):", "FQ-" + Math.random().toString(36).substring(2, 7).toUpperCase());
         if (!newCodeInput) return;
         const sanitized = newCodeInput.trim();
         if (!sanitized) return;
 
         this.syncCode = sanitized;
+        localStorage.setItem('focusquest_sync_code', this.syncCode);
+        
         const input = document.getElementById('syncCodeDisplay');
         if (input) input.value = this.syncCode;
 
-        this.tasks = [];
-        this.user.points = 0;
-        this.user.level = 1;
-        this.user.xp = 0;
-        this.saveLocalStorage();
+        this.loadLocalStorage();
         this.connectFirebaseSync();
         this.render();
         this.showMotivationalToast(`Created and connected to new code: ${this.syncCode}`);
