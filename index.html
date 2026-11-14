@@ -270,7 +270,7 @@
             <div>
                 <div class="flex items-center justify-between px-3 mb-2">
                     <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Categories</span>
-                    <button onclick="app.openModal('categoryModal')" class="p-1 text-slate-400 hover:text-white text-xs transition" title="Add Category">
+                    <button onclick="app.openCategoryModal()" class="p-1 text-slate-400 hover:text-white text-xs transition" title="Add Category">
                         <i class="fa-solid fa-plus"></i>
                     </button>
                 </div>
@@ -629,10 +629,11 @@
 <div id="categoryModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl my-auto">
         <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
-            <h3 class="font-extrabold text-base text-white">Create / Customize Category</h3>
+            <h3 id="categoryModalTitle" class="font-extrabold text-base text-white">Create / Customize Category</h3>
             <button onclick="app.closeModal('categoryModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form onsubmit="app.saveCategory(event)" class="p-6 space-y-4">
+            <input type="hidden" id="editCategoryId">
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Category Name</label>
                 <input type="text" id="categoryNameInput" required placeholder="e.g., Coding, Fitness" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
@@ -1268,22 +1269,59 @@ class FocusQuestApp {
         this.dbRef.on('value', (snapshot) => {
             const cloudData = snapshot.val();
             if (cloudData) {
-                const localUpdatedAt = parseInt(localStorage.getItem('focusquest_updated_at') || '0');
-                const cloudUpdatedAt = parseInt(cloudData.updatedAt || '0');
+                this.isSyncingFromCloud = true;
+                
+                // INTELLIGENT SMART MERGE (Fixes flight mode race conditions & overwriting)
+                const mergedTasksMap = new Map();
+                (this.tasks || []).forEach(t => mergedTasksMap.set(t.id, t));
+                (cloudData.tasks || []).forEach(ct => {
+                    if (!mergedTasksMap.has(ct.id)) {
+                        mergedTasksMap.set(ct.id, ct);
+                    } else {
+                        const lt = mergedTasksMap.get(ct.id);
+                        const ltTime = lt.updatedAt || lt.createdAt || 0;
+                        const ctTime = ct.updatedAt || ct.createdAt || 0;
+                        if (ctTime >= ltTime) {
+                            mergedTasksMap.set(ct.id, ct);
+                        }
+                    }
+                });
+                this.tasks = Array.from(mergedTasksMap.values());
 
-                if (cloudUpdatedAt >= localUpdatedAt || !localUpdatedAt) {
-                    this.isSyncingFromCloud = true;
-                    if (cloudData.tasks) this.tasks = cloudData.tasks;
-                    if (cloudData.categories) this.categories = cloudData.categories;
-                    if (cloudData.user) this.user = { ...this.user, ...cloudData.user };
+                // Merge categories
+                const mergedCatsMap = new Map();
+                (this.categories || []).forEach(c => mergedCatsMap.set(c.id, c));
+                (cloudData.categories || []).forEach(cc => {
+                    if (!mergedCatsMap.has(cc.id)) mergedCatsMap.set(cc.id, cc);
+                });
+                this.categories = Array.from(mergedCatsMap.values());
+
+                // Merge user stats (max points, union of inventory & achievements)
+                if (cloudData.user) {
+                    const cu = cloudData.user;
+                    this.user.points = Math.max(this.user.points || 0, cu.points || 0);
+                    this.user.level = Math.max(this.user.level || 1, cu.level || 1);
+                    this.user.xp = Math.max(this.user.xp || 0, cu.xp || 0);
                     
-                    localStorage.setItem('focusquest_updated_at', cloudUpdatedAt);
-                    this.saveLocalStorage(false);
-                    this.isSyncingFromCloud = false;
-                    this.render();
-                } else if (localUpdatedAt > cloudUpdatedAt) {
-                    this.syncToCloud();
+                    const invSet = new Set([...(this.user.inventory || []), ...(cu.inventory || [])]);
+                    this.user.inventory = Array.from(invSet);
+
+                    const achSet = new Set([...(this.user.unlockedAchievements || []), ...(cu.unlockedAchievements || [])]);
+                    this.user.unlockedAchievements = Array.from(achSet);
+
+                    if (cu.name && cu.name !== 'Warrior') this.user.name = cu.name;
+                    if (cu.timezone && cu.timezone !== 'auto') this.user.timezone = cu.timezone;
                 }
+
+                const maxUpdatedAt = Math.max(
+                    parseInt(localStorage.getItem('focusquest_updated_at') || '0'),
+                    parseInt(cloudData.updatedAt || '0'),
+                    Date.now()
+                );
+                localStorage.setItem('focusquest_updated_at', maxUpdatedAt);
+                this.saveLocalStorage(false);
+                this.isSyncingFromCloud = false;
+                this.render();
             } else {
                 this.syncToCloud();
             }
@@ -1386,6 +1424,7 @@ class FocusQuestApp {
                 const existingIds = new Set(this.tasks.map(t => t.id));
                 parsedTasks.forEach(pt => {
                     if (!existingIds.has(pt.id)) {
+                        pt.updatedAt = Date.now();
                         this.tasks.push(pt);
                     }
                 });
@@ -1483,6 +1522,7 @@ class FocusQuestApp {
         this.tasks.forEach(task => {
             if (task.frequencyType === 'recurring' && task.completed && task.lastCompletedDate !== todayStr) {
                 task.completed = false;
+                task.updatedAt = Date.now();
             }
         });
 
@@ -1508,6 +1548,7 @@ class FocusQuestApp {
                 if (!task.completionHistory) task.completionHistory = {};
                 task.completionHistory[settlementDate] = false;
                 task.isToday = false;
+                task.updatedAt = Date.now();
 
                 if (task.frequencyType === 'once') {
                     task.frequencyType = 'undated';
@@ -1637,6 +1678,12 @@ class FocusQuestApp {
             modal.classList.add('hidden');
             if (modalId === 'taskModal') {
                 this.resetTaskForm();
+            } else if (modalId === 'categoryModal') {
+                document.getElementById('editCategoryId').value = '';
+                document.getElementById('categoryNameInput').value = '';
+                document.getElementById('categoryIconInput').value = 'fa-folder';
+                document.getElementById('categoryColorInput').value = '#6366f1';
+                document.getElementById('categoryModalTitle').textContent = 'Create / Customize Category';
             }
         }
     }
@@ -1780,6 +1827,7 @@ class FocusQuestApp {
         const imageFile = document.getElementById('taskImageInput').files[0];
         
         const finishSave = (imageData) => {
+            const nowTime = Date.now();
             if (taskId) {
                 const task = this.tasks.find(t => t.id === taskId);
                 if (task) {
@@ -1795,10 +1843,11 @@ class FocusQuestApp {
                     task.multipleDates = multipleDates;
                     task.recurringDays = recurringDays;
                     task.isToday = isToday;
+                    task.updatedAt = nowTime;
                 }
             } else {
                 const newTask = {
-                    id: 'task-' + Date.now(),
+                    id: 'task-' + nowTime,
                     title,
                     description,
                     startTime,
@@ -1815,7 +1864,8 @@ class FocusQuestApp {
                     lastCompletedDate: null,
                     completionHistory: {},
                     favorite: false,
-                    createdAt: Date.now()
+                    createdAt: nowTime,
+                    updatedAt: nowTime
                 };
                 this.tasks.unshift(newTask);
             }
@@ -1894,6 +1944,7 @@ class FocusQuestApp {
         const nextState = !isCurrentlyCompleted;
 
         task.completionHistory[dateISO] = nextState;
+        task.updatedAt = Date.now();
 
         if (dateISO === this.getTodayISO()) {
             task.completed = nextState;
@@ -1944,6 +1995,7 @@ class FocusQuestApp {
         const task = this.tasks.find(t => t.id === taskId);
         if (task) {
             task.favorite = !task.favorite;
+            task.updatedAt = Date.now();
             this.saveLocalStorage();
             this.render();
         }
@@ -2058,14 +2110,44 @@ class FocusQuestApp {
         });
     }
 
+    openCategoryModal(catId = null) {
+        if (catId) {
+            const cat = this.categories.find(c => c.id === catId);
+            if (!cat) return;
+            document.getElementById('editCategoryId').value = cat.id;
+            document.getElementById('categoryNameInput').value = cat.name;
+            document.getElementById('categoryIconInput').value = cat.icon || 'fa-folder';
+            document.getElementById('categoryColorInput').value = cat.color || '#6366f1';
+            document.getElementById('categoryModalTitle').textContent = 'Edit Category';
+        } else {
+            document.getElementById('editCategoryId').value = '';
+            document.getElementById('categoryNameInput').value = '';
+            document.getElementById('categoryIconInput').value = 'fa-folder';
+            document.getElementById('categoryColorInput').value = '#6366f1';
+            document.getElementById('categoryModalTitle').textContent = 'Create / Customize Category';
+        }
+        this.openModal('categoryModal');
+    }
+
     saveCategory(e) {
         e.preventDefault();
+        const catId = document.getElementById('editCategoryId').value;
         const name = document.getElementById('categoryNameInput').value.trim();
         const icon = document.getElementById('categoryIconInput').value.trim() || 'fa-folder';
         const color = document.getElementById('categoryColorInput').value;
 
-        const newCat = { id: 'cat-' + Date.now(), name, icon, color };
-        this.categories.push(newCat);
+        if (catId) {
+            const cat = this.categories.find(c => c.id === catId);
+            if (cat) {
+                cat.name = name;
+                cat.icon = icon;
+                cat.color = color;
+            }
+        } else {
+            const newCat = { id: 'cat-' + Date.now(), name, icon, color };
+            this.categories.push(newCat);
+        }
+
         this.saveLocalStorage();
         this.closeModal('categoryModal');
         this.render();
@@ -2464,13 +2546,14 @@ class FocusQuestApp {
                         <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${cat.color}"></span>
                         <span class="truncate">${cat.name}</span>
                     </div>
-                    <div class="flex items-center space-x-1">
-                        <span class="text-xs bg-slate-900/80 px-2 py-0.5 rounded-full text-slate-400 font-semibold mr-1">${catTaskCount}</span>
-                        <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-0.5 transition">
+                    <div class="flex items-center space-x-2">
+                        <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-0.5 transition mr-1">
+                            <button onclick="app.openCategoryModal('${cat.id}')" class="p-1 text-slate-400 hover:text-indigo-400 transition" title="Edit Category"><i class="fa-solid fa-pen text-[10px]"></i></button>
                             ${index > 0 ? `<button onclick="app.moveCategory('${cat.id}', -1, event)" class="p-1 text-slate-400 hover:text-white transition" title="Move Up"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>` : ''}
                             ${index < this.categories.length - 1 ? `<button onclick="app.moveCategory('${cat.id}', 1, event)" class="p-1 text-slate-400 hover:text-white transition" title="Move Down"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>` : ''}
                             ${cat.id !== 'cat-general' ? `<button onclick="app.deleteCategory('${cat.id}', event)" class="p-1 text-slate-400 hover:text-rose-400 transition" title="Delete Category"><i class="fa-solid fa-trash-can text-[10px]"></i></button>` : ''}
                         </div>
+                        <span class="text-xs bg-slate-900/80 px-2 py-0.5 rounded-full text-slate-400 font-semibold">${catTaskCount}</span>
                     </div>
                 </div>
             `;
