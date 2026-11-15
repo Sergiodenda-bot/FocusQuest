@@ -836,11 +836,32 @@
                 </div>
             </div>
 
+            <!-- File Export & Import Section -->
+            <div class="pt-4 border-t border-slate-800 space-y-3">
+                <h4 class="text-sm font-bold text-indigo-400 flex items-center space-x-2">
+                    <i class="fa-solid fa-file-arrow-down"></i>
+                    <span>Export & Import Backup File</span>
+                </h4>
+                <p class="text-xs text-slate-300">Export your tasks and data as a JSON file for safe backup, or import a backup file to merge tasks.</p>
+                
+                <div class="flex space-x-2">
+                    <button onclick="app.exportTasksToFile()" class="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Export File</span>
+                    </button>
+                    <label class="flex-1 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition flex items-center justify-center space-x-2 cursor-pointer">
+                        <i class="fa-solid fa-upload"></i>
+                        <span>Import File</span>
+                        <input type="file" id="importFileInput" accept=".json" onchange="app.importTasksFromFile(event)" class="hidden">
+                    </label>
+                </div>
+            </div>
+
             <!-- COPY & PASTE TASKS BUTTONS -->
             <div class="pt-4 border-t border-slate-800 space-y-3">
                 <h4 class="text-sm font-bold text-indigo-400 flex items-center space-x-2">
                     <i class="fa-solid fa-file-export"></i>
-                    <span>Manual Task Backup & Transfer</span>
+                    <span>Clipboard Task Transfer</span>
                 </h4>
                 <p class="text-xs text-slate-300">Copy all your tasks to clipboard or paste tasks from another device/account.</p>
                 
@@ -1438,6 +1459,73 @@ class FocusQuestApp {
         this.saveLocalStorage();
         this.closeModal('settingsModal');
         this.showMotivationalToast(`Profile updated, ${this.user.name}! Settings saved successfully.`);
+    }
+
+    exportTasksToFile() {
+        const backupData = {
+            syncCode: this.syncCode,
+            exportDate: new Date().toISOString(),
+            tasks: this.tasks,
+            categories: this.categories,
+            user: this.user
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `focusquest_backup_${this.syncCode}_${this.getTodayISO()}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        this.showMotivationalToast("Backup file exported successfully!");
+    }
+
+    importTasksFromFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const parsedData = JSON.parse(e.target.result);
+                const importedTasks = parsedData.tasks || (Array.isArray(parsedData) ? parsedData : null);
+
+                if (!importedTasks || !Array.isArray(importedTasks)) {
+                    this.showMotivationalToast("Invalid backup file format.");
+                    return;
+                }
+
+                this.confirmDelete(`Importing backup file will add ${importedTasks.length} task(s) to your current tasks. Continue?`, () => {
+                    const existingIds = new Set(this.tasks.map(t => t.id));
+                    let addedCount = 0;
+
+                    importedTasks.forEach(pt => {
+                        if (!existingIds.has(pt.id)) {
+                            pt.updatedAt = Date.now();
+                            this.tasks.push(pt);
+                            addedCount++;
+                        }
+                    });
+
+                    // Merge categories if present
+                    if (parsedData.categories && Array.isArray(parsedData.categories)) {
+                        const existingCatIds = new Set(this.categories.map(c => c.id));
+                        parsedData.categories.forEach(pc => {
+                            if (!existingCatIds.has(pc.id)) {
+                                this.categories.push(pc);
+                            }
+                        });
+                    }
+
+                    this.saveLocalStorage();
+                    this.render();
+                    this.showMotivationalToast(`Successfully imported ${addedCount} new task(s) from file!`);
+                });
+            } catch (err) {
+                this.showMotivationalToast("Could not parse JSON backup file.");
+            }
+            event.target.value = '';
+        };
+        reader.readAsText(file);
     }
 
     copyAllTasksToClipboard() {
@@ -2127,6 +2215,30 @@ class FocusQuestApp {
             }
         }
         this.user.level = level;
+        this.updateAutoRankBasedOnLevel();
+    }
+
+    updateAutoRankBasedOnLevel() {
+        const lvl = this.user.level;
+        let rankName = 'Bronze I';
+        let css = 'rank-bronze';
+        let icon = 'fa-shield-halved';
+
+        if (lvl >= 31) { rankName = 'Legendary'; css = 'rank-legendary'; icon = 'fa-trophy'; }
+        else if (lvl >= 27) { rankName = `Mythic ${lvl - 26}`; css = 'rank-mythic'; icon = 'fa-khanda'; }
+        else if (lvl >= 22) { rankName = `Master ${lvl - 21}`; css = 'rank-masters'; icon = 'fa-medal'; }
+        else if (lvl >= 17) { rankName = `Pro Tier ${lvl - 16}`; css = 'rank-pro'; icon = 'fa-bolt'; }
+        else if (lvl >= 13) { rankName = `Diamond ${lvl - 12}`; css = 'rank-diamond'; icon = 'fa-gem'; }
+        else if (lvl >= 9) { rankName = `Gold ${lvl - 8}`; css = 'rank-gold'; icon = 'fa-crown'; }
+        else if (lvl >= 5) { rankName = `Silver ${lvl - 4}`; css = 'rank-silver'; icon = 'fa-shield'; }
+        else {
+            const sub = Math.min(3, lvl);
+            rankName = `Bronze ${sub}`;
+            css = 'rank-bronze';
+            icon = 'fa-shield-halved';
+        }
+
+        this.user.activeRank = { tier: rankName, cssClass: css, icon: icon };
     }
 
     checkAchievements() {
