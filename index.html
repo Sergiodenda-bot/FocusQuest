@@ -1217,7 +1217,7 @@ class FocusQuestApp {
     startVoiceInput(inputId) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            this.showMotivationalToast("Spracherkennung wird von deinem Browser leider nicht unterstützt.");
+            this.showMotivationalToast("Spracherkennung wird von deinem Browser nicht unterstützt.");
             return;
         }
 
@@ -1245,8 +1245,14 @@ class FocusQuestApp {
             this.showMotivationalToast(`Erkannt: "${speechResult}"`);
         };
 
-        recognition.onerror = () => {
-            this.showMotivationalToast("Spracherkennung fehlgeschlagen oder abgebrochen.");
+        recognition.onerror = (event) => {
+            let errorMsg = "Spracherkennung fehlgeschlagen.";
+            if (event.error === 'not-allowed') {
+                errorMsg = "Mikrofon-Berechtigung wurde verweigert. Bitte erlaube den Zugriff im Browser.";
+            } else if (event.error === 'no-speech') {
+                errorMsg = "Es wurde keine Sprache erkannt. Bitte versuche es erneut.";
+            }
+            this.showMotivationalToast(errorMsg);
         };
 
         recognition.onend = () => {
@@ -1259,7 +1265,7 @@ class FocusQuestApp {
             recognition.start();
         } catch(e) {
             if (micBtn) micBtn.classList.remove('mic-recording');
-            this.showMotivationalToast("Mikrofon konnte nicht gestartet werden.");
+            this.showMotivationalToast("Mikrofon konnte nicht gestartet werden (evtl. blockiert).");
         }
     }
 
@@ -2782,8 +2788,7 @@ class FocusQuestApp {
                         <span class="truncate">${cat.name}</span>
                     </div>
                     <div class="flex items-center space-x-1.5 shrink-0">
-                        <!-- Permanent visible action buttons matching the screenshot design -->
-                        <div class="flex items-center space-x-1 mr-1">
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-1 mr-1">
                             <button onclick="app.openCategoryModal('${cat.id}')" class="p-1 text-slate-400 hover:text-indigo-400 transition" title="Edit Category"><i class="fa-solid fa-pen text-[10px]"></i></button>
                             ${index > 0 ? `<button onclick="app.moveCategory('${cat.id}', -1, event)" class="p-1 text-slate-400 hover:text-white transition" title="Move Up"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>` : ''}
                             ${index < this.categories.length - 1 ? `<button onclick="app.moveCategory('${cat.id}', 1, event)" class="p-1 text-slate-400 hover:text-white transition" title="Move Down"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>` : ''}
