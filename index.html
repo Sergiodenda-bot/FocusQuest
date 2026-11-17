@@ -378,11 +378,14 @@
                 </div>
             </div>
 
-            <!-- Filters & Search Bar -->
+            <!-- Filters & Search Bar with Voice Input -->
             <div id="filtersAndSearchSection" class="flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div class="relative w-full sm:w-80">
+                <div class="relative w-full sm:w-80 flex items-center">
                     <i class="fa-solid fa-search absolute left-3.5 top-3 text-slate-400 text-sm"></i>
-                    <input type="text" id="taskSearchInput" oninput="app.handleSearch(this.value)" placeholder="Search tasks..." class="w-full bg-slate-900/80 border border-slate-700/80 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                    <input type="text" id="taskSearchInput" oninput="app.handleSearch(this.value)" placeholder="Search tasks..." class="w-full bg-slate-900/80 border border-slate-700/80 rounded-xl pl-10 pr-10 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                    <button type="button" onclick="app.startVoiceInput('taskSearchInput')" class="absolute right-3 text-slate-400 hover:text-indigo-400 transition" title="Per Sprache suchen">
+                        <i class="fa-solid fa-microphone text-sm"></i>
+                    </button>
                 </div>
                 <div class="flex items-center space-x-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
                     <button onclick="app.setFilter('all')" id="filter-btn-all" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white transition whitespace-nowrap shadow-md shadow-indigo-600/20">All</button>
@@ -435,12 +438,22 @@
             <input type="hidden" id="editTaskId">
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Task Title</label>
-                <input type="text" id="taskTitleInput" required placeholder="e.g., Complete Math Assignment" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                <div class="relative flex items-center">
+                    <input type="text" id="taskTitleInput" required placeholder="e.g., Complete Math Assignment" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 pr-10 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                    <button type="button" onclick="app.startVoiceInput('taskTitleInput')" class="absolute right-3 text-slate-400 hover:text-indigo-400 transition" title="Titel diktieren">
+                        <i class="fa-solid fa-microphone text-sm"></i>
+                    </button>
+                </div>
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Instructions / Notes (Optional)</label>
-                <textarea id="taskDescriptionInput" rows="2" placeholder="e.g., Read pages 40-55..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                <div class="relative">
+                    <textarea id="taskDescriptionInput" rows="2" placeholder="e.g., Read pages 40-55..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 pr-10 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                    <button type="button" onclick="app.startVoiceInput('taskDescriptionInput')" class="absolute right-3 top-3 text-slate-400 hover:text-indigo-400 transition" title="Notizen diktieren">
+                        <i class="fa-solid fa-microphone text-sm"></i>
+                    </button>
+                </div>
             </div>
 
             <div>
@@ -625,7 +638,7 @@
     </div>
 </div>
 
-<!-- Category Modal -->
+<!-- Category Modal with Voice Input -->
 <div id="categoryModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
     <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl my-auto">
         <div class="px-6 py-4 border-b border-borderCol flex items-center justify-between bg-slate-900/50">
@@ -636,7 +649,12 @@
             <input type="hidden" id="editCategoryId">
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Category Name</label>
-                <input type="text" id="categoryNameInput" required placeholder="e.g., Coding, Fitness" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                <div class="relative flex items-center">
+                    <input type="text" id="categoryNameInput" required placeholder="e.g., Coding, Fitness" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 pr-10 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                    <button type="button" onclick="app.startVoiceInput('categoryNameInput')" class="absolute right-3 text-slate-400 hover:text-indigo-400 transition" title="Kategorie diktieren">
+                        <i class="fa-solid fa-microphone text-sm"></i>
+                    </button>
+                </div>
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
@@ -744,7 +762,12 @@
                 <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">User Profile & Timezone</h4>
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Your Name (For Motivational Popups)</label>
-                    <input type="text" id="userNameInput" placeholder="Enter your name..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                    <div class="relative flex items-center">
+                        <input type="text" id="userNameInput" placeholder="Enter your name..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 pr-10 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
+                        <button type="button" onclick="app.startVoiceInput('userNameInput')" class="absolute right-3 text-slate-400 hover:text-indigo-400 transition" title="Namen diktieren">
+                            <i class="fa-solid fa-microphone text-sm"></i>
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-300 mb-1">Timezone / Country Settings</label>
@@ -1182,6 +1205,38 @@ class FocusQuestApp {
         }, 3500);
     }
 
+    startVoiceInput(inputId) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            this.showMotivationalToast("Spracherkennung wird von deinem Browser leider nicht unterstützt.");
+            return;
+        }
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'de-DE';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        this.showMotivationalToast("🎤 Höre zu... Sprich jetzt!");
+
+        recognition.onresult = (event) => {
+            const speechResult = event.results[0][0].transcript;
+            const inputElem = document.getElementById(inputId);
+            if (inputElem) {
+                inputElem.value = speechResult;
+                if (inputId === 'taskSearchInput') {
+                    this.handleSearch(speechResult);
+                }
+            }
+            this.showMotivationalToast(`Erkannt: "${speechResult}"`);
+        };
+
+        recognition.onerror = () => {
+            this.showMotivationalToast("Spracherkennung fehlgeschlagen oder abgebrochen.");
+        };
+
+        recognition.start();
+    }
+
     toggleNotifications(enabled) {
         if (enabled) {
             if (!("Notification" in window)) {
@@ -1298,7 +1353,6 @@ class FocusQuestApp {
             if (cloudData) {
                 this.isSyncingFromCloud = true;
                 
-                // INTELLIGENT SMART MERGE (Specific to this code world)
                 const mergedTasksMap = new Map();
                 (this.tasks || []).forEach(t => mergedTasksMap.set(t.id, t));
                 (cloudData.tasks || []).forEach(ct => {
@@ -1315,7 +1369,6 @@ class FocusQuestApp {
                 });
                 this.tasks = Array.from(mergedTasksMap.values());
 
-                // Merge categories
                 const mergedCatsMap = new Map();
                 (this.categories || []).forEach(c => mergedCatsMap.set(c.id, c));
                 (cloudData.categories || []).forEach(cc => {
@@ -1323,7 +1376,6 @@ class FocusQuestApp {
                 });
                 this.categories = Array.from(mergedCatsMap.values());
 
-                // Merge user stats
                 if (cloudData.user) {
                     const cu = cloudData.user;
                     this.user.points = Math.max(this.user.points || 0, cu.points || 0);
@@ -1506,7 +1558,6 @@ class FocusQuestApp {
                         }
                     });
 
-                    // Merge categories if present
                     if (parsedData.categories && Array.isArray(parsedData.categories)) {
                         const existingCatIds = new Set(this.categories.map(c => c.id));
                         parsedData.categories.forEach(pc => {
@@ -1657,13 +1708,14 @@ class FocusQuestApp {
         });
 
         if (this.user.lastSettlementDate !== todayStr) {
+            this.executeMidnightSettlementLogic(this.user.lastSettlementDate || this.getYesterdayISO());
             this.user.lastSettlementDate = todayStr;
             this.saveLocalStorage();
         }
     }
 
     executeMidnightSettlementLogic(settlementDate) {
-        if (!settlementDate) settlementDate = this.getTodayISO();
+        if (!settlementDate) settlementDate = this.getYesterdayISO();
         let tasksCompletedOnSettlementDay = 0;
 
         this.tasks.forEach(task => {
@@ -1851,7 +1903,7 @@ class FocusQuestApp {
 
         document.getElementById('taskFrequencyTypeSelect').value = 'once';
         document.getElementById('taskDateInput').value = this.getTodayISO();
-        document.getElementById('taskIsTodayInput').checked = true;
+        document.getElementById('taskIsTodayInput').checked = false; // Standardmäßig AUS
 
         this.selectedMultipleDates = [];
         this.renderSelectedMultipleDates();
@@ -2584,7 +2636,6 @@ class FocusQuestApp {
             this.syncCode = newCode;
             localStorage.setItem('focusquest_sync_code', this.syncCode);
             
-            // Clean load of local storage for this specific code world
             this.loadLocalStorage();
             this.connectFirebaseSync();
             this.showMotivationalToast(`Switched to sync code: ${this.syncCode}`);
