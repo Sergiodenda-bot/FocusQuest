@@ -369,15 +369,19 @@
             <div id="aiAssistantContainer" class="hidden h-full flex flex-col lg:flex-row gap-4 -m-4 sm:-m-6 p-4 sm:p-6">
                 <!-- Gemini-Style Chat History Sidebar -->
                 <div class="w-full lg:w-72 bg-cardBg/80 border border-borderCol/80 rounded-2xl flex flex-col shrink-0 overflow-hidden shadow-xl h-72 lg:h-auto">
-                    <div class="p-3.5 border-b border-borderCol flex items-center justify-between bg-slate-900/60">
-                        <span class="font-black text-xs text-cyan-400 uppercase tracking-wider flex items-center space-x-1.5">
-                            <i class="fa-solid fa-message"></i>
-                            <span>Chat Sessions</span>
-                        </span>
-                        <button onclick="app.createNewAiChat()" class="px-3 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-black text-xs shadow-md flex items-center space-x-1 transition">
+                    <!-- New Chat Button First -->
+                    <div class="p-3.5 border-b border-borderCol bg-slate-900/60 shrink-0">
+                        <button onclick="app.createNewAiChat()" class="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-black text-xs shadow-md flex items-center justify-center space-x-1.5 transition">
                             <i class="fa-solid fa-plus text-xs"></i>
                             <span>New Chat</span>
                         </button>
+                    </div>
+                    <!-- Chat Sessions Header & List with Delete Icons -->
+                    <div class="px-3.5 py-2 border-b border-borderCol/60 bg-slate-900/40 flex items-center justify-between shrink-0">
+                        <span class="font-black text-[11px] text-cyan-400 uppercase tracking-wider flex items-center space-x-1.5">
+                            <i class="fa-solid fa-message text-[10px]"></i>
+                            <span>Chat Sessions</span>
+                        </span>
                     </div>
                     <div id="aiChatThreadsList" class="flex-1 overflow-y-auto p-2 space-y-1.5"></div>
                 </div>
@@ -407,27 +411,35 @@
                     <!-- Messages Box -->
                     <div id="aiMessagesContainer" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4"></div>
 
+                    <!-- Quick Prompt Suggestions Bar -->
+                    <div class="px-4 py-2 bg-slate-900/50 border-t border-borderCol/40 flex items-center space-x-2 overflow-x-auto shrink-0">
+                        <span class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider whitespace-nowrap"><i class="fa-solid fa-lightbulb mr-1"></i>Quick Prompts:</span>
+                        <button onclick="app.insertQuickPrompt('Create a study plan for my exam starting this Friday.')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] whitespace-nowrap transition border border-slate-700">Exam study plan from Friday</button>
+                        <button onclick="app.insertQuickPrompt('Break down my upcoming project into daily steps.')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] whitespace-nowrap transition border border-slate-700">Project breakdown</button>
+                        <button onclick="app.insertQuickPrompt('What should I focus on first today?')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] whitespace-nowrap transition border border-slate-700">Priority check</button>
+                    </div>
+
                     <!-- Input Bar -->
                     <div class="p-3 sm:p-4 border-t border-borderCol bg-slate-900/90 shrink-0 space-y-2">
                         <form onsubmit="app.sendAiMessage(event)" class="flex items-center space-x-2">
-                            <label class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 cursor-pointer transition" title="Material / Screenshot hochladen">
+                            <label class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 cursor-pointer transition shrink-0" title="Material / Screenshot hochladen">
                                 <i class="fa-solid fa-paperclip text-sm"></i>
                                 <input type="file" id="aiMaterialInput" onchange="app.handleAiMaterialUpload(event)" accept="image/*,.pdf,.txt" class="hidden">
                             </label>
                             <div class="relative flex-1 flex items-center">
-                                <input type="text" id="aiChatInput" placeholder="z. B. Ich habe am Donnerstag Chemie-Arbeit, plane meinen Lernplan..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 pr-10 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500">
+                                <input type="text" id="aiChatInput" placeholder="Ask AI to schedule tasks, explain topics..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 pr-10 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500">
                                 <button type="button" id="mic-btn-aiChatInput" onclick="app.startVoiceInput('aiChatInput')" class="absolute right-3 text-slate-400 hover:text-cyan-400 transition" title="Spracheingabe">
                                     <i class="fa-solid fa-microphone text-sm"></i>
                                 </button>
                             </div>
-                            <button type="submit" class="px-4.5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-slate-950 font-black text-sm shadow-lg shadow-cyan-500/25 transition transform hover:scale-105 active:scale-95 flex items-center space-x-1.5">
+                            <button type="submit" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-slate-950 font-black text-xs shadow-md shadow-cyan-500/25 transition transform hover:scale-105 active:scale-95 flex items-center space-x-1 shrink-0">
                                 <i class="fa-solid fa-paper-plane text-xs"></i>
-                                <span class="hidden sm:inline">Senden</span>
+                                <span class="hidden sm:inline">Send</span>
                             </button>
                         </form>
                         <div id="aiAttachedMaterialIndicator" class="hidden flex items-center justify-between text-xs text-cyan-300 bg-cyan-950/60 px-3 py-1.5 rounded-lg border border-cyan-500/30">
-                            <span id="aiAttachedMaterialName" class="truncate">Material geladen</span>
-                            <button type="button" onclick="app.clearAiMaterial()" class="text-rose-400 hover:underline ml-2">Entfernen</button>
+                            <span id="aiAttachedMaterialName" class="truncate">Material attached</span>
+                            <button type="button" onclick="app.clearAiMaterial()" class="text-rose-400 hover:underline ml-2">Remove</button>
                         </div>
                     </div>
                 </div>
@@ -1095,14 +1107,14 @@ const SHOP_ITEMS = [
     { id: 'box-epic', type: 'box', name: 'Epic Mystery Box', cost: 70, boxTier: 'epic', icon: '💎', desc: 'Unlocks rare pets, focus ranks, or premium gradients.' },
     { id: 'box-legendary', type: 'box', name: 'Legendary Mystery Box', cost: 150, boxTier: 'legendary', icon: '👑', desc: 'Unlocks the rarest mythical pets, cosmic themes & legendary rank emblems!' },
 
-    { id: 'rank-bronze', type: 'rank', name: 'Bronze Rank Emblem', cost: 0, rankTier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved', desc: 'Bronze rank badge emblem.' },
-    { id: 'rank-silver', type: 'rank', name: 'Silver Rank Emblem', cost: 20, rankTier: 'Silver I', cssClass: 'rank-silver', icon: 'fa-shield', desc: 'Silver rank badge emblem.' },
-    { id: 'rank-gold', type: 'rank', name: 'Gold Rank Emblem', cost: 40, rankTier: 'Gold I', cssClass: 'rank-gold', icon: 'fa-crown', desc: 'Gold rank badge emblem.' },
-    { id: 'rank-diamond', type: 'rank', name: 'Diamond Rank Emblem', cost: 70, rankTier: 'Diamond I', cssClass: 'rank-diamond', icon: 'fa-gem', desc: 'Diamond rank badge emblem.' },
-    { id: 'rank-pro', type: 'rank', name: 'Pro Rank Emblem', cost: 90, rankTier: 'Pro Tier', cssClass: 'rank-pro', icon: 'fa-bolt', desc: 'Pro competitive tier badge emblem.' },
-    { id: 'rank-masters', type: 'rank', name: 'Master Rank Emblem', cost: 120, rankTier: 'Master', cssClass: 'rank-masters', icon: 'fa-medal', desc: 'Master competitive tier emblem.' },
-    { id: 'rank-mythic', type: 'rank', name: 'Mythic Rank Emblem', cost: 160, rankTier: 'Mythic', cssClass: 'rank-mythic', icon: 'fa-khanda', desc: 'Mythic competitive tier emblem.' },
-    { id: 'rank-legendary', type: 'rank', name: 'Legendary Rank Emblem', cost: 220, rankTier: 'Legendary', cssClass: 'rank-legendary', icon: 'fa-trophy', desc: 'Legendary apex focus rank emblem.' }
+    { id: 'rank-bronze', type: 'badge', name: 'Bronze Rank Emblem', cost: 0, rankTier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved', desc: 'Bronze rank badge emblem.' },
+    { id: 'rank-silver', type: 'badge', name: 'Silver Rank Emblem', cost: 20, rankTier: 'Silver I', cssClass: 'rank-silver', icon: 'fa-shield', desc: 'Silver rank badge emblem.' },
+    { id: 'rank-gold', type: 'badge', name: 'Gold Rank Emblem', cost: 40, rankTier: 'Gold I', cssClass: 'rank-gold', icon: 'fa-crown', desc: 'Gold rank badge emblem.' },
+    { id: 'rank-diamond', type: 'badge', name: 'Diamond Rank Emblem', cost: 70, rankTier: 'Diamond I', cssClass: 'rank-diamond', icon: 'fa-gem', desc: 'Diamond rank badge emblem.' },
+    { id: 'rank-pro', type: 'badge', name: 'Pro Rank Emblem', cost: 90, rankTier: 'Pro Tier', cssClass: 'rank-pro', icon: 'fa-bolt', desc: 'Pro competitive tier badge emblem.' },
+    { id: 'rank-masters', type: 'badge', name: 'Master Rank Emblem', cost: 120, rankTier: 'Master', cssClass: 'rank-masters', icon: 'fa-medal', desc: 'Master competitive tier emblem.' },
+    { id: 'rank-mythic', type: 'badge', name: 'Mythic Rank Emblem', cost: 160, rankTier: 'Mythic', cssClass: 'rank-mythic', icon: 'fa-khanda', desc: 'Mythic competitive tier emblem.' },
+    { id: 'rank-legendary', type: 'badge', name: 'Legendary Rank Emblem', cost: 220, rankTier: 'Legendary', cssClass: 'rank-legendary', icon: 'fa-trophy', desc: 'Legendary apex focus rank emblem.' }
 ];
 
 const GENERATED_ACHIEVEMENTS = [];
@@ -1193,9 +1205,9 @@ class FocusQuestApp {
         this.aiChats = [
             {
                 id: 'chat-default',
-                title: 'Neuer Lern-Chat',
+                title: 'New Study Chat',
                 messages: [
-                    { sender: 'ai', text: 'Hallo! Ich bin dein AI Focus Assistant ✨. Sag mir einfach, was du vorhast (z.B. "Chemie-Arbeit am Donnerstag"), und ich plane alles vollautomatisch für dich in deinen Weekly Planner ein!' }
+                    { sender: 'ai', text: 'Hello! I am your AI Focus Assistant ✨. Tell me what you want to achieve or study, and I will automatically schedule everything into your Weekly Planner!' }
                 ]
             }
         ];
@@ -1253,7 +1265,7 @@ class FocusQuestApp {
         const dateElem = document.getElementById('headerDateBadge');
         if (dateElem) {
             const today = new Date();
-            dateElem.textContent = today.toLocaleDateString('de-DE', { weekday: 'short', month: 'short', day: 'numeric' });
+            dateElem.textContent = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
         }
     }
 
@@ -1312,7 +1324,7 @@ class FocusQuestApp {
     startVoiceInput(inputId) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            this.showMotivationalToast("Spracherkennung wird von deinem Browser nicht unterstützt.");
+            this.showMotivationalToast("Speech recognition is not supported in your browser.");
             return;
         }
 
@@ -1322,11 +1334,11 @@ class FocusQuestApp {
         }
 
         const recognition = new SpeechRecognition();
-        recognition.lang = 'de-DE';
+        recognition.lang = 'en-US';
         recognition.interimResults = false;
         recognition.maxAlternatives = 1;
 
-        this.showMotivationalToast("🎤 Höre zu... Sprich jetzt!");
+        this.showMotivationalToast("🎤 Listening... Speak now!");
 
         recognition.onresult = (event) => {
             const speechResult = event.results[0][0].transcript;
@@ -1337,15 +1349,15 @@ class FocusQuestApp {
                     this.handleSearch(speechResult);
                 }
             }
-            this.showMotivationalToast(`Erkannt: "${speechResult}"`);
+            this.showMotivationalToast(`Recognized: "${speechResult}"`);
         };
 
         recognition.onerror = (event) => {
-            let errorMsg = "Spracherkennung fehlgeschlagen.";
+            let errorMsg = "Speech recognition failed.";
             if (event.error === 'not-allowed') {
-                errorMsg = "Mikrofon-Berechtigung wurde verweigert. Bitte erlaube den Zugriff im Browser.";
+                errorMsg = "Microphone permission denied. Please allow access in browser settings.";
             } else if (event.error === 'no-speech') {
-                errorMsg = "Es wurde keine Sprache erkannt. Bitte versuche es erneut.";
+                errorMsg = "No speech detected. Please try again.";
             }
             this.showMotivationalToast(errorMsg);
         };
@@ -1360,7 +1372,7 @@ class FocusQuestApp {
             recognition.start();
         } catch(e) {
             if (micBtn) micBtn.classList.remove('mic-recording');
-            this.showMotivationalToast("Mikrofon konnte nicht gestartet werden (evtl. blockiert).");
+            this.showMotivationalToast("Could not start microphone.");
         }
     }
 
@@ -2498,9 +2510,9 @@ class FocusQuestApp {
     createNewAiChat() {
         const newChat = {
             id: 'chat-' + Date.now(),
-            title: 'Lern-Planung ' + (this.aiChats.length + 1),
+            title: 'Study Session ' + (this.aiChats.length + 1),
             messages: [
-                { sender: 'ai', text: 'Neuer Chat gestartet! Was möchtest du heute erledigen oder lernen?' }
+                { sender: 'ai', text: 'Hello! I am your AI Focus Assistant ✨. Tell me what exam or study plan you need, and I will automatically schedule it for you!' }
             ]
         };
         this.aiChats.unshift(newChat);
@@ -2517,7 +2529,7 @@ class FocusQuestApp {
     renameActiveAiChat() {
         const chat = this.aiChats.find(c => c.id === this.currentAiChatId);
         if (!chat) return;
-        const newTitle = prompt("Chat-Titel umbenennen:", chat.title);
+        const newTitle = prompt("Rename chat session:", chat.title);
         if (newTitle && newTitle.trim()) {
             chat.title = newTitle.trim();
             this.saveLocalStorage();
@@ -2525,14 +2537,38 @@ class FocusQuestApp {
         }
     }
 
-    clearActiveAiChat() {
-        const chat = this.aiChats.find(c => c.id === this.currentAiChatId);
-        if (!chat) return;
-        this.confirmDelete("Möchtest du diesen Chat wirklich leeren?", () => {
-            chat.messages = [{ sender: 'ai', text: 'Chat geleert. Wie kann ich dir weiterhelfen?' }];
+    deleteAiChat(chatId, event) {
+        if (event) event.stopPropagation();
+        if (this.aiChats.length <= 1) {
+            this.showMotivationalToast("You must keep at least one chat session.");
+            return;
+        }
+        this.confirmDelete("Do you really want to delete this chat session?", () => {
+            this.aiChats = this.aiChats.filter(c => c.id !== chatId);
+            if (this.currentAiChatId === chatId) {
+                this.currentAiChatId = this.aiChats[0].id;
+            }
             this.saveLocalStorage();
             this.renderAiAssistant();
         });
+    }
+
+    clearActiveAiChat() {
+        const chat = this.aiChats.find(c => c.id === this.currentAiChatId);
+        if (!chat) return;
+        this.confirmDelete("Do you want to clear this chat?", () => {
+            chat.messages = [{ sender: 'ai', text: 'Chat cleared. How can I help you?' }];
+            this.saveLocalStorage();
+            this.renderAiAssistant();
+        });
+    }
+
+    insertQuickPrompt(promptText) {
+        const inputElem = document.getElementById('aiChatInput');
+        if (inputElem) {
+            inputElem.value = promptText;
+            inputElem.focus();
+        }
     }
 
     handleAiMaterialUpload(event) {
@@ -2547,10 +2583,10 @@ class FocusQuestApp {
             const indicator = document.getElementById('aiAttachedMaterialIndicator');
             const nameLabel = document.getElementById('aiAttachedMaterialName');
             if (indicator && nameLabel) {
-                nameLabel.textContent = `Angehängt: ${file.name}`;
+                nameLabel.textContent = `Attached: ${file.name}`;
                 indicator.classList.remove('hidden');
             }
-            this.showMotivationalToast("Material erfolgreich angehängt!");
+            this.showMotivationalToast("Material attached successfully!");
         };
         reader.readAsDataURL(file);
     }
@@ -2574,7 +2610,7 @@ class FocusQuestApp {
 
         let userMsgHTML = text;
         if (this.tempAiMaterialData) {
-            userMsgHTML += `<br><span class="text-[10px] text-cyan-300 font-mono">[Anhang: ${this.tempAiMaterialData.name}]</span>`;
+            userMsgHTML += `<br><span class="text-[10px] text-cyan-300 font-mono">[Attachment: ${this.tempAiMaterialData.name}]</span>`;
         }
 
         chat.messages.push({ sender: 'user', text: userMsgHTML, material: this.tempAiMaterialData });
@@ -2584,7 +2620,7 @@ class FocusQuestApp {
         this.clearAiMaterial();
         this.renderAiAssistantMessages();
 
-        // Simulate AI Response & Automatic Task Scheduling
+        // Simulate AI Response & Automatic Task Scheduling with exact date parsing
         setTimeout(() => {
             const aiReply = this.processAiSmartCommand(text, materialUsed);
             chat.messages.push({ sender: 'ai', text: aiReply });
@@ -2596,44 +2632,54 @@ class FocusQuestApp {
 
     processAiSmartCommand(userText, material) {
         const lower = userText.toLowerCase();
-        const todayStr = this.getTodayISO();
         let reply = "";
         let tasksCreated = 0;
 
-        // Auto detect subject or topic (e.g. Chemie, Vokabeln, Mathe, etc.)
-        let subject = "Lernsession";
-        if (lower.includes('chemie')) subject = "Chemie";
-        else if (lower.includes('mathe') || lower.includes('mathematik')) subject = "Mathe";
-        else if (lower.includes('spanisch')) subject = "Spanisch";
-        else if (lower.includes('englisch')) subject = "Englisch";
-        else if (lower.includes('geschichte')) subject = "Geschichte";
-        else if (lower.includes('physik')) subject = "Physik";
-        else if (lower.includes('bio')) subject = "Biologie";
+        let subject = "Study Session";
+        if (lower.includes('physik') || lower.includes('physics')) subject = "Physics";
+        else if (lower.includes('chemie') || lower.includes('chemistry')) subject = "Chemistry";
+        else if (lower.includes('mathe') || lower.includes('math')) subject = "Math";
+        else if (lower.includes('spanisch') || lower.includes('spanish')) subject = "Spanish";
+        else if (lower.includes('englisch') || lower.includes('english')) subject = "English";
+        else if (lower.includes('geschichte') || lower.includes('history')) subject = "History";
 
-        // Check if user is asking for scheduling / exam prep
-        if (lower.includes('arbeit') || lower.includes('test') || lower.includes('klausur') || lower.includes('prüfung') || lower.includes('lernen') || lower.includes('plan')) {
-            // Generate tasks for today and coming days
-            const d1 = new Date();
-            const datesToSchedule = [];
+        // Intelligent Date Parsing (e.g., finding target date like 25.11 or starting from Friday)
+        let startDate = new Date();
+        if (lower.includes('freitag') || lower.includes('friday')) {
+            // Find next upcoming Friday
+            let dayOfWeek = startDate.getDay();
+            let daysUntilFriday = (5 - dayOfWeek + 7) % 7;
+            if (daysUntilFriday === 0) daysUntilFriday = 7; 
+            startDate.setDate(startDate.getDate() + daysUntilFriday);
+        }
+
+        // Check explicit date mention like 25.11
+        const dateMatch = userText.match(/(\d{1,2})\.(\d{1,2})/);
+        let targetExamDate = null;
+        if (dateMatch) {
+            const day = parseInt(dateMatch[1]);
+            const month = parseInt(dateMatch[2]) - 1;
+            const year = new Date().getFullYear();
+            targetExamDate = new Date(year, month, day);
+        }
+
+        if (lower.includes('arbeit') || lower.includes('exam') || lower.includes('test') || lower.includes('klausur') || lower.includes('lernen') || lower.includes('plan')) {
+            // Schedule study blocks starting from startDate up to 3 blocks
             for (let i = 0; i < 3; i++) {
-                const nextD = new Date(d1);
-                nextD.setDate(d1.getDate() + i);
-                datesToSchedule.push(nextD.toISOString().split('T')[0]);
-            }
+                const blockDate = new Date(startDate);
+                blockDate.setDate(startDate.getDate() + i);
+                const dateISO = blockDate.toISOString().split('T')[0];
 
-            datesToSchedule.forEach((dateISO, index) => {
-                let taskTitle = `${subject} Vorbereitung (Teil ${index + 1})`;
-                let taskDesc = `KI-generierter Lernblock für ${subject}.`;
-                if (material) {
-                    taskDesc += ` Materialbezug: ${material.name}`;
-                }
+                let taskTitle = `${subject} Prep (Part ${i + 1})`;
+                let taskDesc = `AI-generated study session for ${subject}.`;
+                if (material) taskDesc += ` Material: ${material.name}`;
 
                 const newTask = {
-                    id: 'task-ai-' + Date.now() + '-' + index,
+                    id: 'task-ai-' + Date.now() + '-' + i,
                     title: taskTitle,
                     description: taskDesc,
-                    startTime: index === 0 ? '15:00' : '16:00',
-                    endTime: index === 0 ? '16:00' : '17:00',
+                    startTime: '15:00',
+                    endTime: '16:00',
                     url: '',
                     imageData: material ? material.data : null,
                     categoryId: 'cat-work',
@@ -2641,7 +2687,7 @@ class FocusQuestApp {
                     dueDate: dateISO,
                     multipleDates: [],
                     recurringDays: [],
-                    isToday: index === 0,
+                    isToday: dateISO === this.getTodayISO(),
                     completed: false,
                     lastCompletedDate: null,
                     completionHistory: {},
@@ -2651,18 +2697,17 @@ class FocusQuestApp {
                 };
                 this.tasks.unshift(newTask);
                 tasksCreated++;
-            });
-
-            reply = `🚀 **Erfolgreich in deinen Weekly Planner eingetragen!**<br>Ich habe ${tasksCreated} Lernblöcke für <strong>${subject}</strong> erstellt (inkl. ab Heute bis in die kommenden Tage).<br><br>`;
-            if (material) {
-                reply += `📎 Dein angehängtes Material (${material.name}) wurde direkt in die Aufgabenbeschreibung integriert!<br><br>`;
             }
-            reply += `💡 *Zusatz-Tipp:* Schau in deinen Weekly Planner – dort sind alle Blöcke fein säuberlich einsortiert.`;
-        } else if (lower.includes('erklär') || lower.includes('was ist') || lower.includes('wie funktioniert')) {
-            reply = `🤖 **KI-Erklärung zu ${subject}:**<br>Basierend auf deinem Anliegen fasse ich kurz zusammen: Wichtig sind die Grundlagen, strukturierte Lernschritte und regelmäßige Wiederholung. Falls du möchtest, kann ich dir dazu passende Aufgaben in deinen Planner schreiben!`;
+
+            reply = `🚀 **Study Plan Successfully Scheduled!**<br>I have created ${tasksCreated} study sessions for <strong>${subject}</strong> starting correctly from <strong>${startDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</strong>.<br><br>`;
+            if (material) {
+                reply += `📎 Your attached material (${material.name}) has been embedded into the task descriptions.<br><br>`;
+            }
+            reply += `💡 *Tip:* Check your Weekly Planner to see all scheduled blocks!`;
+        } else if (lower.includes('explain') || lower.includes('what is') || lower.includes('how')) {
+            reply = `🤖 **AI Explanation for ${subject}:**<br>Here is a concise breakdown: focus on core concepts, practice past problems, and review step-by-step. Let me know if you want me to add study blocks for this!`;
         } else {
-            // General assistant reply
-            reply = `Ich habe deine Anfrage verstanden! Soll ich das als Aufgabe in deinen Planner eintragen oder möchtest du, dass ich dir einen detaillierten Lernplan für "${userText}" erstelle?`;
+            reply = `I understand your request! Would you like me to schedule tasks for this in your Weekly Planner or create a detailed study roadmap?`;
         }
 
         this.saveLocalStorage();
@@ -2674,10 +2719,16 @@ class FocusQuestApp {
         const threadsContainer = document.getElementById('aiChatThreadsList');
         if (!threadsContainer) return;
 
+        // New Chat button is rendered at top in HTML, here we render session list with delete icons next to the title
         threadsContainer.innerHTML = this.aiChats.map(chat => `
-            <div onclick="app.switchAiChat('${chat.id}')" class="p-2.5 rounded-xl text-xs font-bold cursor-pointer transition flex items-center justify-between ${chat.id === this.currentAiChatId ? 'bg-cyan-600/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'}">
-                <span class="truncate">${chat.title}</span>
-                <span class="text-[10px] text-slate-500">${chat.messages.length} msg</span>
+            <div onclick="app.switchAiChat('${chat.id}')" class="group p-2.5 rounded-xl text-xs font-bold cursor-pointer transition flex items-center justify-between ${chat.id === this.currentAiChatId ? 'bg-cyan-600/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'}">
+                <span class="truncate mr-2">${chat.title}</span>
+                <div class="flex items-center space-x-1 shrink-0">
+                    <button onclick="app.deleteAiChat('${chat.id}', event)" class="p-1 text-slate-400 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition" title="Delete Chat">
+                        <i class="fa-solid fa-trash-can text-[10px]"></i>
+                    </button>
+                    <span class="text-[10px] text-slate-500">${chat.messages.length}</span>
+                </div>
             </div>
         `).join('');
 
@@ -2800,10 +2851,10 @@ class FocusQuestApp {
         const isOwned = (this.user.inventory || []).includes(item.id);
         const isEquipped = item.type === 'theme' ? this.user.activeTheme === item.themeClass : 
                            ((item.type === 'pet' || item.type === 'seasonal') ? this.user.activePet === item.icon : 
-                           (item.type === 'rank' ? (this.user.activeRank && this.user.activeRank.tier === item.rankTier) : this.user.activeTitle === item.title));
+                           (item.type === 'badge' ? (this.user.activeRank && this.user.activeRank.tier === item.rankTier) : this.user.activeTitle === item.title));
 
         let visualElement = item.icon ? item.icon : '🎨';
-        if (item.type === 'rank' && item.icon) {
+        if (item.type === 'badge' && item.icon) {
             visualElement = `<i class="fa-solid ${item.icon}"></i>`;
         }
 
@@ -2898,15 +2949,17 @@ class FocusQuestApp {
             this.user.activeTheme = item.themeClass;
             document.body.className = `${item.themeClass} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
         } else if (item.type === 'badge') {
-            this.user.activeTitle = item.title;
+            if (item.rankTier) {
+                this.user.activeRank = { tier: item.rankTier, cssClass: item.cssClass, icon: item.icon };
+            } else {
+                this.user.activeTitle = item.title;
+            }
         } else if (item.type === 'pet' || item.type === 'seasonal') {
             if (item.icon) this.user.activePet = item.icon;
             if (item.themeClass) {
                 this.user.activeTheme = item.themeClass;
                 document.body.className = `${item.themeClass} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
             }
-        } else if (item.type === 'rank') {
-            this.user.activeRank = { tier: item.rankTier, cssClass: item.cssClass, icon: item.icon };
         }
 
         this.saveLocalStorage();
@@ -3221,8 +3274,8 @@ class FocusQuestApp {
         headerTitle.innerHTML = `<i class="fa-solid fa-calendar-week text-indigo-400 mr-2"></i>Weekly Calendar Planner`;
         headerSubtitle.textContent = "Plan tasks in advance for any day of the week. Double-tap/click any day to zoom in.";
 
-        const weekStartStr = days[0].toLocaleDateString('de-DE', { month: 'short', day: 'numeric' });
-        const weekEndStr = days[6].toLocaleDateString('de-DE', { month: 'short', day: 'numeric' });
+        const weekStartStr = days[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const weekEndStr = days[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         document.getElementById('plannerWeekRangeLabel').textContent = `${weekStartStr} - ${weekEndStr}`;
 
         grid.className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-3";
