@@ -93,6 +93,15 @@
             animation: subtlePulse 2s infinite ease-in-out;
         }
 
+        @keyframes micPulse {
+            0% { transform: scale(1); color: #f43f5e; text-shadow: 0 0 8px rgba(244, 63, 94, 0.6); }
+            50% { transform: scale(1.25); color: #f43f5e; text-shadow: 0 0 15px rgba(244, 63, 94, 0.9); }
+            100% { transform: scale(1); color: #f43f5e; text-shadow: 0 0 8px rgba(244, 63, 94, 0.6); }
+        }
+        .mic-recording {
+            animation: micPulse 1.2s infinite ease-in-out;
+        }
+
         @keyframes floatPet {
             0%, 100% { transform: translateY(0px) rotate(0deg); }
             50% { transform: translateY(-4px) rotate(3deg); }
@@ -383,7 +392,7 @@
                 <div class="relative w-full sm:w-80 flex items-center">
                     <i class="fa-solid fa-search absolute left-3.5 top-3 text-slate-400 text-sm"></i>
                     <input type="text" id="taskSearchInput" oninput="app.handleSearch(this.value)" placeholder="Search tasks..." class="w-full bg-slate-900/80 border border-slate-700/80 rounded-xl pl-10 pr-10 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
-                    <button type="button" onclick="app.startVoiceInput('taskSearchInput')" class="absolute right-3 text-slate-400 hover:text-indigo-400 transition" title="Per Sprache suchen">
+                    <button type="button" id="mic-btn-taskSearchInput" onclick="app.startVoiceInput('taskSearchInput')" class="absolute right-3 text-slate-400 hover:text-indigo-400 transition" title="Per Sprache suchen">
                         <i class="fa-solid fa-microphone text-sm"></i>
                     </button>
                 </div>
@@ -440,7 +449,7 @@
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Task Title</label>
                 <div class="relative flex items-center">
                     <input type="text" id="taskTitleInput" required placeholder="e.g., Complete Math Assignment" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 pr-10 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
-                    <button type="button" onclick="app.startVoiceInput('taskTitleInput')" class="absolute right-3 text-slate-400 hover:text-indigo-400 transition" title="Titel diktieren">
+                    <button type="button" id="mic-btn-taskTitleInput" onclick="app.startVoiceInput('taskTitleInput')" class="absolute right-3 text-slate-400 hover:text-indigo-400 transition" title="Titel diktieren">
                         <i class="fa-solid fa-microphone text-sm"></i>
                     </button>
                 </div>
@@ -448,9 +457,9 @@
 
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Instructions / Notes (Optional)</label>
-                <div class="relative">
+                <div class="relative flex items-center">
                     <textarea id="taskDescriptionInput" rows="2" placeholder="e.g., Read pages 40-55..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 pr-10 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
-                    <button type="button" onclick="app.startVoiceInput('taskDescriptionInput')" class="absolute right-3 top-3 text-slate-400 hover:text-indigo-400 transition" title="Notizen diktieren">
+                    <button type="button" id="mic-btn-taskDescriptionInput" onclick="app.startVoiceInput('taskDescriptionInput')" class="absolute right-3 top-3 text-slate-400 hover:text-indigo-400 transition" title="Notizen diktieren">
                         <i class="fa-solid fa-microphone text-sm"></i>
                     </button>
                 </div>
@@ -651,7 +660,7 @@
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Category Name</label>
                 <div class="relative flex items-center">
                     <input type="text" id="categoryNameInput" required placeholder="e.g., Coding, Fitness" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 pr-10 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
-                    <button type="button" onclick="app.startVoiceInput('categoryNameInput')" class="absolute right-3 text-slate-400 hover:text-indigo-400 transition" title="Kategorie diktieren">
+                    <button type="button" id="mic-btn-categoryNameInput" onclick="app.startVoiceInput('categoryNameInput')" class="absolute right-3 text-slate-400 hover:text-indigo-400 transition" title="Kategorie diktieren">
                         <i class="fa-solid fa-microphone text-sm"></i>
                     </button>
                 </div>
@@ -764,7 +773,7 @@
                     <label class="block text-xs font-medium text-slate-300 mb-1">Your Name (For Motivational Popups)</label>
                     <div class="relative flex items-center">
                         <input type="text" id="userNameInput" placeholder="Enter your name..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 pr-10 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500">
-                        <button type="button" onclick="app.startVoiceInput('userNameInput')" class="absolute right-3 text-slate-400 hover:text-indigo-400 transition" title="Namen diktieren">
+                        <button type="button" id="mic-btn-userNameInput" onclick="app.startVoiceInput('userNameInput')" class="absolute right-3 text-slate-400 hover:text-indigo-400 transition" title="Namen diktieren">
                             <i class="fa-solid fa-microphone text-sm"></i>
                         </button>
                     </div>
@@ -1211,6 +1220,12 @@ class FocusQuestApp {
             this.showMotivationalToast("Spracherkennung wird von deinem Browser leider nicht unterstützt.");
             return;
         }
+
+        const micBtn = document.getElementById(`mic-btn-${inputId}`);
+        if (micBtn) {
+            micBtn.classList.add('mic-recording');
+        }
+
         const recognition = new SpeechRecognition();
         recognition.lang = 'de-DE';
         recognition.interimResults = false;
@@ -1234,7 +1249,18 @@ class FocusQuestApp {
             this.showMotivationalToast("Spracherkennung fehlgeschlagen oder abgebrochen.");
         };
 
-        recognition.start();
+        recognition.onend = () => {
+            if (micBtn) {
+                micBtn.classList.remove('mic-recording');
+            }
+        };
+
+        try {
+            recognition.start();
+        } catch(e) {
+            if (micBtn) micBtn.classList.remove('mic-recording');
+            this.showMotivationalToast("Mikrofon konnte nicht gestartet werden.");
+        }
     }
 
     toggleNotifications(enabled) {
@@ -1903,7 +1929,7 @@ class FocusQuestApp {
 
         document.getElementById('taskFrequencyTypeSelect').value = 'once';
         document.getElementById('taskDateInput').value = this.getTodayISO();
-        document.getElementById('taskIsTodayInput').checked = false; // Standardmäßig AUS
+        document.getElementById('taskIsTodayInput').checked = false;
 
         this.selectedMultipleDates = [];
         this.renderSelectedMultipleDates();
@@ -2755,8 +2781,9 @@ class FocusQuestApp {
                         <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${cat.color}"></span>
                         <span class="truncate">${cat.name}</span>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <div class="opacity-0 group-hover:opacity-100 flex items-center space-x-0.5 transition mr-1">
+                    <div class="flex items-center space-x-1.5 shrink-0">
+                        <!-- Permanent visible action buttons matching the screenshot design -->
+                        <div class="flex items-center space-x-1 mr-1">
                             <button onclick="app.openCategoryModal('${cat.id}')" class="p-1 text-slate-400 hover:text-indigo-400 transition" title="Edit Category"><i class="fa-solid fa-pen text-[10px]"></i></button>
                             ${index > 0 ? `<button onclick="app.moveCategory('${cat.id}', -1, event)" class="p-1 text-slate-400 hover:text-white transition" title="Move Up"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>` : ''}
                             ${index < this.categories.length - 1 ? `<button onclick="app.moveCategory('${cat.id}', 1, event)" class="p-1 text-slate-400 hover:text-white transition" title="Move Down"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>` : ''}
