@@ -63,61 +63,44 @@
         body.theme-pastel { background: linear-gradient(135deg, #311042 0%, #701a75 50%, #9d174d 100%); }
         body.theme-matrix { background: linear-gradient(135deg, #052e16 0%, #14532d 50%, #166534 100%); }
 
-        /* Seasonal Border Decorations */
-        body.season-christmas::before {
-            content: '';
+        /* Elegant Corner Christmas Decorations */
+        body.season-christmas::before, body.season-christmas::after {
+            content: '🌿';
             position: fixed;
-            inset: 0;
-            pointer-events: none;
-            border: 6px dashed #ef4444;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
             z-index: 99;
-            opacity: 0.8;
-            box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.5);
+            pointer-events: none;
+            filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6));
         }
-        body.season-winter::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            border: 6px solid #38bdf8;
-            z-index: 99;
-            opacity: 0.6;
+        body.season-christmas::after {
+            content: '🎄';
+            left: auto;
+            right: 10px;
         }
-        body.season-spring::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            border: 6px dotted #4ade80;
-            z-index: 99;
-            opacity: 0.7;
+
+        /* Task Card Corner Decorations for Christmas */
+        .season-christmas-card {
+            position: relative;
         }
-        body.season-summer::before {
-            content: '';
-            position: fixed;
-            inset: 0;
+        .season-christmas-card::before {
+            content: '🌿';
+            position: absolute;
+            top: 6px;
+            left: 8px;
+            font-size: 12px;
             pointer-events: none;
-            border: 6px wavy #f59e0b;
-            z-index: 99;
-            opacity: 0.7;
+            opacity: 0.85;
         }
-        body.season-autumn::before {
-            content: '';
-            position: fixed;
-            inset: 0;
+        .season-christmas-card::after {
+            content: '🔴';
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            font-size: 10px;
             pointer-events: none;
-            border: 6px groove #d97706;
-            z-index: 99;
-            opacity: 0.7;
-        }
-        body.season-hallow::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            border: 6px ridge #a855f7;
-            z-index: 99;
-            opacity: 0.8;
+            opacity: 0.85;
         }
 
         /* Sidebar Transitions */
@@ -507,7 +490,7 @@
                             </label>
 
                             <!-- Emergency Date / Time Override Button (+ button next to mic) -->
-                            <button type="button" onclick="app.openModal('aiDateOverrideModal')" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 transition shrink-0" title="Emergency: Specify Date, Day & Time manually">
+                            <button type="button" onclick="app.openModal('aiDateOverrideModal')" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 transition shrink-0" title="Emergency: Specify Multiple Target Dates & Times">
                                 <i class="fa-solid fa-calendar-plus text-sm"></i>
                             </button>
 
@@ -614,30 +597,27 @@
     </div>
 </div>
 
-<!-- AI Emergency Date Override Modal -->
+<!-- AI Multiple Target Dates Override Modal -->
 <div id="aiDateOverrideModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
-    <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl my-auto p-6 space-y-4">
+    <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-md overflow-hidden shadow-2xl my-auto p-6 space-y-4">
         <div class="flex items-center justify-between border-b border-borderCol pb-3">
             <h3 class="font-extrabold text-base text-cyan-400 flex items-center space-x-2">
                 <i class="fa-solid fa-calendar-days"></i>
-                <span>Manual Date & Time Override</span>
+                <span>Multiple Target Dates & Times</span>
             </h3>
             <button onclick="app.closeModal('aiDateOverrideModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <p class="text-xs text-slate-300">If the AI needs exact context, specify the target date, day, and time below before sending your prompt.</p>
+        <p class="text-xs text-slate-300">Add multiple specific target dates for AI scheduling.</p>
         <div class="space-y-3">
-            <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Target Date</label>
-                <input type="date" id="overrideDateInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+            <div class="flex items-center space-x-2">
+                <input type="date" id="multiDateInputPicker" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+                <button type="button" onclick="app.addAiMultiDate()" class="px-3 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold">Add Date</button>
             </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Target Time</label>
-                <input type="time" id="overrideTimeInput" value="15:00" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
-            </div>
+            <div id="aiSelectedMultiDatesChips" class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto"></div>
         </div>
-        <div class="flex justify-end space-x-2 pt-2">
+        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-800">
             <button onclick="app.closeModal('aiDateOverrideModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cancel</button>
-            <button onclick="app.applyAiDateOverride()" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold">Apply Context</button>
+            <button onclick="app.applyAiMultipleDatesContext()" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold">Apply Dates</button>
         </div>
     </div>
 </div>
@@ -1041,7 +1021,7 @@
                 </label>
             </div>
 
-            <!-- Firebase Cloud Sync Section & Synchronize all dispositivos -->
+            <!-- Firebase Cloud Sync Section & Synchronize all devices -->
             <div class="pt-4 border-t border-slate-800 space-y-4">
                 <div>
                     <h4 class="text-sm font-bold text-indigo-400 flex items-center space-x-2">
@@ -1067,11 +1047,11 @@
                             </div>
                         </div>
 
-                        <!-- Synchronize all dispositivos Button (Additive Merge) -->
+                        <!-- Synchronize all devices Button (Additive Merge) -->
                         <div class="mt-3">
                             <button onclick="app.forceSynchronizeAllDispositivos()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-black shadow-md flex items-center justify-center space-x-2 transition">
                                 <i class="fa-solid fa-sync text-sm"></i>
-                                <span>Synchronize all dispositivos</span>
+                                <span>Synchronize all devices</span>
                             </button>
                             <p class="text-[10px] text-slate-400 mt-1 text-center">Merges all data additively (nothing gets lost, max points/inventory combined).</p>
                         </div>
@@ -1199,8 +1179,8 @@ const SEASONAL_CATALOGUE = [
     { id: 'sea-hallow-ghost', type: 'seasonal', season: 'Halloween', seasonClass: 'season-hallow', name: 'Spooky Phantom', cost: 55, icon: '👻', desc: 'Haunts away your procrastination.' },
     { id: 'sea-hallow-rose-theme', type: 'theme', season: 'Halloween', seasonClass: 'season-hallow', name: 'Vampire Rose Theme', cost: 70, themeClass: 'theme-rose', desc: 'Deep crimson gothic gradient glow.' },
 
-    { id: 'sea-xmas-reindeer', type: 'seasonal', season: 'Christmas', seasonClass: 'season-christmas', name: 'Rudolph Reindeer', cost: 60, icon: '🦌', desc: 'Guides your sleigh to productivity success.' },
-    { id: 'sea-xmas-santa', type: 'seasonal', season: 'Christmas', seasonClass: 'season-christmas', name: 'Festive Elf', cost: 50, icon: '🧑‍🎄', desc: 'Delivers bonus coin rewards on time.' },
+    { id: 'sea-xmas-reindeer', type: 'pet', season: 'Christmas', seasonClass: 'season-christmas', name: 'Rudolph Reindeer', cost: 60, icon: '🦌', desc: 'Guides your sleigh to productivity success.' },
+    { id: 'sea-xmas-santa', type: 'pet', season: 'Christmas', seasonClass: 'season-christmas', name: 'Festive Elf', cost: 50, icon: '🧑‍🎄', desc: 'Delivers bonus coin rewards on time.' },
     { id: 'sea-xmas-pastel-theme', type: 'theme', season: 'Christmas', seasonClass: 'season-christmas', name: 'Holiday Sunset Gradient', cost: 65, themeClass: 'theme-pastel', desc: 'Magical magenta & purple celebration glow.' }
 ];
 
@@ -1337,6 +1317,7 @@ class FocusQuestApp {
         ];
         this.currentAiChatId = 'chat-default';
         this.tempAiMaterialData = null;
+        this.aiSelectedDates = [];
 
         this.sidebarCollapsed = false;
         this.currentView = 'today';
@@ -1445,26 +1426,23 @@ class FocusQuestApp {
         }, 3500);
     }
 
-    // Improved Microphone with continuous listening and auto-restart robustness
     startVoiceInput(inputId) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-            this.showMotivationalToast("Spracherkennung wird von deinem Browser leider nicht unterstützt.");
+            this.showMotivationalToast("Speech recognition is not supported by your browser.");
             return;
         }
 
         const micBtn = document.getElementById(`mic-btn-${inputId}`);
-        if (micBtn) {
-            micBtn.classList.add('mic-recording');
-        }
+        if (micBtn) micBtn.classList.add('mic-recording');
 
         const recognition = new SpeechRecognition();
         recognition.lang = 'de-DE';
-        recognition.continuous = true; // Kept open longer to avoid cutting off
+        recognition.continuous = true;
         recognition.interimResults = true;
         recognition.maxAlternatives = 1;
 
-        this.showMotivationalToast("🎤 Höre zu... Sprich jetzt in einem ruhigen Fluss!");
+        this.showMotivationalToast("🎤 Listening... Speak now!");
 
         let finalTranscript = '';
 
@@ -1488,34 +1466,25 @@ class FocusQuestApp {
             }
         };
 
-        recognition.onerror = (event) => {
-            if (event.error !== 'no-speech') {
-                this.showMotivationalToast("Spracherkennung Hinweis: " + event.error);
-            }
-        };
-
+        recognition.onerror = () => {};
         recognition.onend = () => {
-            if (micBtn) {
-                micBtn.classList.remove('mic-recording');
-            }
+            if (micBtn) micBtn.classList.remove('mic-recording');
         };
 
         try {
             recognition.start();
-            // Stop automatically after 8 seconds of continuous listening
             setTimeout(() => {
                 try { recognition.stop(); } catch(e) {}
             }, 8000);
         } catch(e) {
             if (micBtn) micBtn.classList.remove('mic-recording');
-            this.showMotivationalToast("Spracherkennung konnte nicht gestartet werden.");
         }
     }
 
     toggleNotifications(enabled) {
         if (enabled) {
             if (!("Notification" in window)) {
-                this.showMotivationalToast("Push Notifications werden von deinem Browser nicht unterstützt.");
+                this.showMotivationalToast("Push notifications not supported.");
                 document.getElementById('notificationsToggle').checked = false;
                 this.user.notificationsEnabled = false;
                 return;
@@ -1524,18 +1493,18 @@ class FocusQuestApp {
                 if (permission === "granted") {
                     this.user.notificationsEnabled = true;
                     this.saveLocalStorage();
-                    this.showMotivationalToast(`Benachrichtigungen aktiviert für ${this.user.name}.`);
+                    this.showMotivationalToast(`Notifications enabled for ${this.user.name}.`);
                 } else {
                     this.user.notificationsEnabled = false;
                     document.getElementById('notificationsToggle').checked = false;
                     this.saveLocalStorage();
-                    this.showMotivationalToast("Berechtigung für Benachrichtigungen wurde verweigert.");
+                    this.showMotivationalToast("Notification permission denied.");
                 }
             });
         } else {
             this.user.notificationsEnabled = false;
             this.saveLocalStorage();
-            this.showMotivationalToast("Push-Benachrichtigungen deaktiviert.");
+            this.showMotivationalToast("Push notifications disabled.");
         }
     }
 
@@ -1567,14 +1536,14 @@ class FocusQuestApp {
                 this.notifiedTaskMap[notificationKey] = true;
                 
                 const userName = this.user.name || "Warrior";
-                let offsetText = "startet jetzt!";
+                let offsetText = "starts now!";
                 if (this.user.notificationOffset > 0) {
-                    offsetText = `startet in ${this.user.notificationOffset} Minuten!`;
+                    offsetText = `starts in ${this.user.notificationOffset} minutes!`;
                 }
 
                 try {
-                    new Notification(`FocusQuest Erinnerung`, {
-                        body: `Hey ${userName}, deine Aufgabe "${task.title}" ${offsetText}`,
+                    new Notification(`FocusQuest Reminder`, {
+                        body: `Hey ${userName}, your task "${task.title}" ${offsetText}`,
                         icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%236366f1"><circle cx="12" cy="12" r="10"/></svg>'
                     });
                 } catch(e) {}
@@ -1609,7 +1578,6 @@ class FocusQuestApp {
         }
     }
 
-    // Additive Merge Sync (Nothing gets lost unless deleted across devices)
     connectFirebaseSync() {
         if (!this.db || !this.syncCode) return;
         this.updateSyncBadge(true, 'Syncing...');
@@ -1668,6 +1636,7 @@ class FocusQuestApp {
                     if (cu.name && cu.name !== 'Warrior') this.user.name = cu.name;
                     if (cu.timezone && cu.timezone !== 'auto') this.user.timezone = cu.timezone;
                     if (cu.activeSeasonClass) this.user.activeSeasonClass = cu.activeSeasonClass;
+                    if (cu.activePet) this.user.activePet = cu.activePet;
                 }
 
                 const maxUpdatedAt = Math.max(
@@ -1691,7 +1660,7 @@ class FocusQuestApp {
 
     forceSynchronizeAllDispositivos() {
         this.syncToCloud();
-        this.showMotivationalToast("Synchronize all dispositivos successful! All items & tasks merged additively.");
+        this.showMotivationalToast("Synchronize all devices successful! All items & tasks merged additively.");
     }
 
     syncToCloud() {
@@ -1776,7 +1745,7 @@ class FocusQuestApp {
 
         this.saveLocalStorage();
         this.closeModal('settingsModal');
-        this.showMotivationalToast(`Profil aktualisiert, ${this.user.name}! Einstellungen gespeichert.`);
+        this.showMotivationalToast(`Profile updated, ${this.user.name}! Settings saved.`);
     }
 
     exportTasksToFile() {
@@ -1794,7 +1763,7 @@ class FocusQuestApp {
         document.body.appendChild(downloadAnchor);
         downloadAnchor.click();
         downloadAnchor.remove();
-        this.showMotivationalToast("Backup-Datei erfolgreich exportiert!");
+        this.showMotivationalToast("Backup file exported successfully!");
     }
 
     importTasksFromFile(event) {
@@ -1808,11 +1777,11 @@ class FocusQuestApp {
                 const importedTasks = parsedData.tasks || (Array.isArray(parsedData) ? parsedData : null);
 
                 if (!importedTasks || !Array.isArray(importedTasks)) {
-                    this.showMotivationalToast("Ungültiges Backup-Dateiformat.");
+                    this.showMotivationalToast("Invalid backup file format.");
                     return;
                 }
 
-                this.confirmDelete(`Beim Importieren werden ${importedTasks.length} Aufgabe(n) hinzugefügt. Fortfahren?`, () => {
+                this.confirmDelete(`Importing will add ${importedTasks.length} task(s). Proceed?`, () => {
                     const existingIds = new Set(this.tasks.map(t => t.id));
                     let addedCount = 0;
 
@@ -1835,10 +1804,10 @@ class FocusQuestApp {
 
                     this.saveLocalStorage();
                     this.render();
-                    this.showMotivationalToast(`Erfolgreich ${addedCount} Aufgabe(n) importiert!`);
+                    this.showMotivationalToast(`Successfully imported ${addedCount} task(s)!`);
                 });
             } catch (err) {
-                this.showMotivationalToast("Fehler beim Lesen der JSON-Backup-Datei.");
+                this.showMotivationalToast("Error reading JSON backup file.");
             }
             event.target.value = '';
         };
@@ -1848,9 +1817,9 @@ class FocusQuestApp {
     copyAllTasksToClipboard() {
         const tasksJson = JSON.stringify(this.tasks, null, 2);
         navigator.clipboard.writeText(tasksJson).then(() => {
-            this.showMotivationalToast("Alle Aufgaben in die Zwischenablage kopiert!");
+            this.showMotivationalToast("All tasks copied to clipboard!");
         }).catch(() => {
-            this.showMotivationalToast("Kopieren in die Zwischenablage fehlgeschlagen.");
+            this.showMotivationalToast("Failed to copy to clipboard.");
         });
     }
 
@@ -1858,16 +1827,16 @@ class FocusQuestApp {
         try {
             const clipboardText = await navigator.clipboard.readText();
             if (!clipboardText) {
-                this.showMotivationalToast("Die Zwischenablage ist leer.");
+                this.showMotivationalToast("Clipboard is empty.");
                 return;
             }
             const parsedTasks = JSON.parse(clipboardText);
             if (!Array.isArray(parsedTasks)) {
-                this.showMotivationalToast("Kein gültiges Aufgabenformat in der Zwischenablage.");
+                this.showMotivationalToast("No valid task format in clipboard.");
                 return;
             }
 
-            this.confirmDelete(`Möchtest du ${parsedTasks.length} Aufgabe(n) importieren?`, () => {
+            this.confirmDelete(`Import ${parsedTasks.length} task(s) from clipboard?`, () => {
                 const existingIds = new Set(this.tasks.map(t => t.id));
                 parsedTasks.forEach(pt => {
                     if (!existingIds.has(pt.id)) {
@@ -1877,10 +1846,10 @@ class FocusQuestApp {
                 });
                 this.saveLocalStorage();
                 this.render();
-                this.showMotivationalToast(`Aufgaben erfolgreich eingefügt!`);
+                this.showMotivationalToast(`Tasks successfully pasted!`);
             });
         } catch (e) {
-            this.showMotivationalToast("Konnte keine gültigen Aufgaben aus der Zwischenablage lesen.");
+            this.showMotivationalToast("Could not read valid tasks from clipboard.");
         }
     }
 
@@ -2008,7 +1977,7 @@ class FocusQuestApp {
         if (tasksCompletedOnSettlementDay >= 7) {
             this.user.points += 2;
             this.user.xp += 20;
-            this.showMotivationalToast(`Mitternachts-Bonus: +2 Punkte vergeben für 7+ erledigte Aufgaben!`);
+            this.showMotivationalToast(`Midnight bonus: +2 points awarded for 7+ completed tasks!`);
         }
 
         this.render();
@@ -2117,18 +2086,47 @@ class FocusQuestApp {
             } else if (modalId === 'debugModal') {
                 this.renderDebugSummary();
             } else if (modalId === 'aiDateOverrideModal') {
-                document.getElementById('overrideDateInput').value = this.getTodayISO();
+                this.aiSelectedDates = [this.getTodayISO()];
+                this.renderAiMultiDatesChips();
             }
         }
     }
 
-    applyAiDateOverride() {
-        const dInput = document.getElementById('overrideDateInput').value;
-        const tInput = document.getElementById('overrideTimeInput').value;
-        if (dInput) {
+    addAiMultiDate() {
+        const picker = document.getElementById('multiDateInputPicker');
+        if (!picker || !picker.value) return;
+        const val = picker.value;
+        if (!this.aiSelectedDates.includes(val)) {
+            this.aiSelectedDates.push(val);
+            this.aiSelectedDates.sort();
+            this.renderAiMultiDatesChips();
+        }
+        picker.value = '';
+    }
+
+    removeAiMultiDate(dateStr) {
+        this.aiSelectedDates = this.aiSelectedDates.filter(d => d !== dateStr);
+        this.renderAiMultiDatesChips();
+    }
+
+    renderAiMultiDatesChips() {
+        const container = document.getElementById('aiSelectedMultiDatesChips');
+        if (!container) return;
+        container.innerHTML = this.aiSelectedDates.map(d => `
+            <span class="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-cyan-950 border border-cyan-500/40 text-xs font-semibold text-cyan-200">
+                <span>${d}</span>
+                <button type="button" onclick="app.removeAiMultiDate('${d}')" class="text-cyan-400 hover:text-rose-400 ml-1">
+                    <i class="fa-solid fa-xmark text-[10px]"></i>
+                </button>
+            </span>
+        `).join('');
+    }
+
+    applyAiMultipleDatesContext() {
+        if (this.aiSelectedDates.length > 0) {
             const inputElem = document.getElementById('aiChatInput');
-            inputElem.value = `[Context: Target Date ${dInput}, Time ${tInput}] ` + inputElem.value;
-            this.showMotivationalToast(`Date context applied: ${dInput} (${tInput})`);
+            inputElem.value = `[Target Dates: ${this.aiSelectedDates.join(', ')}] ` + inputElem.value;
+            this.showMotivationalToast(`Applied ${this.aiSelectedDates.length} target date(s) to AI context.`);
         }
         this.closeModal('aiDateOverrideModal');
     }
@@ -2152,7 +2150,7 @@ class FocusQuestApp {
     confirmDelete(message, onConfirm) {
         this.pendingDeleteAction = onConfirm;
         const msgElem = document.getElementById('deleteConfirmMessage');
-        if (msgElem) msgElem.textContent = message || 'Diese Aktion kann nicht rückgängig gemacht werden.';
+        if (msgElem) msgElem.textContent = message || 'This action cannot be undone.';
         this.openModal('deleteConfirmModal');
     }
 
@@ -2416,7 +2414,6 @@ class FocusQuestApp {
         if (nextState) {
             task.lastCompletedDate = dateISO;
 
-            // Accurate Streak Calculation
             const yesterdayStr = this.getYesterdayISO();
             if (this.user.lastCompletedDate === yesterdayStr || this.user.lastCompletedDate === dateISO) {
                 if (this.user.lastCompletedDate !== dateISO) {
@@ -2425,7 +2422,6 @@ class FocusQuestApp {
             } else if (!this.user.currentStreak || this.user.currentStreak === 0) {
                 this.user.currentStreak = 1;
             } else {
-                // Streak broken if gap > 1 day
                 this.user.currentStreak = 1;
             }
             this.user.lastCompletedDate = dateISO;
@@ -2435,13 +2431,13 @@ class FocusQuestApp {
             this.user.xp += pointsEarned * 10;
             this.playChime();
 
-            this.showMotivationalToast(`Super gemacht, ${userName}! (+${pointsEarned} Pkt, Streak: ${this.user.currentStreak} Tage)`);
+            this.showMotivationalToast(`Great job, ${userName}! (+${pointsEarned} pts, Streak: ${this.user.currentStreak} days)`);
 
             const todayTasks = this.tasks.filter(t => this.isTaskScheduledForToday(t));
             const allTodayCompleted = todayTasks.length > 0 && todayTasks.every(t => this.isTaskCompletedOnDate(t, this.getTodayISO()));
 
             if (allTodayCompleted) {
-                const celebrationMsg = `Unglaubliche Arbeit, ${userName}! Du hast heute alle Aufgaben komplett erledigt!`;
+                const celebrationMsg = `Incredible work, ${userName}! You completed every task today!`;
                 document.getElementById('celebrationMessageText').textContent = celebrationMsg;
                 this.openModal('celebrationModal');
             }
@@ -2469,7 +2465,7 @@ class FocusQuestApp {
     }
 
     deleteTask(taskId) {
-        this.confirmDelete('Möchtest du diese Aufgabe wirklich löschen?', () => {
+        this.confirmDelete('Do you really want to delete this task?', () => {
             this.tasks = this.tasks.filter(t => t.id !== taskId);
             this.saveLocalStorage();
             this.render();
@@ -2484,13 +2480,13 @@ class FocusQuestApp {
         const category = this.categories.find(c => c.id === task.categoryId) || { name: 'General', color: '#6366f1' };
 
         document.getElementById('detailTaskTitle').textContent = task.title;
-        document.getElementById('detailTaskDescription').textContent = task.description || 'Keine Notizen hinterlegt.';
+        document.getElementById('detailTaskDescription').textContent = task.description || 'No additional notes provided.';
         
         const timeSlotElem = document.getElementById('detailTaskTimeSlot');
         if (task.startTime) {
-            timeSlotElem.textContent = `⏰ Geplantes Zeitfenster: ${task.startTime}${task.endTime ? ' - ' + task.endTime : ''}`;
+            timeSlotElem.textContent = `⏰ Scheduled Time: ${task.startTime}${task.endTime ? ' - ' + task.endTime : ''}`;
         } else {
-            timeSlotElem.textContent = '⏰ Kein festes Zeitfenster';
+            timeSlotElem.textContent = '⏰ No specific time slot';
         }
 
         const catBadge = document.getElementById('detailTaskCategoryBadge');
@@ -2517,7 +2513,7 @@ class FocusQuestApp {
         }
 
         const ptsValue = this.calculateTaskPointValue(task, this.getTodayISO());
-        document.getElementById('detailTaskPoints').textContent = `+${ptsValue} Pkt`;
+        document.getElementById('detailTaskPoints').textContent = `+${ptsValue} pts`;
         document.getElementById('detailTaskType').textContent = task.frequencyType.toUpperCase();
 
         this.openModal('taskDetailModal');
@@ -2648,7 +2644,7 @@ class FocusQuestApp {
 
     deleteCategory(catId, event) {
         if (event) event.stopPropagation();
-        this.confirmDelete('Das Löschen dieser Kategorie setzt zugeordnete Aufgaben auf General.', () => {
+        this.confirmDelete('Deleting this category will move assigned tasks to General.', () => {
             this.categories = this.categories.filter(c => c.id !== catId);
             this.tasks.forEach(t => {
                 if (t.categoryId === catId) t.categoryId = 'cat-general';
@@ -2674,7 +2670,7 @@ class FocusQuestApp {
     }
 
     /* =========================================
-       AI FOCUS ASSISTANT METHODS (ENGLISH ENFORCED & DATE SMART)
+       AI FOCUS ASSISTANT METHODS (MULTIPLE TARGET DATES SUPPORTED)
        ========================================= */
 
     createNewAiChat() {
@@ -2817,38 +2813,32 @@ class FocusQuestApp {
         else if (lower.includes('englisch') || lower.includes('english')) subject = "English";
         else if (lower.includes('geschichte') || lower.includes('history')) subject = "History";
 
-        // Precise AI Date & Context Extraction
-        let startDate = new Date();
-        const contextMatch = userText.match(/Target Date (\d{4}-\d{2}-\d{2})/);
-        if (contextMatch) {
-            startDate = new Date(contextMatch[1] + 'T00:00:00');
-        } else if (lower.includes('freitag') || lower.includes('friday')) {
-            let dayOfWeek = startDate.getDay();
-            let daysUntilFriday = (5 - dayOfWeek + 7) % 7;
-            if (daysUntilFriday === 0) daysUntilFriday = 7; 
-            startDate.setDate(startDate.getDate() + daysUntilFriday);
+        // Multiple Target Dates Support Extraction
+        let targetDates = [];
+        const multiDatesMatch = userText.match(/Target Dates: ([^\]]+)/);
+        if (multiDatesMatch) {
+            targetDates = multiDatesMatch[1].split(',').map(s => s.trim()).filter(Boolean);
         }
 
-        const dateMatch = userText.match(/(\d{1,2})\.(\d{1,2})/);
-        if (dateMatch && !contextMatch) {
-            const day = parseInt(dateMatch[1]);
-            const month = parseInt(dateMatch[2]) - 1;
-            const year = new Date().getFullYear();
-            startDate = new Date(year, month, day);
+        if (targetDates.length === 0) {
+            let startDate = new Date();
+            if (lower.includes('freitag') || lower.includes('friday')) {
+                let dayOfWeek = startDate.getDay();
+                let daysUntilFriday = (5 - dayOfWeek + 7) % 7;
+                if (daysUntilFriday === 0) daysUntilFriday = 7; 
+                startDate.setDate(startDate.getDate() + daysUntilFriday);
+            }
+            targetDates.push(startDate.toISOString().split('T')[0]);
         }
 
         if (lower.includes('arbeit') || lower.includes('exam') || lower.includes('test') || lower.includes('klausur') || lower.includes('lernen') || lower.includes('plan')) {
-            for (let i = 0; i < 3; i++) {
-                const blockDate = new Date(startDate);
-                blockDate.setDate(startDate.getDate() + i);
-                const dateISO = blockDate.toISOString().split('T')[0];
-
-                let taskTitle = `${subject} Prep (Part ${i + 1})`;
+            targetDates.forEach((dateISO, index) => {
+                let taskTitle = `${subject} Prep (Session ${index + 1})`;
                 let taskDesc = `AI-generated study session for ${subject}.`;
                 if (material) taskDesc += ` Material: ${material.name}`;
 
                 const newTask = {
-                    id: 'task-ai-' + Date.now() + '-' + i,
+                    id: 'task-ai-' + Date.now() + '-' + index,
                     title: taskTitle,
                     description: taskDesc,
                     startTime: '15:00',
@@ -2870,17 +2860,17 @@ class FocusQuestApp {
                 };
                 this.tasks.unshift(newTask);
                 tasksCreated++;
-            }
+            });
 
-            reply = `🚀 **Study Plan Successfully Scheduled!**<br>I have created ${tasksCreated} study sessions for <strong>${subject}</strong> starting correctly from <strong>${startDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</strong>.<br><br>`;
+            reply = `🚀 **Study Plan Scheduled across Multiple Dates!**<br>I have created ${tasksCreated} study sessions for <strong>${subject}</strong> on target dates: <strong>${targetDates.join(', ')}</strong>.<br><br>`;
             if (material) {
-                reply += `📎 Your attached material (${material.name}) has been embedded into the task descriptions.<br><br>`;
+                reply += `📎 Attached material (${material.name}) embedded.<br><br>`;
             }
-            reply += `💡 *Tip:* Check your Weekly Planner to see all scheduled blocks!`;
+            reply += `💡 Check your Weekly Planner!`;
         } else if (lower.includes('explain') || lower.includes('what is') || lower.includes('how')) {
-            reply = `🤖 **AI Explanation for ${subject}:**<br>Here is a concise breakdown: focus on core concepts, practice past problems, and review step-by-step. Let me know if you want me to add study blocks for this!`;
+            reply = `🤖 **AI Explanation for ${subject}:**<br>Focus on core concepts, practice past problems, and review step-by-step.`;
         } else {
-            reply = `I understand your request! Would you like me to schedule tasks for this in your Weekly Planner or create a detailed study roadmap?`;
+            reply = `I understand! Would you like me to schedule tasks for this across multiple target dates in your Weekly Planner?`;
         }
 
         this.saveLocalStorage();
@@ -3041,7 +3031,7 @@ class FocusQuestApp {
         const isOwned = (this.user.inventory || []).includes(item.id);
         const isEquipped = item.type === 'theme' ? this.user.activeTheme === item.themeClass : 
                            (item.type === 'seasonal' ? this.user.activeSeasonClass === item.seasonClass :
-                           ((item.type === 'pet') ? this.user.activePet === item.icon : 
+                           ((item.type === 'pet' || item.id.startsWith('sea-xmas-')) ? this.user.activePet === item.icon : 
                            (item.type === 'badge' ? (this.user.activeRank && this.user.activeRank.tier === item.rankTier) : this.user.activeTitle === item.title)));
 
         let visualElement = item.icon ? item.icon : '🎨';
@@ -3090,7 +3080,7 @@ class FocusQuestApp {
         if (!item) return;
 
         if (this.user.points < item.cost) {
-            this.confirmDelete('Du hast nicht genügend Punkte/Münzen für diesen Kauf!', null);
+            this.confirmDelete('You do not have enough points/coins for this purchase!', null);
             return;
         }
 
@@ -3107,7 +3097,7 @@ class FocusQuestApp {
         if (!box) return;
 
         if (this.user.points < box.cost) {
-            this.confirmDelete('Du hast nicht genügend Münzen für diese Mystery Box!', null);
+            this.confirmDelete('Not enough coins for this Mystery Box!', null);
             return;
         }
 
@@ -3147,8 +3137,9 @@ class FocusQuestApp {
             } else {
                 this.user.activeTitle = item.title;
             }
-        } else if (item.type === 'pet') {
+        } else if (item.type === 'pet' || item.id.startsWith('sea-xmas-')) {
             if (item.icon) this.user.activePet = item.icon;
+            if (item.seasonClass) this.user.activeSeasonClass = item.seasonClass;
         }
 
         this.applyActiveThemeAndSeason();
@@ -3168,7 +3159,7 @@ class FocusQuestApp {
             input.select();
             document.execCommand('copy');
             const textElem = document.getElementById('cloudStatusText');
-            if (textElem) textElem.textContent = 'Code kopiert!';
+            if (textElem) textElem.textContent = 'Code copied!';
             setTimeout(() => this.updateSyncBadge(true, 'Synced'), 2000);
         }
     }
@@ -3184,12 +3175,12 @@ class FocusQuestApp {
             
             this.loadLocalStorage();
             this.connectFirebaseSync();
-            this.showMotivationalToast(`Zu Sync-Code gewechselt: ${this.syncCode}`);
+            this.showMotivationalToast(`Switched to Sync Code: ${this.syncCode}`);
         }
     }
 
     createNewSyncCodePrompt() {
-        const newCodeInput = prompt("Gib einen Namen/Code für deinen Workspace ein:", "FQ-" + Math.random().toString(36).substring(2, 7).toUpperCase());
+        const newCodeInput = prompt("Enter a workspace name/code:", "FQ-" + Math.random().toString(36).substring(2, 7).toUpperCase());
         if (!newCodeInput) return;
         const sanitized = newCodeInput.trim();
         if (!sanitized) return;
@@ -3203,7 +3194,7 @@ class FocusQuestApp {
         this.loadLocalStorage();
         this.connectFirebaseSync();
         this.render();
-        this.showMotivationalToast(`Neuer Workspace erstellt: ${this.syncCode}`);
+        this.showMotivationalToast(`New workspace created: ${this.syncCode}`);
     }
 
     renderDebugSummary() {
@@ -3211,9 +3202,9 @@ class FocusQuestApp {
         const container = document.getElementById('debugUncompletedSummary');
         if (container) {
             if (uncompletedToday.length === 0) {
-                container.textContent = 'Keine offenen heutigen Aufgaben.';
+                container.textContent = 'No uncompleted tasks for today.';
             } else {
-                container.innerHTML = `<strong>${uncompletedToday.length}</strong> offene Aufgabe(n) gefunden:<br>` +
+                container.innerHTML = `<strong>${uncompletedToday.length}</strong> uncompleted task(s):<br>` +
                     uncompletedToday.map(t => `• ${t.title}`).join('<br>');
             }
         }
@@ -3302,7 +3293,7 @@ class FocusQuestApp {
         const percent = Math.min(100, Math.max(0, (currentInLevel / thresh.range) * 100));
 
         document.getElementById('levelProgressBar').style.width = `${percent}%`;
-        document.getElementById('progressText').textContent = `${currentInLevel} / ${thresh.range} Pkt zu Level ${this.user.level + 1}`;
+        document.getElementById('progressText').textContent = `${currentInLevel} / ${thresh.range} pts to Level ${this.user.level + 1}`;
     }
 
     renderCategoryList() {
@@ -3603,6 +3594,9 @@ class FocusQuestApp {
             return;
         }
 
+        const isChristmasActive = this.user.activeSeasonClass === 'season-christmas';
+        const cardClassAdd = isChristmasActive ? 'season-christmas-card' : '';
+
         container.innerHTML = filtered.map(task => {
             const category = this.categories.find(c => c.id === task.categoryId) || { name: 'General', color: '#6366f1', icon: 'fa-folder' };
             const isTodayBet = this.isTaskScheduledForToday(task);
@@ -3610,7 +3604,7 @@ class FocusQuestApp {
             const ptsVal = this.calculateTaskPointValue(task, this.getTodayISO());
 
             return `
-                <div class="p-4 rounded-2xl bg-cardBg/80 border transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isCompletedToday ? 'opacity-60 border-slate-800' : (isTodayBet ? 'border-indigo-500/50 hover:border-indigo-500 penalty-pulse' : 'border-borderCol/60 hover:border-slate-600')}">
+                <div class="p-4 rounded-2xl bg-cardBg/80 border transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${cardClassAdd} ${isCompletedToday ? 'opacity-60 border-slate-800' : (isTodayBet ? 'border-indigo-500/50 hover:border-indigo-500 penalty-pulse' : 'border-borderCol/60 hover:border-slate-600')}">
                     <div class="flex items-start space-x-3.5 min-w-0">
                         <button onclick="app.toggleTaskComplete('${task.id}')" class="mt-0.5 w-5 h-5 rounded-lg border flex items-center justify-center transition shrink-0 ${isCompletedToday ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-slate-600 hover:border-indigo-500 bg-slate-900/60'}">
                             ${isCompletedToday ? '<i class="fa-solid fa-check text-xs"></i>' : ''}
