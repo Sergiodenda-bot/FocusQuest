@@ -63,44 +63,275 @@
         body.theme-pastel { background: linear-gradient(135deg, #311042 0%, #701a75 50%, #9d174d 100%); }
         body.theme-matrix { background: linear-gradient(135deg, #052e16 0%, #14532d 50%, #166534 100%); }
 
-        /* Elegant Corner Christmas Decorations */
-        body.season-christmas::before, body.season-christmas::after {
-            content: '🌿';
+        /* =========================================================
+           SEASONAL DECORATIONS (Driven strictly by Active Pet Skin)
+           ========================================================= */
+
+        /* 1. CHRISTMAS (Snow cap on top, Mistletoe with berries, Big Tree) */
+        body.season-christmas::before {
+            content: '';
             position: fixed;
-            top: 10px;
-            left: 10px;
-            font-size: 20px;
-            z-index: 99;
+            top: 0; left: 0; right: 0;
+            height: 8px;
+            background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 70%, transparent 100%);
+            box-shadow: 0 3px 14px rgba(255, 255, 255, 0.55);
+            z-index: 98;
             pointer-events: none;
-            filter: drop-shadow(0 0 4px rgba(239, 68, 68, 0.6));
         }
         body.season-christmas::after {
             content: '🎄';
-            left: auto;
-            right: 10px;
+            position: fixed;
+            top: 12px;
+            right: 16px;
+            font-size: 36px;
+            z-index: 99;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 10px rgba(16, 185, 129, 0.5));
         }
 
-        /* Task Card Corner Decorations for Christmas */
         .season-christmas-card {
             position: relative;
+            border-top: 4px solid #f8fafc !important;
+            box-shadow: inset 0 6px 12px -6px rgba(255, 255, 255, 0.45), 0 4px 15px -3px rgba(220, 38, 38, 0.25);
         }
+        /* Detailed SVG Mistletoe (Mistelzweig mit roten Beeren zum Küssen) top-left */
         .season-christmas-card::before {
-            content: '🌿';
+            content: '';
             position: absolute;
-            top: 6px;
+            top: -8px;
             left: 8px;
-            font-size: 12px;
+            width: 30px;
+            height: 24px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 36 28'%3E%3Cpath d='M18 4 C12 6, 4 12, 3 20 C9 19, 15 14, 18 8 Z' fill='%2315803d' stroke='%23166534' stroke-width='1'/%3E%3Cpath d='M18 4 C24 6, 32 12, 33 20 C27 19, 21 14, 18 8 Z' fill='%2316a34a' stroke='%2315803d' stroke-width='1'/%3E%3Cpath d='M18 2 L18 10' stroke='%2378350f' stroke-width='2' stroke-linecap='round'/%3E%3Ccircle cx='15' cy='11' r='2.8' fill='%23ef4444'/%3E%3Ccircle cx='21' cy='11' r='2.8' fill='%23dc2626'/%3E%3Ccircle cx='18' cy='14.5' r='2.8' fill='%23f87171'/%3E%3C/svg%3E");
+            background-size: contain;
+            background-repeat: no-repeat;
             pointer-events: none;
-            opacity: 0.85;
+            z-index: 10;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6));
         }
+        /* Larger Christmas Tree top-right */
         .season-christmas-card::after {
-            content: '🔴';
+            content: '🎄';
             position: absolute;
-            top: 6px;
+            top: -10px;
             right: 8px;
-            font-size: 10px;
+            font-size: 22px;
             pointer-events: none;
-            opacity: 0.85;
+            z-index: 10;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+        }
+
+        /* 2. HALLOWEEN (Pumpkins & Ghosts) */
+        body.season-hallow::before {
+            content: '🎃';
+            position: fixed;
+            top: 12px;
+            left: 16px;
+            font-size: 32px;
+            z-index: 99;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 10px rgba(249, 115, 22, 0.5));
+        }
+        body.season-hallow::after {
+            content: '👻';
+            position: fixed;
+            top: 12px;
+            right: 16px;
+            font-size: 32px;
+            z-index: 99;
+            pointer-events: none;
+            filter: drop-shadow(0 4px 10px rgba(168, 85, 247, 0.5));
+        }
+        .season-hallow-card {
+            position: relative;
+            border-color: rgba(249, 115, 22, 0.45) !important;
+            box-shadow: 0 4px 15px -3px rgba(147, 51, 234, 0.25);
+        }
+        .season-hallow-card::before {
+            content: '🎃';
+            position: absolute;
+            top: -9px;
+            left: 8px;
+            font-size: 18px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .season-hallow-card::after {
+            content: '👻';
+            position: absolute;
+            top: -9px;
+            right: 8px;
+            font-size: 18px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* 3. AUTUMN (Colored Maple & Oak Leaves) */
+        body.season-autumn::before {
+            content: '🍁';
+            position: fixed;
+            top: 12px;
+            left: 16px;
+            font-size: 32px;
+            z-index: 99;
+            pointer-events: none;
+        }
+        body.season-autumn::after {
+            content: '🍂';
+            position: fixed;
+            top: 12px;
+            right: 16px;
+            font-size: 32px;
+            z-index: 99;
+            pointer-events: none;
+        }
+        .season-autumn-card {
+            position: relative;
+            border-color: rgba(217, 119, 6, 0.45) !important;
+        }
+        .season-autumn-card::before {
+            content: '🍁';
+            position: absolute;
+            top: -8px;
+            left: 8px;
+            font-size: 17px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .season-autumn-card::after {
+            content: '🍂';
+            position: absolute;
+            top: -8px;
+            right: 8px;
+            font-size: 17px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* 4. WINTER (Snowflakes & Snow Cap) */
+        body.season-winter::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 6px;
+            background: linear-gradient(180deg, #e0f2fe 0%, #bae6fd 70%, transparent 100%);
+            z-index: 98;
+            pointer-events: none;
+        }
+        body.season-winter::after {
+            content: '❄️';
+            position: fixed;
+            top: 12px;
+            right: 16px;
+            font-size: 32px;
+            z-index: 99;
+            pointer-events: none;
+        }
+        .season-winter-card {
+            position: relative;
+            border-top: 3px solid #bae6fd !important;
+        }
+        .season-winter-card::before {
+            content: '❄️';
+            position: absolute;
+            top: -8px;
+            left: 8px;
+            font-size: 16px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .season-winter-card::after {
+            content: '☃️';
+            position: absolute;
+            top: -9px;
+            right: 8px;
+            font-size: 18px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* 5. SPRING (Cherry Blossoms & Tulips) */
+        body.season-spring::before {
+            content: '🌸';
+            position: fixed;
+            top: 12px;
+            left: 16px;
+            font-size: 30px;
+            z-index: 99;
+            pointer-events: none;
+        }
+        body.season-spring::after {
+            content: '🌷';
+            position: fixed;
+            top: 12px;
+            right: 16px;
+            font-size: 30px;
+            z-index: 99;
+            pointer-events: none;
+        }
+        .season-spring-card {
+            position: relative;
+            border-color: rgba(244, 114, 182, 0.4) !important;
+        }
+        .season-spring-card::before {
+            content: '🌸';
+            position: absolute;
+            top: -8px;
+            left: 8px;
+            font-size: 16px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .season-spring-card::after {
+            content: '🌷';
+            position: absolute;
+            top: -8px;
+            right: 8px;
+            font-size: 16px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* 6. SUMMER (Sun & Palm Trees) */
+        body.season-summer::before {
+            content: '☀️';
+            position: fixed;
+            top: 12px;
+            left: 16px;
+            font-size: 32px;
+            z-index: 99;
+            pointer-events: none;
+        }
+        body.season-summer::after {
+            content: '🌴';
+            position: fixed;
+            top: 12px;
+            right: 16px;
+            font-size: 32px;
+            z-index: 99;
+            pointer-events: none;
+        }
+        .season-summer-card {
+            position: relative;
+            border-color: rgba(250, 204, 21, 0.4) !important;
+        }
+        .season-summer-card::before {
+            content: '☀️';
+            position: absolute;
+            top: -8px;
+            left: 8px;
+            font-size: 16px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        .season-summer-card::after {
+            content: '🌴';
+            position: absolute;
+            top: -8px;
+            right: 8px;
+            font-size: 17px;
+            pointer-events: none;
+            z-index: 10;
         }
 
         /* Sidebar Transitions */
@@ -490,7 +721,7 @@
                             </label>
 
                             <!-- Emergency Date / Time Override Button (+ button next to mic) -->
-                            <button type="button" onclick="app.openModal('aiDateOverrideModal')" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 transition shrink-0" title="Emergency: Specify Multiple Target Dates & Times">
+                            <button type="button" onclick="app.openModal('aiDateOverrideModal')" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 transition shrink-0" title="Specify Multiple Target Dates & Times">
                                 <i class="fa-solid fa-calendar-plus text-sm"></i>
                             </button>
 
@@ -1159,29 +1390,29 @@ const PET_CATALOGUE = [
 ];
 
 const SEASONAL_CATALOGUE = [
-    { id: 'sea-winter-polar', type: 'seasonal', season: 'Winter', seasonClass: 'season-winter', name: 'Polar Bear Companion', cost: 50, icon: '🐻‍❄️', desc: 'Cozy winter polar bear for snowy focus.' },
-    { id: 'sea-winter-penguin', type: 'seasonal', season: 'Winter', seasonClass: 'season-winter', name: 'Chilly Penguin', cost: 40, icon: '🐧', desc: 'Slides through cold study sessions.' },
-    { id: 'sea-winter-frost-theme', type: 'theme', season: 'Winter', seasonClass: 'season-winter', name: 'Nordic Frost Theme', cost: 60, themeClass: 'theme-frost', desc: 'Crisp Arctic cyan gradient glow.' },
+    { id: 'sea-winter-polar', type: 'pet', season: 'Winter', seasonClass: 'season-winter', name: 'Polar Bear Companion', cost: 50, icon: '🐻‍❄️', desc: 'Cozy winter polar bear with snowy UI decorations.' },
+    { id: 'sea-winter-penguin', type: 'pet', season: 'Winter', seasonClass: 'season-winter', name: 'Chilly Penguin', cost: 40, icon: '🐧', desc: 'Slides through cold study sessions with frost decorations.' },
+    { id: 'sea-winter-frost-theme', type: 'theme', season: 'Winter', name: 'Nordic Frost Theme', cost: 60, themeClass: 'theme-frost', desc: 'Crisp Arctic cyan gradient glow.' },
 
-    { id: 'sea-spring-chick', type: 'seasonal', season: 'Spring', seasonClass: 'season-spring', name: 'Spring Hatchling', cost: 30, icon: '🐥', desc: 'Fresh new beginnings and vibrant motivation.' },
-    { id: 'sea-spring-bee', type: 'seasonal', season: 'Spring', seasonClass: 'season-spring', name: 'Busy Honeybee', cost: 35, icon: '🐝', desc: 'Buzzes around completing daily tasks.' },
-    { id: 'sea-spring-mint-theme', type: 'theme', season: 'Spring', seasonClass: 'season-spring', name: 'Mint Fresh Gradient', cost: 55, themeClass: 'theme-mint', desc: 'Vibrant spring green theme.' },
+    { id: 'sea-spring-chick', type: 'pet', season: 'Spring', seasonClass: 'season-spring', name: 'Spring Hatchling', cost: 30, icon: '🐥', desc: 'Fresh new beginnings with cherry blossom decorations.' },
+    { id: 'sea-spring-bee', type: 'pet', season: 'Spring', seasonClass: 'season-spring', name: 'Busy Honeybee', cost: 35, icon: '🐝', desc: 'Buzzes around completing daily tasks with spring flowers.' },
+    { id: 'sea-spring-mint-theme', type: 'theme', season: 'Spring', name: 'Mint Fresh Gradient', cost: 55, themeClass: 'theme-mint', desc: 'Vibrant spring green theme.' },
 
-    { id: 'sea-summer-flamingo', type: 'seasonal', season: 'Summer', seasonClass: 'season-summer', name: 'Tropical Flamingo', cost: 45, icon: '🦩', desc: 'Brings warm summer vibes to your planner.' },
-    { id: 'sea-summer-crab', type: 'seasonal', season: 'Summer', seasonClass: 'season-summer', name: 'Sunny Beach Crab', cost: 35, icon: '🦀', desc: 'Pinches down overdue task lists.' },
-    { id: 'sea-summer-solar-theme', type: 'theme', season: 'Summer', seasonClass: 'season-summer', name: 'Solar Flare Gradient', cost: 60, themeClass: 'theme-solar', desc: 'Radiant bronze sunburst gradient.' },
+    { id: 'sea-summer-flamingo', type: 'pet', season: 'Summer', seasonClass: 'season-summer', name: 'Tropical Flamingo', cost: 45, icon: '🦩', desc: 'Brings warm summer sun & palm tree decorations.' },
+    { id: 'sea-summer-crab', type: 'pet', season: 'Summer', seasonClass: 'season-summer', name: 'Sunny Beach Crab', cost: 35, icon: '🦀', desc: 'Pinches down overdue task lists in summer vibes.' },
+    { id: 'sea-summer-solar-theme', type: 'theme', season: 'Summer', name: 'Solar Flare Gradient', cost: 60, themeClass: 'theme-solar', desc: 'Radiant bronze sunburst gradient.' },
 
-    { id: 'sea-autumn-squirrel', type: 'seasonal', season: 'Autumn', seasonClass: 'season-autumn', name: 'Nutty Squirrel', cost: 35, icon: '🐿️', desc: 'Hoards completed tasks like acorns.' },
-    { id: 'sea-autumn-hedgehog', type: 'seasonal', season: 'Autumn', seasonClass: 'season-autumn', name: 'Autumn Hedgehog', cost: 40, icon: '🦔', desc: 'Rustles through falling leaf study blocks.' },
-    { id: 'sea-autumn-sands-theme', type: 'theme', season: 'Autumn', seasonClass: 'season-autumn', name: 'Golden Sands Gradient', cost: 55, themeClass: 'theme-sands', desc: 'Warm amber and golden oak leaves.' },
+    { id: 'sea-autumn-squirrel', type: 'pet', season: 'Autumn', seasonClass: 'season-autumn', name: 'Nutty Squirrel', cost: 35, icon: '🐿️', desc: 'Hoards completed tasks with colorful autumn leaves.' },
+    { id: 'sea-autumn-hedgehog', type: 'pet', season: 'Autumn', seasonClass: 'season-autumn', name: 'Autumn Hedgehog', cost: 40, icon: '🦔', desc: 'Rustles through falling maple & oak leaf blocks.' },
+    { id: 'sea-autumn-sands-theme', type: 'theme', season: 'Autumn', name: 'Golden Sands Gradient', cost: 55, themeClass: 'theme-sands', desc: 'Warm amber and golden oak leaves.' },
 
-    { id: 'sea-hallow-bat', type: 'seasonal', season: 'Halloween', seasonClass: 'season-hallow', name: 'Vampire Bat Companion', cost: 50, icon: '🦇', desc: 'Spooky companion for late midnight focus.' },
-    { id: 'sea-hallow-ghost', type: 'seasonal', season: 'Halloween', seasonClass: 'season-hallow', name: 'Spooky Phantom', cost: 55, icon: '👻', desc: 'Haunts away your procrastination.' },
-    { id: 'sea-hallow-rose-theme', type: 'theme', season: 'Halloween', seasonClass: 'season-hallow', name: 'Vampire Rose Theme', cost: 70, themeClass: 'theme-rose', desc: 'Deep crimson gothic gradient glow.' },
+    { id: 'sea-hallow-bat', type: 'pet', season: 'Halloween', seasonClass: 'season-hallow', name: 'Vampire Bat Companion', cost: 50, icon: '🦇', desc: 'Spooky Halloween companion with pumpkins & ghosts.' },
+    { id: 'sea-hallow-ghost', type: 'pet', season: 'Halloween', seasonClass: 'season-hallow', name: 'Spooky Phantom', cost: 55, icon: '👻', desc: 'Haunts away procrastination with spooky decor.' },
+    { id: 'sea-hallow-rose-theme', type: 'theme', season: 'Halloween', name: 'Vampire Rose Theme', cost: 70, themeClass: 'theme-rose', desc: 'Deep crimson gothic gradient glow.' },
 
-    { id: 'sea-xmas-reindeer', type: 'pet', season: 'Christmas', seasonClass: 'season-christmas', name: 'Rudolph Reindeer', cost: 60, icon: '🦌', desc: 'Guides your sleigh to productivity success.' },
-    { id: 'sea-xmas-santa', type: 'pet', season: 'Christmas', seasonClass: 'season-christmas', name: 'Festive Elf', cost: 50, icon: '🧑‍🎄', desc: 'Delivers bonus coin rewards on time.' },
-    { id: 'sea-xmas-pastel-theme', type: 'theme', season: 'Christmas', seasonClass: 'season-christmas', name: 'Holiday Sunset Gradient', cost: 65, themeClass: 'theme-pastel', desc: 'Magical magenta & purple celebration glow.' }
+    { id: 'sea-xmas-reindeer', type: 'pet', season: 'Christmas', seasonClass: 'season-christmas', name: 'Rudolph Reindeer', cost: 60, icon: '🦌', desc: 'Festive snow caps, mistletoe & Christmas trees!' },
+    { id: 'sea-xmas-santa', type: 'pet', season: 'Christmas', seasonClass: 'season-christmas', name: 'Festive Elf', cost: 50, icon: '🧑‍🎄', desc: 'Holiday snow, mistletoe & Christmas tree decorations!' },
+    { id: 'sea-xmas-pastel-theme', type: 'theme', season: 'Christmas', name: 'Holiday Sunset Gradient', cost: 65, themeClass: 'theme-pastel', desc: 'Magical magenta & purple celebration glow.' }
 ];
 
 const SHOP_ITEMS = [
@@ -1296,6 +1527,7 @@ class FocusQuestApp {
             activeTheme: 'theme-midnight',
             activeSeasonClass: '',
             activePet: '🐱',
+            activePetId: 'pet-cat',
             activeRank: { tier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved' },
             inventory: ['theme-midnight', 'pet-cat', 'rank-bronze'],
             unlockedAchievements: [],
@@ -1635,8 +1867,9 @@ class FocusQuestApp {
 
                     if (cu.name && cu.name !== 'Warrior') this.user.name = cu.name;
                     if (cu.timezone && cu.timezone !== 'auto') this.user.timezone = cu.timezone;
-                    if (cu.activeSeasonClass) this.user.activeSeasonClass = cu.activeSeasonClass;
                     if (cu.activePet) this.user.activePet = cu.activePet;
+                    if (cu.activePetId) this.user.activePetId = cu.activePetId;
+                    if (cu.activeSeasonClass !== undefined) this.user.activeSeasonClass = cu.activeSeasonClass;
                 }
 
                 const maxUpdatedAt = Math.max(
@@ -1647,7 +1880,7 @@ class FocusQuestApp {
                 localStorage.setItem(this.getStorageKey('updated_at'), maxUpdatedAt);
                 this.saveLocalStorage(false);
                 this.isSyncingFromCloud = false;
-                this.applyActiveSeasonClass();
+                this.applyActiveThemeAndSeason();
                 this.render();
             } else {
                 this.syncToCloud();
@@ -1726,14 +1959,22 @@ class FocusQuestApp {
         if (notifOffsetSelect) notifOffsetSelect.value = this.user.notificationOffset || 0;
     }
 
-    applyActiveThemeAndSeason() {
-        let theme = this.user.activeTheme || 'theme-midnight';
-        let seasonClass = this.user.activeSeasonClass || '';
-        document.body.className = `${theme} ${seasonClass} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
+    getEffectiveSeasonClass() {
+        // Strictly derive seasonal decorations ONLY from the currently equipped companion skin at the top
+        if (this.user.activePetId) {
+            const activePetItem = SHOP_ITEMS.find(i => i.id === this.user.activePetId);
+            if (activePetItem) {
+                return activePetItem.seasonClass || '';
+            }
+        }
+        return this.user.activeSeasonClass || '';
     }
 
-    applyActiveSeasonClass() {
-        this.applyActiveThemeAndSeason();
+    applyActiveThemeAndSeason() {
+        let theme = this.user.activeTheme || 'theme-midnight';
+        let seasonClass = this.getEffectiveSeasonClass();
+        this.user.activeSeasonClass = seasonClass;
+        document.body.className = `${theme} ${seasonClass} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
     }
 
     saveProfileSettings() {
@@ -2670,7 +2911,7 @@ class FocusQuestApp {
     }
 
     /* =========================================
-       AI FOCUS ASSISTANT METHODS (MULTIPLE TARGET DATES SUPPORTED)
+       AI FOCUS ASSISTANT METHODS
        ========================================= */
 
     createNewAiChat() {
@@ -2813,7 +3054,6 @@ class FocusQuestApp {
         else if (lower.includes('englisch') || lower.includes('english')) subject = "English";
         else if (lower.includes('geschichte') || lower.includes('history')) subject = "History";
 
-        // Multiple Target Dates Support Extraction
         let targetDates = [];
         const multiDatesMatch = userText.match(/Target Dates: ([^\]]+)/);
         if (multiDatesMatch) {
@@ -3030,9 +3270,8 @@ class FocusQuestApp {
     renderShopCardHTML(item) {
         const isOwned = (this.user.inventory || []).includes(item.id);
         const isEquipped = item.type === 'theme' ? this.user.activeTheme === item.themeClass : 
-                           (item.type === 'seasonal' ? this.user.activeSeasonClass === item.seasonClass :
-                           ((item.type === 'pet' || item.id.startsWith('sea-xmas-')) ? this.user.activePet === item.icon : 
-                           (item.type === 'badge' ? (this.user.activeRank && this.user.activeRank.tier === item.rankTier) : this.user.activeTitle === item.title)));
+                           (item.type === 'pet' ? (this.user.activePetId === item.id || (!this.user.activePetId && this.user.activePet === item.icon)) : 
+                           (item.type === 'badge' ? (this.user.activeRank && this.user.activeRank.tier === item.rankTier) : this.user.activeTitle === item.title));
 
         let visualElement = item.icon ? item.icon : '🎨';
         if (item.type === 'badge' && item.icon) {
@@ -3128,18 +3367,17 @@ class FocusQuestApp {
 
         if (item.type === 'theme') {
             this.user.activeTheme = item.themeClass;
-        } else if (item.type === 'seasonal') {
-            this.user.activeSeasonClass = item.seasonClass || '';
-            if (item.themeClass) this.user.activeTheme = item.themeClass;
         } else if (item.type === 'badge') {
             if (item.rankTier) {
                 this.user.activeRank = { tier: item.rankTier, cssClass: item.cssClass, icon: item.icon };
             } else {
                 this.user.activeTitle = item.title;
             }
-        } else if (item.type === 'pet' || item.id.startsWith('sea-xmas-')) {
+        } else if (item.type === 'pet') {
             if (item.icon) this.user.activePet = item.icon;
-            if (item.seasonClass) this.user.activeSeasonClass = item.seasonClass;
+            this.user.activePetId = item.id;
+            // Strictly tie decorations to the newly equipped companion skin
+            this.user.activeSeasonClass = item.seasonClass || '';
         }
 
         this.applyActiveThemeAndSeason();
@@ -3594,8 +3832,8 @@ class FocusQuestApp {
             return;
         }
 
-        const isChristmasActive = this.user.activeSeasonClass === 'season-christmas';
-        const cardClassAdd = isChristmasActive ? 'season-christmas-card' : '';
+        const effectiveSeason = this.getEffectiveSeasonClass();
+        const cardClassAdd = effectiveSeason ? `${effectiveSeason}-card` : '';
 
         container.innerHTML = filtered.map(task => {
             const category = this.categories.find(c => c.id === task.categoryId) || { name: 'General', color: '#6366f1', icon: 'fa-folder' };
