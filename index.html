@@ -63,6 +63,63 @@
         body.theme-pastel { background: linear-gradient(135deg, #311042 0%, #701a75 50%, #9d174d 100%); }
         body.theme-matrix { background: linear-gradient(135deg, #052e16 0%, #14532d 50%, #166534 100%); }
 
+        /* Seasonal Border Decorations */
+        body.season-christmas::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            border: 6px dashed #ef4444;
+            z-index: 99;
+            opacity: 0.8;
+            box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.5);
+        }
+        body.season-winter::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            border: 6px solid #38bdf8;
+            z-index: 99;
+            opacity: 0.6;
+        }
+        body.season-spring::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            border: 6px dotted #4ade80;
+            z-index: 99;
+            opacity: 0.7;
+        }
+        body.season-summer::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            border: 6px wavy #f59e0b;
+            z-index: 99;
+            opacity: 0.7;
+        }
+        body.season-autumn::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            border: 6px groove #d97706;
+            z-index: 99;
+            opacity: 0.7;
+        }
+        body.season-hallow::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            border: 6px ridge #a855f7;
+            z-index: 99;
+            opacity: 0.8;
+        }
+
         /* Sidebar Transitions */
         #sidebar {
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -128,7 +185,6 @@
         .rank-mythic { background: linear-gradient(135deg, #831843, #db2777); color: #fce7f3; border: 1px solid #f472b6; }
         .rank-legendary { background: linear-gradient(135deg, #7f1d1d, #ef4444); color: #fee2e2; border: 1px solid #fca5a5; }
 
-        /* Cyberpunk AI Glow */
         .ai-cyber-glow {
             box-shadow: 0 0 20px -3px rgba(99, 102, 241, 0.4);
             border-color: rgba(99, 102, 241, 0.6) !important;
@@ -369,14 +425,12 @@
             <div id="aiAssistantContainer" class="hidden h-full flex flex-col lg:flex-row gap-4 -m-4 sm:-m-6 p-4 sm:p-6">
                 <!-- Gemini-Style Chat History Sidebar -->
                 <div class="w-full lg:w-72 bg-cardBg/80 border border-borderCol/80 rounded-2xl flex flex-col shrink-0 overflow-hidden shadow-xl h-72 lg:h-auto">
-                    <!-- New Chat Button First -->
                     <div class="p-3.5 border-b border-borderCol bg-slate-900/60 shrink-0">
                         <button onclick="app.createNewAiChat()" class="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-black text-xs shadow-md flex items-center justify-center space-x-1.5 transition">
                             <i class="fa-solid fa-plus text-xs"></i>
                             <span>New Chat</span>
                         </button>
                     </div>
-                    <!-- Chat Sessions Header & List with Rename & Delete Icons -->
                     <div class="px-3.5 py-2 border-b border-borderCol/60 bg-slate-900/40 flex items-center justify-between shrink-0">
                         <span class="font-black text-[11px] text-cyan-400 uppercase tracking-wider flex items-center space-x-1.5">
                             <i class="fa-solid fa-message text-[10px]"></i>
@@ -444,13 +498,19 @@
                         </div>
                     </div>
 
-                    <!-- Input Bar with Smaller Send Button -->
+                    <!-- Input Bar with Date Override Emergency Button -->
                     <div class="p-3 sm:p-4 border-t border-borderCol bg-slate-900/90 shrink-0 space-y-2">
                         <form onsubmit="app.sendAiMessage(event)" class="flex items-center space-x-2">
                             <label class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-400 cursor-pointer transition shrink-0" title="Upload material or screenshot">
                                 <i class="fa-solid fa-paperclip text-sm"></i>
                                 <input type="file" id="aiMaterialInput" onchange="app.handleAiMaterialUpload(event)" accept="image/*,.pdf,.txt" class="hidden">
                             </label>
+
+                            <!-- Emergency Date / Time Override Button (+ button next to mic) -->
+                            <button type="button" onclick="app.openModal('aiDateOverrideModal')" class="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 transition shrink-0" title="Emergency: Specify Date, Day & Time manually">
+                                <i class="fa-solid fa-calendar-plus text-sm"></i>
+                            </button>
+
                             <div class="relative flex-1 flex items-center">
                                 <input type="text" id="aiChatInput" placeholder="Ask AI to schedule tasks, explain topics..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 pr-10 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500">
                                 <button type="button" id="mic-btn-aiChatInput" onclick="app.startVoiceInput('aiChatInput')" class="absolute right-3 text-slate-400 hover:text-cyan-400 transition" title="Voice Input">
@@ -551,6 +611,34 @@
         <button onclick="app.closeModal('celebrationModal')" class="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-emerald-500/30 transition transform hover:scale-105 active:scale-95">
             Continue Crushing It!
         </button>
+    </div>
+</div>
+
+<!-- AI Emergency Date Override Modal -->
+<div id="aiDateOverrideModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-cardBg border border-borderCol rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl my-auto p-6 space-y-4">
+        <div class="flex items-center justify-between border-b border-borderCol pb-3">
+            <h3 class="font-extrabold text-base text-cyan-400 flex items-center space-x-2">
+                <i class="fa-solid fa-calendar-days"></i>
+                <span>Manual Date & Time Override</span>
+            </h3>
+            <button onclick="app.closeModal('aiDateOverrideModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <p class="text-xs text-slate-300">If the AI needs exact context, specify the target date, day, and time below before sending your prompt.</p>
+        <div class="space-y-3">
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Target Date</label>
+                <input type="date" id="overrideDateInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Target Time</label>
+                <input type="time" id="overrideTimeInput" value="15:00" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200">
+            </div>
+        </div>
+        <div class="flex justify-end space-x-2 pt-2">
+            <button onclick="app.closeModal('aiDateOverrideModal')" class="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 text-xs font-semibold">Cancel</button>
+            <button onclick="app.applyAiDateOverride()" class="px-4 py-2 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold">Apply Context</button>
+        </div>
     </div>
 </div>
 
@@ -953,14 +1041,14 @@
                 </label>
             </div>
 
-            <!-- Firebase Cloud Sync Section -->
+            <!-- Firebase Cloud Sync Section & Synchronize all dispositivos -->
             <div class="pt-4 border-t border-slate-800 space-y-4">
                 <div>
                     <h4 class="text-sm font-bold text-indigo-400 flex items-center space-x-2">
                         <i class="fa-solid fa-cloud-arrow-up"></i>
                         <span>Firebase Realtime Cloud Sync</span>
                     </h4>
-                    <p class="text-xs text-slate-300 mt-1">Sync tasks, points, levels, pets, and unlocks instantly between devices using a shared Account Key / Sync Code.</p>
+                    <p class="text-xs text-slate-300 mt-1">Sync tasks, points, levels, pets, and unlocks instantly between devices using a shared Account Key / Sync Code (Additive Merge).</p>
                 </div>
 
                 <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3">
@@ -978,6 +1066,16 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Synchronize all dispositivos Button (Additive Merge) -->
+                        <div class="mt-3">
+                            <button onclick="app.forceSynchronizeAllDispositivos()" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white text-xs font-black shadow-md flex items-center justify-center space-x-2 transition">
+                                <i class="fa-solid fa-sync text-sm"></i>
+                                <span>Synchronize all dispositivos</span>
+                            </button>
+                            <p class="text-[10px] text-slate-400 mt-1 text-center">Merges all data additively (nothing gets lost, max points/inventory combined).</p>
+                        </div>
+
                         <div class="mt-2 text-right">
                             <button onclick="app.createNewSyncCodePrompt()" class="text-xs text-indigo-400 hover:text-indigo-300 font-bold underline transition flex items-center justify-end space-x-1 ml-auto">
                                 <i class="fa-solid fa-plus-circle text-xs"></i>
@@ -1081,29 +1179,29 @@ const PET_CATALOGUE = [
 ];
 
 const SEASONAL_CATALOGUE = [
-    { id: 'sea-winter-polar', type: 'seasonal', season: 'Winter', name: 'Polar Bear Companion', cost: 50, icon: '🐻‍❄️', desc: 'Cozy winter polar bear for snowy focus.' },
-    { id: 'sea-winter-penguin', type: 'seasonal', season: 'Winter', name: 'Chilly Penguin', cost: 40, icon: '🐧', desc: 'Slides through cold study sessions.' },
-    { id: 'sea-winter-frost-theme', type: 'theme', season: 'Winter', name: 'Nordic Frost Theme', cost: 60, themeClass: 'theme-frost', desc: 'Crisp Arctic cyan gradient glow.' },
+    { id: 'sea-winter-polar', type: 'seasonal', season: 'Winter', seasonClass: 'season-winter', name: 'Polar Bear Companion', cost: 50, icon: '🐻‍❄️', desc: 'Cozy winter polar bear for snowy focus.' },
+    { id: 'sea-winter-penguin', type: 'seasonal', season: 'Winter', seasonClass: 'season-winter', name: 'Chilly Penguin', cost: 40, icon: '🐧', desc: 'Slides through cold study sessions.' },
+    { id: 'sea-winter-frost-theme', type: 'theme', season: 'Winter', seasonClass: 'season-winter', name: 'Nordic Frost Theme', cost: 60, themeClass: 'theme-frost', desc: 'Crisp Arctic cyan gradient glow.' },
 
-    { id: 'sea-spring-chick', type: 'seasonal', season: 'Spring', name: 'Spring Hatchling', cost: 30, icon: '🐥', desc: 'Fresh new beginnings and vibrant motivation.' },
-    { id: 'sea-spring-bee', type: 'seasonal', season: 'Spring', name: 'Busy Honeybee', cost: 35, icon: '🐝', desc: 'Buzzes around completing daily tasks.' },
-    { id: 'sea-spring-mint-theme', type: 'theme', season: 'Spring', name: 'Mint Fresh Gradient', cost: 55, themeClass: 'theme-mint', desc: 'Vibrant spring green theme.' },
+    { id: 'sea-spring-chick', type: 'seasonal', season: 'Spring', seasonClass: 'season-spring', name: 'Spring Hatchling', cost: 30, icon: '🐥', desc: 'Fresh new beginnings and vibrant motivation.' },
+    { id: 'sea-spring-bee', type: 'seasonal', season: 'Spring', seasonClass: 'season-spring', name: 'Busy Honeybee', cost: 35, icon: '🐝', desc: 'Buzzes around completing daily tasks.' },
+    { id: 'sea-spring-mint-theme', type: 'theme', season: 'Spring', seasonClass: 'season-spring', name: 'Mint Fresh Gradient', cost: 55, themeClass: 'theme-mint', desc: 'Vibrant spring green theme.' },
 
-    { id: 'sea-summer-flamingo', type: 'seasonal', season: 'Summer', name: 'Tropical Flamingo', cost: 45, icon: '🦩', desc: 'Brings warm summer vibes to your planner.' },
-    { id: 'sea-summer-crab', type: 'seasonal', season: 'Summer', name: 'Sunny Beach Crab', cost: 35, icon: '🦀', desc: 'Pinches down overdue task lists.' },
-    { id: 'sea-summer-solar-theme', type: 'theme', season: 'Summer', name: 'Solar Flare Gradient', cost: 60, themeClass: 'theme-solar', desc: 'Radiant bronze sunburst gradient.' },
+    { id: 'sea-summer-flamingo', type: 'seasonal', season: 'Summer', seasonClass: 'season-summer', name: 'Tropical Flamingo', cost: 45, icon: '🦩', desc: 'Brings warm summer vibes to your planner.' },
+    { id: 'sea-summer-crab', type: 'seasonal', season: 'Summer', seasonClass: 'season-summer', name: 'Sunny Beach Crab', cost: 35, icon: '🦀', desc: 'Pinches down overdue task lists.' },
+    { id: 'sea-summer-solar-theme', type: 'theme', season: 'Summer', seasonClass: 'season-summer', name: 'Solar Flare Gradient', cost: 60, themeClass: 'theme-solar', desc: 'Radiant bronze sunburst gradient.' },
 
-    { id: 'sea-autumn-squirrel', type: 'seasonal', season: 'Autumn', name: 'Nutty Squirrel', cost: 35, icon: '🐿️', desc: 'Hoards completed tasks like acorns.' },
-    { id: 'sea-autumn-hedgehog', type: 'seasonal', season: 'Autumn', name: 'Autumn Hedgehog', cost: 40, icon: '🦔', desc: 'Rustles through falling leaf study blocks.' },
-    { id: 'sea-autumn-sands-theme', type: 'theme', season: 'Autumn', name: 'Golden Sands Gradient', cost: 55, themeClass: 'theme-sands', desc: 'Warm amber and golden oak leaves.' },
+    { id: 'sea-autumn-squirrel', type: 'seasonal', season: 'Autumn', seasonClass: 'season-autumn', name: 'Nutty Squirrel', cost: 35, icon: '🐿️', desc: 'Hoards completed tasks like acorns.' },
+    { id: 'sea-autumn-hedgehog', type: 'seasonal', season: 'Autumn', seasonClass: 'season-autumn', name: 'Autumn Hedgehog', cost: 40, icon: '🦔', desc: 'Rustles through falling leaf study blocks.' },
+    { id: 'sea-autumn-sands-theme', type: 'theme', season: 'Autumn', seasonClass: 'season-autumn', name: 'Golden Sands Gradient', cost: 55, themeClass: 'theme-sands', desc: 'Warm amber and golden oak leaves.' },
 
-    { id: 'sea-hallow-bat', type: 'seasonal', season: 'Halloween', name: 'Vampire Bat Companion', cost: 50, icon: '🦇', desc: 'Spooky companion for late midnight focus.' },
-    { id: 'sea-hallow-ghost', type: 'seasonal', season: 'Halloween', name: 'Spooky Phantom', cost: 55, icon: '👻', desc: 'Haunts away your procrastination.' },
-    { id: 'sea-hallow-rose-theme', type: 'theme', season: 'Halloween', name: 'Vampire Rose Theme', cost: 70, themeClass: 'theme-rose', desc: 'Deep crimson gothic gradient glow.' },
+    { id: 'sea-hallow-bat', type: 'seasonal', season: 'Halloween', seasonClass: 'season-hallow', name: 'Vampire Bat Companion', cost: 50, icon: '🦇', desc: 'Spooky companion for late midnight focus.' },
+    { id: 'sea-hallow-ghost', type: 'seasonal', season: 'Halloween', seasonClass: 'season-hallow', name: 'Spooky Phantom', cost: 55, icon: '👻', desc: 'Haunts away your procrastination.' },
+    { id: 'sea-hallow-rose-theme', type: 'theme', season: 'Halloween', seasonClass: 'season-hallow', name: 'Vampire Rose Theme', cost: 70, themeClass: 'theme-rose', desc: 'Deep crimson gothic gradient glow.' },
 
-    { id: 'sea-xmas-reindeer', type: 'seasonal', season: 'Christmas', name: 'Rudolph Reindeer', cost: 60, icon: '🦌', desc: 'Guides your sleigh to productivity success.' },
-    { id: 'sea-xmas-santa', type: 'seasonal', season: 'Christmas', name: 'Festive Elf', cost: 50, icon: '🧑‍🎄', desc: 'Delivers bonus coin rewards on time.' },
-    { id: 'sea-xmas-pastel-theme', type: 'theme', season: 'Christmas', name: 'Holiday Sunset Gradient', cost: 65, themeClass: 'theme-pastel', desc: 'Magical magenta & purple celebration glow.' }
+    { id: 'sea-xmas-reindeer', type: 'seasonal', season: 'Christmas', seasonClass: 'season-christmas', name: 'Rudolph Reindeer', cost: 60, icon: '🦌', desc: 'Guides your sleigh to productivity success.' },
+    { id: 'sea-xmas-santa', type: 'seasonal', season: 'Christmas', seasonClass: 'season-christmas', name: 'Festive Elf', cost: 50, icon: '🧑‍🎄', desc: 'Delivers bonus coin rewards on time.' },
+    { id: 'sea-xmas-pastel-theme', type: 'theme', season: 'Christmas', seasonClass: 'season-christmas', name: 'Holiday Sunset Gradient', cost: 65, themeClass: 'theme-pastel', desc: 'Magical magenta & purple celebration glow.' }
 ];
 
 const SHOP_ITEMS = [
@@ -1144,7 +1242,7 @@ const SHOP_ITEMS = [
 
 const GENERATED_ACHIEVEMENTS = [];
 
-const streakDays = [1, 2, 3, 4, 5, 7, 10, 14, 21, 30, 45, 60, 75, 90, 100, 125, 150, 175, 200, 250, 300];
+const streakDays = [1, 2, 3, 4, 5, 7, 10, 14, 21, 30, 45, 60, 75, 90, 100];
 streakDays.forEach(days => {
     const reward = Math.min(100, Math.floor(days * 0.4) + 2);
     GENERATED_ACHIEVEMENTS.push({
@@ -1157,7 +1255,7 @@ streakDays.forEach(days => {
     });
 });
 
-const totalTaskCounts = [1, 5, 10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500, 750, 1000];
+const totalTaskCounts = [1, 5, 10, 25, 50, 75, 100, 150, 200, 250, 300, 400, 500];
 totalTaskCounts.forEach(count => {
     const reward = Math.min(150, Math.floor(count * 0.15) + 2);
     GENERATED_ACHIEVEMENTS.push({
@@ -1216,6 +1314,7 @@ class FocusQuestApp {
             xp: 0,
             activeTitle: 'Procrastinator',
             activeTheme: 'theme-midnight',
+            activeSeasonClass: '',
             activePet: '🐱',
             activeRank: { tier: 'Bronze I', cssClass: 'rank-bronze', icon: 'fa-shield-halved' },
             inventory: ['theme-midnight', 'pet-cat', 'rank-bronze'],
@@ -1346,6 +1445,7 @@ class FocusQuestApp {
         }, 3500);
     }
 
+    // Improved Microphone with continuous listening and auto-restart robustness
     startVoiceInput(inputId) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
@@ -1360,31 +1460,38 @@ class FocusQuestApp {
 
         const recognition = new SpeechRecognition();
         recognition.lang = 'de-DE';
-        recognition.interimResults = false;
+        recognition.continuous = true; // Kept open longer to avoid cutting off
+        recognition.interimResults = true;
         recognition.maxAlternatives = 1;
 
-        this.showMotivationalToast("🎤 Höre zu... Sprich jetzt!");
+        this.showMotivationalToast("🎤 Höre zu... Sprich jetzt in einem ruhigen Fluss!");
+
+        let finalTranscript = '';
 
         recognition.onresult = (event) => {
-            const speechResult = event.results[0][0].transcript;
-            const inputElem = document.getElementById(inputId);
-            if (inputElem) {
-                inputElem.value = speechResult;
-                if (inputId === 'taskSearchInput') {
-                    this.handleSearch(speechResult);
+            let interimTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript + ' ';
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
                 }
             }
-            this.showMotivationalToast(`Erkannt: "${speechResult}"`);
+
+            const activeText = (finalTranscript + interimTranscript).trim();
+            const inputElem = document.getElementById(inputId);
+            if (inputElem && activeText) {
+                inputElem.value = activeText;
+                if (inputId === 'taskSearchInput') {
+                    this.handleSearch(activeText);
+                }
+            }
         };
 
         recognition.onerror = (event) => {
-            let errorMsg = "Spracherkennung fehlgeschlagen.";
-            if (event.error === 'not-allowed') {
-                errorMsg = "Mikrofon-Zugriff verweigert. Bitte in den Browsereinstellungen erlauben.";
-            } else if (event.error === 'no-speech') {
-                errorMsg = "Keine Sprache erkannt. Bitte versuche es erneut.";
+            if (event.error !== 'no-speech') {
+                this.showMotivationalToast("Spracherkennung Hinweis: " + event.error);
             }
-            this.showMotivationalToast(errorMsg);
         };
 
         recognition.onend = () => {
@@ -1395,6 +1502,10 @@ class FocusQuestApp {
 
         try {
             recognition.start();
+            // Stop automatically after 8 seconds of continuous listening
+            setTimeout(() => {
+                try { recognition.stop(); } catch(e) {}
+            }, 8000);
         } catch(e) {
             if (micBtn) micBtn.classList.remove('mic-recording');
             this.showMotivationalToast("Spracherkennung konnte nicht gestartet werden.");
@@ -1461,12 +1572,9 @@ class FocusQuestApp {
                     offsetText = `startet in ${this.user.notificationOffset} Minuten!`;
                 }
 
-                const title = `FocusQuest Erinnerung`;
-                const body = `Hey ${userName}, deine Aufgabe "${task.title}" ${offsetText}`;
-
                 try {
-                    new Notification(title, {
-                        body: body,
+                    new Notification(`FocusQuest Erinnerung`, {
+                        body: `Hey ${userName}, deine Aufgabe "${task.title}" ${offsetText}`,
                         icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%236366f1"><circle cx="12" cy="12" r="10"/></svg>'
                     });
                 } catch(e) {}
@@ -1501,6 +1609,7 @@ class FocusQuestApp {
         }
     }
 
+    // Additive Merge Sync (Nothing gets lost unless deleted across devices)
     connectFirebaseSync() {
         if (!this.db || !this.syncCode) return;
         this.updateSyncBadge(true, 'Syncing...');
@@ -1558,6 +1667,7 @@ class FocusQuestApp {
 
                     if (cu.name && cu.name !== 'Warrior') this.user.name = cu.name;
                     if (cu.timezone && cu.timezone !== 'auto') this.user.timezone = cu.timezone;
+                    if (cu.activeSeasonClass) this.user.activeSeasonClass = cu.activeSeasonClass;
                 }
 
                 const maxUpdatedAt = Math.max(
@@ -1568,6 +1678,7 @@ class FocusQuestApp {
                 localStorage.setItem(this.getStorageKey('updated_at'), maxUpdatedAt);
                 this.saveLocalStorage(false);
                 this.isSyncingFromCloud = false;
+                this.applyActiveSeasonClass();
                 this.render();
             } else {
                 this.syncToCloud();
@@ -1576,6 +1687,11 @@ class FocusQuestApp {
         }, () => {
             this.updateSyncBadge(false, 'Offline');
         });
+    }
+
+    forceSynchronizeAllDispositivos() {
+        this.syncToCloud();
+        this.showMotivationalToast("Synchronize all dispositivos successful! All items & tasks merged additively.");
     }
 
     syncToCloud() {
@@ -1623,9 +1739,7 @@ class FocusQuestApp {
             if (!t.completionHistory) t.completionHistory = {};
         });
 
-        if (this.user.activeTheme) {
-            document.body.className = `${this.user.activeTheme} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
-        }
+        this.applyActiveThemeAndSeason();
 
         const syncDisplay = document.getElementById('syncCodeDisplay');
         if (syncDisplay) syncDisplay.value = this.syncCode;
@@ -1641,6 +1755,16 @@ class FocusQuestApp {
 
         const notifOffsetSelect = document.getElementById('notificationOffsetSelect');
         if (notifOffsetSelect) notifOffsetSelect.value = this.user.notificationOffset || 0;
+    }
+
+    applyActiveThemeAndSeason() {
+        let theme = this.user.activeTheme || 'theme-midnight';
+        let seasonClass = this.user.activeSeasonClass || '';
+        document.body.className = `${theme} ${seasonClass} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
+    }
+
+    applyActiveSeasonClass() {
+        this.applyActiveThemeAndSeason();
     }
 
     saveProfileSettings() {
@@ -1992,8 +2116,21 @@ class FocusQuestApp {
                 this.renderShop();
             } else if (modalId === 'debugModal') {
                 this.renderDebugSummary();
+            } else if (modalId === 'aiDateOverrideModal') {
+                document.getElementById('overrideDateInput').value = this.getTodayISO();
             }
         }
+    }
+
+    applyAiDateOverride() {
+        const dInput = document.getElementById('overrideDateInput').value;
+        const tInput = document.getElementById('overrideTimeInput').value;
+        if (dInput) {
+            const inputElem = document.getElementById('aiChatInput');
+            inputElem.value = `[Context: Target Date ${dInput}, Time ${tInput}] ` + inputElem.value;
+            this.showMotivationalToast(`Date context applied: ${dInput} (${tInput})`);
+        }
+        this.closeModal('aiDateOverrideModal');
     }
 
     closeModal(modalId) {
@@ -2279,20 +2416,26 @@ class FocusQuestApp {
         if (nextState) {
             task.lastCompletedDate = dateISO;
 
+            // Accurate Streak Calculation
+            const yesterdayStr = this.getYesterdayISO();
+            if (this.user.lastCompletedDate === yesterdayStr || this.user.lastCompletedDate === dateISO) {
+                if (this.user.lastCompletedDate !== dateISO) {
+                    this.user.currentStreak = (this.user.currentStreak || 0) + 1;
+                }
+            } else if (!this.user.currentStreak || this.user.currentStreak === 0) {
+                this.user.currentStreak = 1;
+            } else {
+                // Streak broken if gap > 1 day
+                this.user.currentStreak = 1;
+            }
+            this.user.lastCompletedDate = dateISO;
+
             const pointsEarned = this.calculateTaskPointValue(task, dateISO);
             this.user.points += pointsEarned;
             this.user.xp += pointsEarned * 10;
             this.playChime();
 
-            const phrases = [
-                `Super gemacht, ${userName}! Weiter so!`,
-                `Hervorragende Arbeit, ${userName}! Bleib fokussiert!`,
-                `Fantastischer Einsatz, ${userName}! Du rockst deine Ziele!`,
-                `Weiter so, ${userName}! Die Motivation steigt!`,
-                `Großartiger Fortschritt, ${userName}!`
-            ];
-            const randomMsg = phrases[Math.floor(Math.random() * phrases.length)];
-            this.showMotivationalToast(randomMsg + ` (+${pointsEarned} Pkt${pointsEarned > 1 ? 'e' : ''})`);
+            this.showMotivationalToast(`Super gemacht, ${userName}! (+${pointsEarned} Pkt, Streak: ${this.user.currentStreak} Tage)`);
 
             const todayTasks = this.tasks.filter(t => this.isTaskScheduledForToday(t));
             const allTodayCompleted = todayTasks.length > 0 && todayTasks.every(t => this.isTaskCompletedOnDate(t, this.getTodayISO()));
@@ -2441,6 +2584,7 @@ class FocusQuestApp {
         const totalCompleted = this.tasks.filter(t => Object.values(t.completionHistory || {}).some(v => v === true) || t.completed).length;
         const todayCompletedCount = this.tasks.filter(t => this.isTaskCompletedOnDate(t, this.getTodayISO())).length;
         const petCount = (this.user.inventory || []).filter(id => id.startsWith('pet-') || id.startsWith('sea-')).length;
+        const currentStreak = this.user.currentStreak || 0;
 
         GENERATED_ACHIEVEMENTS.forEach(ach => {
             if (this.user.unlockedAchievements.includes(ach.id)) return;
@@ -2449,11 +2593,12 @@ class FocusQuestApp {
             if (ach.type === 'totalTasks' && totalCompleted >= ach.target) unlocked = true;
             else if (ach.type === 'singleDayVol' && todayCompletedCount >= ach.target) unlocked = true;
             else if (ach.type === 'petCount' && petCount >= ach.target) unlocked = true;
+            else if (ach.type === 'streak' && currentStreak >= ach.target) unlocked = true;
 
             if (unlocked) {
                 this.user.unlockedAchievements.push(ach.id);
                 this.user.points += ach.rewardCoins;
-                this.showMotivationalToast(`🏆 Quest freigeschaltet: ${ach.title}! Belohnung: +${ach.rewardCoins} Münzen!`);
+                this.showMotivationalToast(`🏆 Quest unlocked: ${ach.title}! Reward: +${ach.rewardCoins} coins!`);
             }
         });
     }
@@ -2529,7 +2674,7 @@ class FocusQuestApp {
     }
 
     /* =========================================
-       AI FOCUS ASSISTANT METHODS (ENGLISH ENFORCED)
+       AI FOCUS ASSISTANT METHODS (ENGLISH ENFORCED & DATE SMART)
        ========================================= */
 
     createNewAiChat() {
@@ -2650,7 +2795,6 @@ class FocusQuestApp {
         this.clearAiMaterial();
         this.renderAiAssistantMessages();
 
-        // Simulate AI Response & Automatic Task Scheduling with exact date parsing
         setTimeout(() => {
             const aiReply = this.processAiSmartCommand(text, materialUsed);
             chat.messages.push({ sender: 'ai', text: aiReply });
@@ -2673,9 +2817,12 @@ class FocusQuestApp {
         else if (lower.includes('englisch') || lower.includes('english')) subject = "English";
         else if (lower.includes('geschichte') || lower.includes('history')) subject = "History";
 
-        // Intelligent Date Parsing (respecting user instructions e.g. "erst an diesem Freitag" or dates like 25.11)
+        // Precise AI Date & Context Extraction
         let startDate = new Date();
-        if (lower.includes('freitag') || lower.includes('friday')) {
+        const contextMatch = userText.match(/Target Date (\d{4}-\d{2}-\d{2})/);
+        if (contextMatch) {
+            startDate = new Date(contextMatch[1] + 'T00:00:00');
+        } else if (lower.includes('freitag') || lower.includes('friday')) {
             let dayOfWeek = startDate.getDay();
             let daysUntilFriday = (5 - dayOfWeek + 7) % 7;
             if (daysUntilFriday === 0) daysUntilFriday = 7; 
@@ -2683,7 +2830,7 @@ class FocusQuestApp {
         }
 
         const dateMatch = userText.match(/(\d{1,2})\.(\d{1,2})/);
-        if (dateMatch) {
+        if (dateMatch && !contextMatch) {
             const day = parseInt(dateMatch[1]);
             const month = parseInt(dateMatch[2]) - 1;
             const year = new Date().getFullYear();
@@ -2745,7 +2892,6 @@ class FocusQuestApp {
         const threadsContainer = document.getElementById('aiChatThreadsList');
         if (!threadsContainer) return;
 
-        // Render session list with both edit (rename) and delete icons next to the chat name
         threadsContainer.innerHTML = this.aiChats.map(chat => `
             <div onclick="app.switchAiChat('${chat.id}')" class="group p-2.5 rounded-xl text-xs font-bold cursor-pointer transition flex items-center justify-between ${chat.id === this.currentAiChatId ? 'bg-cyan-600/20 text-cyan-300 border border-cyan-500/40' : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'}">
                 <span class="truncate mr-2">${chat.title}</span>
@@ -2894,8 +3040,9 @@ class FocusQuestApp {
     renderShopCardHTML(item) {
         const isOwned = (this.user.inventory || []).includes(item.id);
         const isEquipped = item.type === 'theme' ? this.user.activeTheme === item.themeClass : 
-                           ((item.type === 'pet' || item.type === 'seasonal') ? this.user.activePet === item.icon : 
-                           (item.type === 'badge' ? (this.user.activeRank && this.user.activeRank.tier === item.rankTier) : this.user.activeTitle === item.title));
+                           (item.type === 'seasonal' ? this.user.activeSeasonClass === item.seasonClass :
+                           ((item.type === 'pet') ? this.user.activePet === item.icon : 
+                           (item.type === 'badge' ? (this.user.activeRank && this.user.activeRank.tier === item.rankTier) : this.user.activeTitle === item.title)));
 
         let visualElement = item.icon ? item.icon : '🎨';
         if (item.type === 'badge' && item.icon) {
@@ -2991,21 +3138,20 @@ class FocusQuestApp {
 
         if (item.type === 'theme') {
             this.user.activeTheme = item.themeClass;
-            document.body.className = `${item.themeClass} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
+        } else if (item.type === 'seasonal') {
+            this.user.activeSeasonClass = item.seasonClass || '';
+            if (item.themeClass) this.user.activeTheme = item.themeClass;
         } else if (item.type === 'badge') {
             if (item.rankTier) {
                 this.user.activeRank = { tier: item.rankTier, cssClass: item.cssClass, icon: item.icon };
             } else {
                 this.user.activeTitle = item.title;
             }
-        } else if (item.type === 'pet' || item.type === 'seasonal') {
+        } else if (item.type === 'pet') {
             if (item.icon) this.user.activePet = item.icon;
-            if (item.themeClass) {
-                this.user.activeTheme = item.themeClass;
-                document.body.className = `${item.themeClass} text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white overflow-x-hidden`;
-            }
         }
 
+        this.applyActiveThemeAndSeason();
         this.saveLocalStorage();
         this.render();
         this.renderShop();
